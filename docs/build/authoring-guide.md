@@ -85,7 +85,7 @@ Rules:
    decision: <one line>
    evidence: <command + exit code, or file:line>
    ```
-9. **Diagrams** carry a badge in their caption: `GENERATED <command> @ <sha>`, `HYBRID (n/n edges cited)` or `HYPOTHESIS`. Mermaid is the shared format; self-contained HTML is for things you read rather than commit.
+9. **Diagrams** carry a badge in their caption: `GENERATED <command> @ <sha>`, `HYBRID (n/n edges cited)` or `HYPOTHESIS`. Mermaid is the shared format; self-contained HTML is for things you read rather than commit, and diagrams render to a local HTML page per the badge protocol.
 10. **Ask the user** with AskUserQuestion when a decision is theirs; find facts yourself (or with ven-worker). Subagents cannot ask the user: they return BLOCKED.
 11. **Style.** English. Imperative, short sentences. No filler, no hype, no "it's important to". Headings and lists over walls of text. Examples use neutral nouns (widget, order of operations, account, report), never the denylist.
 

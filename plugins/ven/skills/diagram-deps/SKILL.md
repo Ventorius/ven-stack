@@ -1,6 +1,6 @@
 ---
 name: diagram-deps
-description: Draw the module dependency graph from the repo's import-graph adapter, with boundary violations and cycles highlighted. Use for "what depends on what", before moving code between modules, or to check layering. Its last section is the badge protocol every diagram follows.
+description: Draw the module dependency graph from the repo's import-graph adapter, with boundary violations and cycles highlighted. Use for "what depends on what", before moving code between modules, or to check layering. Its last section is the badge protocol every diagram follows, including how a diagram renders to a local HTML page.
 metadata:
   layer: L3
 ---
@@ -65,7 +65,7 @@ Every visual skill follows this section. It is written only here.
 2. From `$TMP`: `ven-profile run commands.setup` if the adapter's `requires` needs installed dependencies, then `ven-profile adapter <capability>`.
 3. `git worktree remove --force "$TMP"`. Make both outputs' paths repo-relative before comparing them.
 
-**Saving.** Save a diagram when a later step or the user will reuse it, as `$(ven-profile path)/diagrams/<kind>-<scope>.md` (for example `deps-api`, `flow-create-widget`). Never write diagrams into the working tree. Whenever the `.md` is written or rewritten, rewrite its `.html` too.
+**Saving.** Save a diagram when a later step or the user will reuse it, as `$(ven-profile path)/diagrams/<kind>-<scope>.md` (for example `deps-api`, `flow-create-widget`). Never write diagrams into the working tree.
 
 ````markdown
 ---
@@ -87,13 +87,7 @@ flowchart LR
 
 A HYBRID file's `command` lists the searches that found the edges, and its claim table follows the diagram. A HYPOTHESIS file has `command: -`.
 
-**Rendering.** Every diagram you show gets a page, written to `$(ven-profile path)/diagrams/<kind>-<scope>.html` even when no `.md` is saved. The page is a view: never read it back, and the `.md` stays the source of truth.
-
-- One file that works offline: no `<script>`, no external request, all CSS inline.
-- Top to bottom: the badge line as caption; a table of the nodes and edges (or the claim table), always; an inline SVG when about 12 nodes or fewer fit legibly; the Mermaid source inside `<details>`.
-- Write `&`, `<` and `>` in pasted text as `&amp;`, `&lt;` and `&gt;`.
-- If the host has a tool that publishes a page privately, publish the file and give the link; otherwise give the file's path.
-- The reply holds the badge, a short text summary and the link or path. It holds a Mermaid fence only when the user asks for one or no file can be written.
+**Rendering.** Every diagram you show gets a local page in `$(ven-profile path)/diagrams/`, even when no `.md` is saved. Offer once to publish it with the host's tool that publishes a page privately. The reply is the badge, a short summary and the page's path. Open `references/diagram-page.md` for the rules, names and skeleton.
 
 **Reuse and drift.** Before reusing a saved diagram, compare its `sha` (the head side of a two-ref diagram) with `git rev-parse --short HEAD`. If they differ:
 
@@ -101,4 +95,4 @@ A HYBRID file's `command` lists the searches that found the edges, and its claim
 - HYBRID: re-run **citation-check** on the saved claim table, fix or drop each failing edge, rewrite the file.
 - HYPOTHESIS: re-check every status before relying on it.
 
-Always say which it was: "no drift since <sha>" or "drifted since <sha>: <edges added, removed or failing>".
+With no drift, render the page from the saved `.md`. Always say which it was: "no drift since <sha>" or "drifted since <sha>: <edges added, removed or failing>".

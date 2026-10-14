@@ -53,7 +53,7 @@ A probe node that has run holds its result and evidence: the command and its exi
 
 - Show the ranked tree to the user before probing. They often re-rank it at once ("H3's area changed yesterday") or have ruled one out. If they're away, proceed with your ranking.
 - One probe, one variable. A probe that doesn't confirm is reverted before the next; never stack changes.
-- Redraw the tree after every probe with the new status and its evidence, rewriting its page per the badge protocol in **diagram-deps**. Record it: `ven-decisions add --step diagram-hypotheses --decision "H2 falsified" --evidence "<command> exit 1"`.
+- Redraw the tree after every probe with the new status and its evidence, rewriting the one page rather than adding another. Render it per **Rendering** in the badge protocol of **diagram-deps**. Republish only if the user said yes to publishing earlier. Record it: `ven-decisions add --step diagram-hypotheses --decision "H2 falsified" --evidence "<command> exit 1"`.
 - Every hypothesis falsified: your model of the system is wrong. Go back to the symptom and the repro, re-read with what the probes taught you, and write a fresh set. Say "I don't understand X" rather than guessing.
 
 ## Badge and saving
