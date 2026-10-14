@@ -19,8 +19,13 @@ export function saveProfile(dir, profile) {
   writeFileSync(profilePath(dir), `${JSON.stringify(profile, null, 2)}\n`);
 }
 
+// Array segments resolve by index or by an element's `name`, so `workspaces.api.commands.test.all` works.
 export function getKey(object, dottedKey) {
-  return dottedKey.split('.').reduce((value, part) => (value == null ? undefined : value[part]), object);
+  return dottedKey.split('.').reduce((value, part) => {
+    if (value == null) return undefined;
+    if (Array.isArray(value) && !/^\d+$/.test(part)) return value.find((item) => item?.name === part);
+    return value[part];
+  }, object);
 }
 
 export function setKey(object, dottedKey, value) {
@@ -54,8 +59,8 @@ export function validateProfile(profile) {
   if (profile.schema_version !== PROFILE_SCHEMA_VERSION) errors.push(`schema_version must be ${PROFILE_SCHEMA_VERSION}`);
   if (!profile.commands || typeof profile.commands !== 'object') errors.push('commands is required');
   const walk = (node, path) => {
-    if (node && typeof node === 'object' && 'run' in node) {
-      if (typeof node.run !== 'string' || !node.run.trim()) errors.push(`${path}.run must be a non-empty string`);
+    if (node && typeof node === 'object' && typeof node.run === 'string') {
+      if (!node.run.trim()) errors.push(`${path}.run must be a non-empty string`);
       if (!['verified', 'unverified', 'manual'].includes(node.status)) {
         errors.push(`${path}.status must be verified, unverified or manual`);
       }

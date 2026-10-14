@@ -1,0 +1,15 @@
+- mattpocock/skills — plugins/ven/skills/grilling/ adapted from skills/productivity/grilling/SKILL.md
+- mattpocock/skills — plugins/ven/skills/to-spec/ adapted from skills/engineering/to-spec/SKILL.md
+- mattpocock/skills — plugins/ven/skills/to-tickets/ adapted from skills/engineering/to-tickets/SKILL.md
+- mattpocock/skills — plugins/ven/skills/glossary/ adapted from skills/engineering/domain-modeling/SKILL.md, GLOSSARY-FORMAT.md, ADR-FORMAT.md
+- mattpocock/skills — plugins/ven/skills/tdd/ adapted from skills/engineering/tdd/SKILL.md, mocking.md
+- obra/superpowers — plugins/ven/skills/tdd/ adapted from skills/test-driven-development/SKILL.md
+- cursor/plugins — plugins/ven/skills/tdd/ adapted from pstack/skills/tdd/SKILL.md
+- cursor/plugins — plugins/ven/skills/sweep/ adapted from pstack/skills/swarm/SKILL.md
+- mattpocock/skills — plugins/ven/skills/prototype/ adapted from skills/engineering/prototype/SKILL.md, LOGIC.md (as references/logic.md), UI.md (as references/visual.md)
+- mattpocock/skills — plugins/ven/skills/improve-architecture/ adapted from skills/engineering/improve-codebase-architecture/SKILL.md
+- mattpocock/skills — plugins/ven/skills/reproduce/ adapted from skills/engineering/diagnosing-bugs/SKILL.md (phases 1–2)
+- obra/superpowers — plugins/ven/skills/reproduce/ adapted from skills/systematic-debugging/SKILL.md (phase 1)
+- cursor/plugins — plugins/ven/skills/verify/ adapted from pstack/skills/create-verification-skill/SKILL.md
+- obra/superpowers — plugins/ven/skills/verify/ adapted from skills/verification-before-completion/SKILL.md
+- cursor/plugins — plugins/ven/skills/benchmark-check/ adapted from pstack/skills/benchmark-checklist/SKILL.md

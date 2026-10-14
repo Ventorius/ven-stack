@@ -19,7 +19,7 @@ if (state?.playbook !== 'bug-fix' || state.reproduced) allow();
 const filePath = editedFilePath(input);
 if (!filePath) allow();
 const file = relative(root, filePath);
-if (file.startsWith('..')) allow();
+if (file.startsWith('..') || file.startsWith('.git/')) allow();
 
 const testGlobs = profile.tests?.patterns ?? [];
 const docsGlobs = profile.docs_only ?? ['**/*.md', '**/*.mdx', 'docs/**'];

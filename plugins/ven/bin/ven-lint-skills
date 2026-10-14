@@ -70,7 +70,8 @@ const where = (unit) => relative(process.cwd(), unit.file);
 // References are written as **name**, `name` or plugin:name; only known unit names count.
 function referencesOf(unit) {
   const found = new Set();
-  const patterns = [/\*\*([a-z0-9][a-z0-9-]*)\*\*/g, /`([a-z0-9][a-z0-9-]*)`/g, /\b[a-z0-9-]+:([a-z0-9][a-z0-9-]*)\b/g];
+  // `/ven:name` is a slash command the user types, i.e. a suggestion, so it doesn't count as a reference.
+  const patterns = [/\*\*([a-z0-9][a-z0-9-]*)\*\*/g, /`([a-z0-9][a-z0-9-]*)`/g, /(?<![/\w-])[a-z0-9-]+:([a-z0-9][a-z0-9-]*)\b/g];
   for (const pattern of patterns) {
     for (const match of unit.body.matchAll(pattern)) {
       if (named.has(match[1]) && match[1] !== unit.name) found.add(match[1]);
@@ -122,7 +123,8 @@ for (const { from, to, via } of edges) {
   const a = LAYER_ORDER[from.layer];
   const b = LAYER_ORDER[to.layer];
   const sideways = from.layer === 'L3' && to.layer === 'L3';
-  if (a && b && !(b < a || sideways)) {
+  // Agents consume skills through preload, so they sit outside the layer direction rule.
+  if (from.kind !== 'agent' && a && b && !(b < a || sideways)) {
     errors.push(`${where(via)}: ${from.name} (${from.layer}) references ${to.name} (${to.layer}); references must point down a layer or sideways within L3`);
   }
   if (from.userInvoked && to.userInvoked) {

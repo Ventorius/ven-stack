@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { makeRepo, runBin, runHook, writeFile } from '../support/fixture.mjs';
+import { makeRepo, runBin, runHook, stateDir, writeFile, writeState } from '../support/fixture.mjs';
 
 const session = (root, extra = {}) => ({ session_id: 's1', cwd: root, ...extra });
 
@@ -53,7 +53,7 @@ test('verify-gate releases after three blocks and records UNVERIFIED', () => {
   writeFile(root, 'src/app.js', 'export const answer = 43;\n');
   for (let i = 0; i < 3; i++) assert.equal(runHook('verify-gate', session(root, { hook_event_name: 'Stop', stop_hook_active: i > 0 })).code, 2);
   assert.equal(runHook('verify-gate', session(root, { hook_event_name: 'Stop', stop_hook_active: true })).code, 0);
-  assert.match(readFileSync(join(root, '.git', 'ven', 'decisions.tsv'), 'utf8'), /UNVERIFIED/);
+  assert.match(readFileSync(join(stateDir(root), 'decisions.tsv'), 'utf8'), /UNVERIFIED/);
 });
 
 test('verify-gate only gates ven-coder subagents', () => {
@@ -88,6 +88,8 @@ test('repro-first blocks source edits during bug-fix until a reproduction is rec
   assert.match(blocked.stderr, /Reproduce first/);
   assert.equal(edit('src/app.test.js').code, 0);
   assert.equal(edit('docs/notes.md').code, 0);
+  assert.equal(edit('.git/info/exclude').code, 0);
+  assert.equal(runHook('repro-first', { cwd: root, tool_name: 'Write', tool_input: { file_path: join(stateDir(root), 'specs', 'fix.json') } }).code, 0);
 
   runBin('ven-decisions', ['add', '--step', 'reproduce', '--decision', 'reproduced', '--evidence', 'app.test.js fails'], { cwd: root });
   assert.equal(edit('src/app.js').code, 0);
@@ -103,7 +105,7 @@ test('no-workaround flags added suppressions and removed assertions, honours ven
 
   const allowed = post('src/app.js', { old_string: 'a', new_string: '// @ts-ignore ven-allow: SUB-1 vendor types' });
   assert.equal(allowed.code, 0);
-  assert.match(readFileSync(join(root, '.git', 'ven', 'decisions.tsv'), 'utf8'), /no-workaround\tallowed/);
+  assert.match(readFileSync(join(stateDir(root), 'decisions.tsv'), 'utf8'), /no-workaround\tallowed/);
 
   const weakened = post('src/app.test.js', { old_string: 'expect(a).toBe(1)\nexpect(b).toBe(2)', new_string: 'expect(a).toBe(1)' });
   assert.equal(weakened.code, 2);
@@ -136,7 +138,7 @@ test('decisions-log appends the agent trailer to decisions.tsv', () => {
   const message = 'Renamed 30 files.\n\nVEN-RESULT: DONE\nplaybook: migration\nstep: sweep\ndecision: renamed fooBar to fooBaz\nevidence: typecheck exit 0';
   runHook('decisions-log', { cwd: root, hook_event_name: 'SubagentStop', agent_type: 'ven:ven-worker', last_assistant_message: message });
   runHook('decisions-log', { cwd: root, hook_event_name: 'SubagentStop', agent_type: 'ven:ven-worker', last_assistant_message: 'VEN-RESULT: BLOCKED: which module owns invoices?' });
-  const log = readFileSync(join(root, '.git', 'ven', 'decisions.tsv'), 'utf8');
+  const log = readFileSync(join(stateDir(root), 'decisions.tsv'), 'utf8');
   assert.match(log, /migration\tsweep\trenamed fooBar to fooBaz\ttypecheck exit 0 \| agent=ven:ven-worker/);
   assert.match(log, /BLOCKED: which module owns invoices\?/);
 });
@@ -149,9 +151,9 @@ test('context-inject points un-onboarded repos at /ven:onboard', () => {
 
 test('context-inject surfaces map, stale profile, playbook and relevant solutions', () => {
   const root = makeRepo();
-  writeFile(root, '.git/ven/map.md', '# Map\nCommands: ven-profile get commands');
-  writeFile(root, '.git/ven/solutions/billing/rounding.md', '---\ntitle: Rounding drift\nsymptoms: [totals off by one cent]\nfiles: [src/app.js]\n---\nbody');
-  writeFile(root, '.git/ven/solutions/other/unrelated.md', '---\ntitle: Unrelated\nfiles: [src/other.js]\n---\nbody');
+  writeState(root, 'map.md', '# Map\nCommands: ven-profile get commands');
+  writeState(root, 'solutions/billing/rounding.md', '---\ntitle: Rounding drift\nsymptoms: [totals off by one cent]\nfiles: [src/app.js]\n---\nbody');
+  writeState(root, 'solutions/other/unrelated.md', '---\ntitle: Unrelated\nfiles: [src/other.js]\n---\nbody');
   writeFile(root, 'src/app.js', 'export const answer = 43;\n');
   runBin('ven-decisions', ['start', 'feature'], { cwd: root });
 

@@ -1,0 +1,3 @@
+- cursor/plugins (pstack) — plugins/ven/skills/onboard/ adapted from pstack/skills/create-verification-skill/SKILL.md (patterns only, no text: interview the repo before the user, prove before handing over)
+- EveryInc/compound-engineering-plugin — plugins/ven/skills/onboard/ adapted from skills/ce-setup/SKILL.md (patterns only, no text: preview every user-owned file change and apply on approval, no bulk installs)
+- mattpocock/skills — plugins/ven/skills/onboard/ adapted from skills/engineering/setup-matt-pocock-skills/SKILL.md (patterns only, no text: explore, present findings, ask only what exploration left open)

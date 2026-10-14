@@ -18,7 +18,7 @@ const root = repoRoot(cwd);
 const filePath = editedFilePath(input);
 if (!filePath) allow();
 const file = relative(root, filePath);
-if (file.startsWith('..') || matchesAny(file, profile.docs_only ?? ['**/*.md', '**/*.mdx', 'docs/**'])) allow();
+if (file.startsWith('..') || file.startsWith('.git/') || matchesAny(file, profile.docs_only ?? ['**/*.md', '**/*.mdx', 'docs/**'])) allow();
 
 const { added, removed } = editDelta(input);
 const findings = [];

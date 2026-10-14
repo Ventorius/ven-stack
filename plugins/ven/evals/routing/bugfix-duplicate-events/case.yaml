@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: routing-bugfix-duplicate-events
+context:
+  scaffold_script: scaffold.sh

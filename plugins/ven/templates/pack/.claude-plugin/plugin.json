@@ -1,0 +1,7 @@
+{
+  "name": "{{repo}}-{{pack}}",
+  "version": "0.1.0",
+  "description": "{{kind}} pack for {{pack}} in {{repo}}: {{one line on what the pack makes the agent get right}}. Requires the ven plugin (ven@ven-stack).",
+  "author": { "name": "{{owner}}" },
+  "keywords": ["ven-pack", "{{kind}}", "{{pack}}"]
+}

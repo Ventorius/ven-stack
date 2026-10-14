@@ -18,7 +18,7 @@ const root = repoRoot(cwd);
 const filePath = editedFilePath(input);
 if (!filePath) allow();
 const file = relative(root, filePath);
-if (file.startsWith('..') || (spec.globs && !matchesAny(file, spec.globs))) allow();
+if (file.startsWith('..') || file.startsWith('.git/') || (spec.globs && !matchesAny(file, spec.globs))) allow();
 
 const command = renderCommand(spec.run, { file: shellQuote(file), files: shellQuote(file) });
 try {

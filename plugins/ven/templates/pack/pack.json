@@ -1,0 +1,12 @@
+{
+  "kind": "{{kind}}",
+  "applies_when": {
+    "paths": ["{{glob where the pack's work happens}}"],
+    "deps": ["{{dependency name from a manifest}}"]
+  },
+  "skills": [],
+  "playbooks": [],
+  "references": [],
+  "adapters": [],
+  "rules": []
+}

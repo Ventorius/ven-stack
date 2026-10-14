@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, rmSync, statSync, utimesSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { copyFileSync, existsSync, realpathSync, rmSync, statSync, utimesSync } from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
+import { basename, dirname, isAbsolute, join } from 'node:path';
 
 export function git(args, cwd, options = {}) {
   return execFileSync('git', args, {
@@ -29,10 +30,18 @@ export function commonDir(cwd) {
   return tryGit(['rev-parse', '--path-format=absolute', '--git-common-dir'], cwd);
 }
 
-// State lives in git's common dir so every worktree of the repo shares it and nothing is ever committed.
+// State lives outside the repo, keyed by git's common dir: every worktree shares it, nothing is ever
+// committed, and it avoids `.git/`, which Claude Code protects from pre-approved writes.
+// VEN_STATE_DIR (absolute, or relative to the main worktree) overrides it; eval runs only pass EVAL_* vars.
 export function venDir(cwd) {
   const common = commonDir(cwd);
-  return common ? join(common, 'ven') : null;
+  if (!common) return null;
+  const mainRoot = basename(common) === '.git' ? dirname(common) : common;
+  const override = process.env.VEN_STATE_DIR ?? process.env.EVAL_VEN_STATE_DIR;
+  if (override) return isAbsolute(override) ? override : join(mainRoot, override);
+  const slug = basename(mainRoot).replace(/[^a-zA-Z0-9._-]/g, '-');
+  const hash = createHash('sha1').update(realpathSync(common)).digest('hex').slice(0, 8);
+  return join(process.env.VEN_HOME ?? join(homedir(), '.ven'), 'repos', `${slug}-${hash}`);
 }
 
 export function defaultBranch(cwd) {

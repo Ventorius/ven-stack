@@ -71,13 +71,14 @@ if (!root) {
     if (stale.length > 0) note('WARN', `profile stale: ${stale.join(', ')} changed; run /ven:onboard --refresh`);
     const unverified = [];
     const walk = (node, path) => {
-      if (node && typeof node === 'object' && 'run' in node) {
+      if (node && typeof node === 'object' && typeof node.run === 'string') {
         if (node.status !== 'verified') unverified.push(`${path} (${node.status})`);
         return;
       }
       if (node && typeof node === 'object') for (const [key, child] of Object.entries(node)) walk(child, path ? `${path}.${key}` : key);
     };
     walk(loaded.profile.commands, 'commands');
+    for (const workspace of loaded.profile.workspaces ?? []) walk(workspace.commands, `workspaces.${workspace.name}.commands`);
     if (unverified.length > 0) note('INFO', `commands not verified: ${unverified.join(', ')}`);
   }
 

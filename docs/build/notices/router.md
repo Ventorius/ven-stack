@@ -1,0 +1,21 @@
+# Notices: router entries and core playbooks
+
+- cursor/plugins — plugins/ven/skills/do/ adapted from pstack/skills/poteto-mode/SKILL.md
+- cursor/plugins — plugins/ven/skills/do/references/principles.md adapted from pstack/skills/poteto-mode/SKILL.md (Principles section)
+- EveryInc/compound-engineering-plugin — plugins/ven/skills/do/ adapted from skills/lfg/SKILL.md (routing by request shape)
+- cursor/plugins — plugins/ven/skills/help/ adapted from pstack/skills/poteto-help/SKILL.md
+- mattpocock/skills — plugins/ven/skills/help/ adapted from skills/engineering/ask-matt/SKILL.md (default flow, close calls)
+- cursor/plugins — plugins/ven/skills/do/playbooks/investigation.md adapted from pstack/skills/poteto-mode/playbooks/investigation.md
+- cursor/plugins — plugins/ven/skills/do/playbooks/feature.md adapted from pstack/skills/poteto-mode/playbooks/feature.md
+- mattpocock/skills — plugins/ven/skills/do/playbooks/feature.md adapted from skills/engineering/implement/SKILL.md and skills/engineering/ask-matt/SKILL.md (grill, spec, tickets, tdd, review flow)
+- cursor/plugins — plugins/ven/skills/do/playbooks/bug-fix.md adapted from pstack/skills/poteto-mode/playbooks/bug-fix.md
+- mattpocock/skills — plugins/ven/skills/do/playbooks/bug-fix.md adapted from skills/engineering/diagnosing-bugs/SKILL.md (ranked falsifiable hypotheses, regression test at a correct seam)
+- cursor/plugins — plugins/ven/skills/do/playbooks/refactor.md adapted from pstack/skills/poteto-mode/playbooks/refactoring.md
+- cursor/plugins — plugins/ven/skills/do/playbooks/perf.md adapted from pstack/skills/poteto-mode/playbooks/perf-issue.md
+- EveryInc/compound-engineering-plugin — plugins/ven/skills/do/playbooks/perf.md adapted from skills/ce-optimize/SKILL.md (keep or revert per measured experiment)
+- cursor/plugins — plugins/ven/skills/do/playbooks/migration.md adapted from pstack/skills/principle-build-the-lever/SKILL.md
+- cursor/plugins — plugins/ven/skills/do/playbooks/autonomous-run.md adapted from pstack/skills/poteto-mode/playbooks/autonomous-run.md
+- cursor/plugins — plugins/ven/skills/do/playbooks/autonomous-run.md adapted from ralph-loop/skills/ralph-loop/SKILL.md (iteration cap)
+- cursor/plugins — plugins/ven/skills/do/playbooks/pickup.md adapted from pstack/skills/poteto-mode/playbooks/session-pickup.md
+- cursor/plugins — plugins/ven/skills/do/playbooks/pause.md adapted from pstack/skills/poteto-mode/playbooks/pause-safely.md
+- cursor/plugins — plugins/ven/skills/do/playbooks/ship.md adapted from pstack/skills/poteto-mode/playbooks/opening-a-pr.md

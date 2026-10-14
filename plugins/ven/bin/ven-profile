@@ -28,10 +28,13 @@ const USAGE = `ven-profile: the repo profile (stack facts + verified commands), 
   ven-profile set <key> <json|string>      set one key
   ven-profile write < profile.json         replace the whole profile (validated)
   ven-profile validate                     check the profile against the schema
-  ven-profile run <key> [--file F]...      run a profile command with {file}/{files} filled in
+  ven-profile run <key> [--file F]... [--var name=value]...   run a profile command, filling {file}/{files}/{name}
   ven-profile prove [<key>...]             run commands once and mark each verified or unverified
   ven-profile verify <key> [--file F]...   run a verify command and log the result against the current tree
   ven-profile fresh                        exit 1 if manifests or lockfiles changed after the profile
+  ven-profile adapters                     print adapters.json (capability → command)
+  ven-profile adapter <capability> [--file F] [--var name=value]   run a verified adapter
+  ven-profile prove-adapters [<capability>...]                     prove adapters like prove does commands
   ven-profile packs-for <file>...          list enabled packs whose applies_when matches the files`;
 
 const [command, ...rest] = process.argv.slice(2);
@@ -60,10 +63,16 @@ function parseValue(raw) {
   }
 }
 
-function execute(spec, files, timeoutSeconds) {
+// `--var name=value` fills {name}; {file}/{files} come from --file.
+function templateVars() {
+  const vars = Object.fromEntries(list(flags.var).map((pair) => pair.split(/=(.*)/s).slice(0, 2)).map(([name, value]) => [name, shellQuote(value ?? '')]));
+  const quoted = list(flags.file).map(shellQuote);
+  return { ...vars, file: quoted[0] ?? '', files: quoted.join(' ') };
+}
+
+function execute(spec, timeoutSeconds) {
   const { root } = requireProfile();
-  const quoted = files.map(shellQuote);
-  const commandLine = renderCommand(spec.run, { file: quoted[0] ?? '', files: quoted.join(' ') });
+  const commandLine = renderCommand(spec.run, templateVars());
   const started = Date.now();
   const result = spawnSync(commandLine, {
     cwd: join(root, spec.cwd ?? '.'),
@@ -150,27 +159,28 @@ const commands = {
   run() {
     const key = positionals[0] ?? fail('usage: ven-profile run <key> [--file F]...');
     const spec = commandSpec(requireProfile().profile, key) ?? fail(`ven-profile: no command at ${key}`);
-    const result = execute(spec, list(flags.file), flags.timeout && Number(flags.timeout));
+    const result = execute(spec, flags.timeout && Number(flags.timeout));
     process.stdout.write(result.output);
     process.exit(result.exit);
   },
   prove() {
     const { dir, profile } = requireProfile();
-    const keys = positionals.length > 0 ? positionals : Object.keys(flattenCommands(profile.commands));
+    const keys = positionals.length > 0 ? positionals.map(qualify) : Object.keys(allCommands(profile));
+    const hasFile = list(flags.file).length > 0;
     for (const key of keys) {
-      const fullKey = key.startsWith('commands.') ? key : `commands.${key}`;
-      const spec = getKey(profile, fullKey);
+      const spec = getKey(profile, key);
       if (!spec?.run) continue;
-      if (spec.status === 'manual' || spec.run.includes('{file')) {
-        console.log(`skip  ${fullKey} (${spec.status === 'manual' ? 'manual' : 'needs a file argument; prove with --file'})`);
+      const needsFile = /\{files?\}/.test(spec.run);
+      if (spec.status === 'manual' || (needsFile && !hasFile)) {
+        console.log(`skip  ${key} (${spec.status === 'manual' ? 'manual' : 'needs a file argument; prove it with --file <path>'})`);
         continue;
       }
-      const result = execute(spec, list(flags.file), spec.timeout_s);
+      const result = execute(spec, spec.timeout_s);
       spec.status = result.exit === 0 ? 'verified' : 'unverified';
-      spec.evidence = `exit ${result.exit} in ${result.seconds}s at ${new Date().toISOString()}`;
+      spec.proof = `exit ${result.exit} in ${result.seconds}s at ${new Date().toISOString()}`;
       if (result.exit !== 0) spec.failure_tail = result.output.trim().split('\n').slice(-20).join('\n');
       else delete spec.failure_tail;
-      console.log(`${result.exit === 0 ? 'ok   ' : 'FAIL '} ${fullKey}  \`${result.commandLine}\`  (${spec.evidence})`);
+      console.log(`${result.exit === 0 ? 'ok   ' : 'FAIL '} ${key}  \`${result.commandLine}\`  (${spec.proof})`);
     }
     saveProfile(dir, profile);
   },
@@ -178,7 +188,7 @@ const commands = {
     const key = positionals[0] ?? fail('usage: ven-profile verify <key> [--file F]...');
     const { dir, root, profile } = requireProfile();
     const spec = commandSpec(profile, key) ?? fail(`ven-profile: no command at ${key}`);
-    const result = execute(spec, list(flags.file), flags.timeout && Number(flags.timeout));
+    const result = execute(spec, flags.timeout && Number(flags.timeout));
     const tree = workingTreeHash(root);
     appendVerify(dir, { tree, key, command: result.commandLine, exit: result.exit, seconds: result.seconds, worktree: repoRoot(cwd) });
     process.stdout.write(result.output);
@@ -191,6 +201,31 @@ const commands = {
     if (stale.length === 0) return print('profile is fresh');
     fail(`profile is stale: ${stale.join(', ')} changed after ${profile.generated_at}`);
   },
+  adapters() {
+    print(readAdapters());
+  },
+  adapter() {
+    const capability = positionals[0] ?? fail('usage: ven-profile adapter <capability> [--file F] [--var name=value]');
+    const spec = readAdapters()[capability];
+    if (!spec?.run) fail(`ven-profile: no adapter for ${capability}; fall back to reading files and suggest forge-adapter`, 3);
+    if (spec.status !== 'verified') fail(`ven-profile: adapter ${capability} is ${spec.status}; prove it first (ven-profile prove-adapters ${capability})`, 3);
+    const result = execute(spec, flags.timeout && Number(flags.timeout));
+    process.stdout.write(result.output);
+    process.exit(result.exit);
+  },
+  'prove-adapters'() {
+    const { dir } = requireProfile();
+    const adapters = readAdapters();
+    for (const capability of positionals.length > 0 ? positionals : Object.keys(adapters)) {
+      const spec = adapters[capability];
+      if (!spec?.run || spec.status === 'manual') continue;
+      const result = execute(spec, spec.timeout_s);
+      spec.status = result.exit === 0 ? 'verified' : 'unverified';
+      spec.proof = `exit ${result.exit} in ${result.seconds}s at ${new Date().toISOString()}`;
+      console.log(`${result.exit === 0 ? 'ok   ' : 'FAIL '} ${capability}  \`${result.commandLine}\``);
+    }
+    writeFileSync(join(dir, 'adapters.json'), `${JSON.stringify(adapters, null, 2)}\n`);
+  },
   'packs-for'() {
     const { profile } = requireProfile();
     const files = positionals;
@@ -202,10 +237,28 @@ const commands = {
   },
 };
 
-function flattenCommands(node, prefix = '') {
+function readAdapters() {
+  const { dir } = requireProfile();
+  const path = join(dir, 'adapters.json');
+  return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {};
+}
+
+function flattenCommands(node, prefix) {
   if (!node || typeof node !== 'object') return {};
-  if ('run' in node) return { [prefix]: node };
-  return Object.assign({}, ...Object.entries(node).map(([key, child]) => flattenCommands(child, prefix ? `${prefix}.${key}` : key)));
+  if (typeof node.run === 'string') return { [prefix]: node };
+  return Object.assign({}, ...Object.entries(node).map(([key, child]) => flattenCommands(child, `${prefix}.${key}`)));
+}
+
+// Every command leaf: top-level commands plus each workspace's, addressed by workspace name.
+function allCommands(profile) {
+  return Object.assign(
+    flattenCommands(profile.commands, 'commands'),
+    ...(profile.workspaces ?? []).map((workspace) => flattenCommands(workspace.commands, `workspaces.${workspace.name}.commands`)),
+  );
+}
+
+function qualify(key) {
+  return key.startsWith('commands.') || key.startsWith('workspaces.') ? key : `commands.${key}`;
 }
 
 if (!commands[command]) fail(USAGE, command ? 1 : 0);

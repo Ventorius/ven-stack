@@ -3,8 +3,12 @@ import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { venDir } from '../../scripts/lib/repo.mjs';
 
 export const PLUGIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+// Child processes inherit this, so tests never touch the real ~/.ven.
+process.env.VEN_HOME = mkdtempSync(join(tmpdir(), 'ven-home-'));
 
 export const BASE_PROFILE = {
   schema_version: 1,
@@ -36,11 +40,19 @@ export function makeRepo({ profile = BASE_PROFILE } = {}) {
   git(root, 'add', '-A');
   git(root, 'commit', '-q', '-m', 'init');
   if (profile) {
-    const dir = join(root, '.git', 'ven');
+    const dir = stateDir(root);
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, 'profile.json'), JSON.stringify(profile, null, 2));
   }
   return root;
+}
+
+export function stateDir(root) {
+  return venDir(root);
+}
+
+export function writeState(root, relativePath, content) {
+  return writeFile(stateDir(root), relativePath, content);
 }
 
 export function writeFile(root, relativePath, content) {
