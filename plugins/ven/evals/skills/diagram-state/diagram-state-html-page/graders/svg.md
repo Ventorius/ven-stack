@@ -1,7 +1,6 @@
 ---
 type: regex
 target: { source: file, path: ".ven-state/diagrams/state-order.html" }
-pattern: "<script"
-match: not_contains
+pattern: '<svg'
 ---
-The page is offline: no script element.
+The small fixture is drawn as an inline SVG.

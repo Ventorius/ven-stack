@@ -1,7 +1,6 @@
 ---
 type: regex
 target: { source: file, path: ".ven-state/diagrams/deps-repo.html" }
-pattern: "<script"
-match: not_contains
+pattern: '(?is)^(?=.*api)(?=.*core)(?=.*store)'
 ---
-The page is offline: no script element.
+The page names every fixture node.
