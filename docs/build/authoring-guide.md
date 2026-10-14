@@ -95,7 +95,7 @@ Evals run with `claude plugin eval` (built into Claude Code). A case is a direct
 
 - Core: `plugins/ven/evals/routing/<case>/` (router picks), `plugins/ven/evals/skills/<skill>/<case>/` (skill behavior and trigger).
 - Packs: `<pack>/evals/<case>/`.
-- Typical run: `claude plugin eval plugins/ven --case <name> --runs 3 --ablation none --scaffold --max-cost-usd 15`. Routing suite cap: `--max-cost-usd 5`.
+- Typical run: `claude plugin eval plugins/ven --case <name> --runs 3 --ablation none --scaffold --max-cost-usd 15`. Routing suite cap: `--max-cost-usd 10`.
 - "Fails without the change" for an edited skill: run the case against a copy of the plugin at the previous commit (`git worktree add <tmp> HEAD`) and against the working copy; compare pass rate and cost from `aggregate-result.json`.
 
 ## Outward-facing actions

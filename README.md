@@ -181,7 +181,7 @@ The routing eval contains 40 prompts with expected playbooks. Edit [`cases.json`
 
 ```sh
 node plugins/ven/evals/routing/generate.mjs
-claude plugin eval plugins/ven --scaffold --runs 3 --max-cost-usd 5
+claude plugin eval plugins/ven --scaffold --runs 3 --max-cost-usd 10
 ```
 
 Before adding or changing a skill, read [`docs/build/authoring-guide.md`](docs/build/authoring-guide.md). It covers frontmatter, body rules, the agent result trailer, evals and how to adapt upstream skills. A skill change counts as done when `ven-lint-skills` passes and its eval passes with the change and fails without it.
