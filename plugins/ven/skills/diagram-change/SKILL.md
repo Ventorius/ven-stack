@@ -41,7 +41,7 @@ flowchart LR
 
 ## 4. Report
 
-The diagram, then three short lists:
+Render the diagram as a page per the badge protocol in **diagram-deps**, then give three short lists:
 
 - **New edges**, each with one import line from the diff that adds it (`path:line` at head).
 - **Removed edges**, each with one import line the diff deletes (`<base sha>:path:line`).

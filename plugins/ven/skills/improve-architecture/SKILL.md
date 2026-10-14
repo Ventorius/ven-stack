@@ -40,7 +40,7 @@ For each candidate:
 - **Problem:** the friction, with `file:line` evidence.
 - **Change:** in plain words, no interface proposal yet.
 - **Gain:** in locality and leverage, and how tests improve.
-- **Before and after:** a small Mermaid sketch, captioned `HYPOTHESIS`.
+- **Before and after:** a small sketch, captioned `HYPOTHESIS` and rendered per the badge protocol in **diagram-deps**.
 - **Strength:** Strong, Worth exploring, or Speculative.
 
 End with your top recommendation and why. Then ask which one to explore (AskUserQuestion when available).
