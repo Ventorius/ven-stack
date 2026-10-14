@@ -74,6 +74,7 @@ All MIT except: **AS (skill-creator) is Apache-2.0** (Copyright 2026 Anthropic, 
 | benchmark-check | PS `skills/benchmark-checklist/SKILL.md` [39] | EV `ce-optimize/references/measurement.md` | tools via profile/adapters |
 | review | PS `skills/interrogate/SKILL.md` [74] + refs rubric/lead-judgment/reviewer-prompt | EV `ce-code-review/references/personas/*`; MP `code-review` [89]; NO `adversarial-review/references/reviewer-lenses.md` | 4 blind lenses, Act on/Consider/Noted/Dismissed |
 | blast-radius | PS `skills/blast-radius/SKILL.md` [50] | — | strip framework names |
+| quality-review | CTK `skills/thermo-nuclear-code-quality-review/SKILL.md` [181] | — | model-invocable; measure step via profile adapters; smells and remedies → reference; never fixes |
 | how | PS `skills/how/SKILL.md` [36] + explorer [35] + explainer [55] | HW `how/SKILL.md` [140] | explorers swarm tier |
 | why | PS `skills/why/SKILL.md` [98] + refs epistemics/investigator/synthesizer/sources/code-archaeology | — | vendor sources → packs |
 | handoff | MP `productivity/handoff/SKILL.md` [16] | EV `ce-handoff` | near verbatim |

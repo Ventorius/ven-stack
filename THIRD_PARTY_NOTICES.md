@@ -44,6 +44,7 @@ Copyright (c) 2026 Cursor (orchestrate, ralph-loop, cursor-team-kit, continual-l
 - plugins/ven/skills/onboard/ adapted from pstack/skills/create-verification-skill/SKILL.md (patterns only, no text: interview the repo before the user, prove before handing over)
 - plugins/ven/skills/pack-audit/ adapted from pstack/skills/maintain-verification-skill/SKILL.md
 - plugins/ven/skills/prove-it-works/ adapted from pstack/skills/principle-prove-it-works/SKILL.md
+- plugins/ven/skills/quality-review/ adapted from cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md
 - plugins/ven/skills/ratchet/ adapted from pstack/skills/correct/SKILL.md
 - plugins/ven/skills/reflect/ adapted from pstack/skills/reflect/SKILL.md
 - plugins/ven/skills/reflect/ adapted from pstack/skills/reflect/references/synthesizer.md

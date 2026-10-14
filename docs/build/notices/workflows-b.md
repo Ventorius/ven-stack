@@ -3,6 +3,7 @@
 - cursor/plugins (pstack, MIT, © 2026 Lauren Tan) — plugins/ven/skills/review/ adapted from pstack/skills/interrogate/SKILL.md, references/rubric.md, references/lead-judgment.md, references/reviewer-prompt.md, references/code-quality-review.md
 - EveryInc/compound-engineering-plugin (MIT, © 2025 Every) — plugins/ven/skills/review/references/lenses.md adapted from skills/ce-code-review/references/personas/correctness-reviewer.md, maintainability-reviewer.md, security-reviewer.md, data-migration-reviewer.md, testing-reviewer.md
 - poteto/noodle (MIT, © 2026 Lauren Tan) — plugins/ven/skills/review/references/lenses.md adapted from .agents/skills/adversarial-review/references/reviewer-lenses.md
+- cursor/plugins (cursor-team-kit, MIT, © 2026 Cursor) — plugins/ven/skills/quality-review/ adapted from cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md
 - cursor/plugins (pstack, MIT, © 2026 Lauren Tan) — plugins/ven/skills/blast-radius/ adapted from pstack/skills/blast-radius/SKILL.md
 - cursor/plugins (pstack, MIT, © 2026 Lauren Tan) — plugins/ven/skills/how/ adapted from pstack/skills/how/SKILL.md, references/explorer-prompt.md, references/explainer-prompt.md
 - poteto/how (MIT, © 2026 Lauren Tan) — plugins/ven/skills/how/ (critique section) adapted from skills/how/SKILL.md

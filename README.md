@@ -158,7 +158,7 @@ Run any of them with `--help` for usage.
 plugins/ven/
 ├── .claude-plugin/plugin.json    # manifest and userConfig
 ├── agents/                       # ven-lead, ven-coder, ven-worker, ven-reviewer, ven-verifier
-├── skills/                       # 65 skills; skills/do/playbooks/ holds the core playbooks
+├── skills/                       # 66 skills; skills/do/playbooks/ holds the core playbooks
 ├── hooks/hooks.json
 ├── scripts/hooks/                # hook implementations
 ├── scripts/lib/                  # shared helpers for hooks and bin tools

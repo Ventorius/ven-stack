@@ -45,6 +45,7 @@ Run these and mention a result only when it changes the answer:
 | Check that cited lines and claims hold | `/ven:citation-check` |
 | Review a diff through blind lenses | `/ven:review` |
 | Know what a change could break outside the diff | `/ven:blast-radius` |
+| Get a strict maintainability verdict on a branch | `/ven:quality-review` |
 | Know how code works now, or why it is shaped this way | `/ven:how`, `/ven:why` |
 | Hand work to another session or person | `/ven:handoff` |
 | Write docs, a PR body or a decision record to a standard | `/ven:technical-writing` |
@@ -79,6 +80,7 @@ Principles (`/ven:laziness`, `/ven:prove-it-works` and the rest) are one idea ea
 
 - `/ven:how` explains what code does; `/ven:why` explains the reasons; `/ven:teach` explains a subsystem plainly; `/ven:explain-pr` explains one change.
 - `/ven:review` judges the diff; `/ven:blast-radius` looks outside it for what it could break.
+- `/ven:review` asks whether the change is right; `/ven:quality-review` asks only whether it leaves the code simpler, and blocks when it doesn't.
 - `/ven:correct` handles one mistake now; `/ven:ratchet` turns it into a check; `/ven:conventions-audit` finds the ones that repeat.
 - `/ven:learning-check` decides whether a session taught anything; `/ven:compound` records a solved problem; `/ven:reflect` edits skills.
 - `/ven:forge-pack` creates a pack; `/ven:forge-skill` adds to one; `/ven:forge-playbook` composes existing skills; `/ven:forge-convention` writes one narrow principle.

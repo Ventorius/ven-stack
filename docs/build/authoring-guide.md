@@ -119,7 +119,7 @@ Start from the base named in `vendoring-map.md`. Keep what makes it work (the ga
 - **L3 align:** `grilling`, `to-spec`, `to-tickets`, `glossary`
 - **L3 build:** `tdd`, `sweep`, `prototype`, `improve-architecture`
 - **L3 prove:** `reproduce`, `verify`, `benchmark-check`, `citation-check`
-- **L3 review:** `review`, `blast-radius`
+- **L3 review:** `review`, `blast-radius`, `quality-review`
 - **L3 understand:** `how`, `why`
 - **L3 write:** `handoff`, `technical-writing`, `unslop`
 - **L3 visual:** `diagram-deps`, `diagram-data`, `diagram-flow`, `diagram-state`, `diagram-arch`, `diagram-hypotheses`, `diagram-change`, `explain-pr`, `teach`
