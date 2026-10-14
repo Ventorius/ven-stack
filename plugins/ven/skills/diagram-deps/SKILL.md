@@ -87,7 +87,7 @@ flowchart LR
 
 A HYBRID file's `command` lists the searches that found the edges, and its claim table follows the diagram. A HYPOTHESIS file has `command: -`.
 
-**Rendering.** Every diagram you show gets a local page in `$(ven-profile path)/diagrams/`, even when no `.md` is saved. Offer once to publish it with the host's tool that publishes a page privately. The reply is the badge, a short summary and the page's path. Open `references/diagram-page.md` for the rules, names and skeleton.
+**Rendering.** Every diagram you show gets a local page in `$(ven-profile path)/diagrams/`, even when no `.md` is saved and even when the user also asks for the Mermaid source. Read `references/diagram-page.md` before writing it: names, content, safety checks and skeleton. Offer once to publish it with the host's tool that publishes a page privately, and publish only on a yes. The reply is the badge, a short summary and the page's path, with a Mermaid fence only when the user asks for one. A request to keep it short shortens the summary, not the page.
 
 **Reuse and drift.** Before reusing a saved diagram, compare its `sha` (the head side of a two-ref diagram) with `git rev-parse --short HEAD`. If they differ:
 
