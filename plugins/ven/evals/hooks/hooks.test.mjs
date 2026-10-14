@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -54,6 +55,24 @@ test('verify-gate releases after three blocks and records UNVERIFIED', () => {
   for (let i = 0; i < 3; i++) assert.equal(runHook('verify-gate', session(root, { hook_event_name: 'Stop', stop_hook_active: i > 0 })).code, 2);
   assert.equal(runHook('verify-gate', session(root, { hook_event_name: 'Stop', stop_hook_active: true })).code, 0);
   assert.match(readFileSync(join(stateDir(root), 'decisions.tsv'), 'utf8'), /UNVERIFIED/);
+});
+
+test('verify-gate without a recorded start tree ignores history already on the default branch', () => {
+  const root = makeRepo();
+  writeFile(root, 'src/app.js', 'export const answer = 43;\n');
+  execFileSync('git', ['commit', '-qam', 'earlier work'], { cwd: root });
+  assert.equal(runHook('verify-gate', session(root, { hook_event_name: 'Stop' })).code, 0);
+
+  writeFile(root, 'src/app.js', 'export const answer = 44;\n');
+  assert.equal(runHook('verify-gate', session(root, { hook_event_name: 'Stop' })).code, 2);
+});
+
+test('verify-gate without a recorded start tree gates commits on a feature branch', () => {
+  const root = makeRepo();
+  execFileSync('git', ['switch', '-qc', 'feature'], { cwd: root });
+  writeFile(root, 'src/app.js', 'export const answer = 43;\n');
+  execFileSync('git', ['commit', '-qam', 'feature work'], { cwd: root });
+  assert.equal(runHook('verify-gate', session(root, { hook_event_name: 'Stop' })).code, 2);
 });
 
 test('verify-gate only gates ven-coder subagents', () => {

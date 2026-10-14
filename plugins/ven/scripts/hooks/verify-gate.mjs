@@ -2,7 +2,7 @@
 import { allow, block, readHookInput } from '../lib/hookio.mjs';
 import { matchesAny } from '../lib/globs.mjs';
 import { loadProfile } from '../lib/profile.mjs';
-import { changedFilesBetween, repoRoot, tryGit, workingTreeHash } from '../lib/repo.mjs';
+import { changedFilesBetween, defaultBranch, repoRoot, tryGit, workingTreeHash } from '../lib/repo.mjs';
 import { appendDecision, passedVerifyFor, readPlaybookState, readSession, writeSession } from '../lib/state.mjs';
 
 const MAX_BLOCKS = 3;
@@ -27,12 +27,13 @@ if (event === 'SessionStart' || event === 'SubagentStart') {
   allow();
 }
 
-// A worktree branch's oldest reflog entry is the commit it was created from.
+// No start tree is recorded when the session began before onboarding wrote the profile. Diffing from
+// where HEAD left the default branch gates a feature branch's own commits, but on the default branch
+// itself only uncommitted work, not the history that was already there when the clone was made.
 function branchStartTree() {
-  const branch = tryGit(['symbolic-ref', '--short', 'HEAD'], cwd);
-  const reflog = branch ? tryGit(['reflog', 'show', '--format=%H', branch], cwd) : null;
-  const start = reflog?.split('\n').filter(Boolean).pop();
-  return start ? tryGit(['rev-parse', `${start}^{tree}`], cwd) : null;
+  const base = defaultBranch(cwd);
+  const from = (base && tryGit(['merge-base', 'HEAD', base], cwd)) ?? 'HEAD';
+  return tryGit(['rev-parse', `${from}^{tree}`], cwd);
 }
 
 const startTree = session.root === root && session.start_tree ? session.start_tree : branchStartTree();
