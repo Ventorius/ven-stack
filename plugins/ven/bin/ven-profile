@@ -1,0 +1,212 @@
+#!/usr/bin/env node
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
+import { fail, list, parseArgs } from '../scripts/lib/args.mjs';
+import { matchesAny } from '../scripts/lib/globs.mjs';
+import {
+  PROFILE_SCHEMA_VERSION,
+  commandSpec,
+  getKey,
+  loadProfile,
+  renderCommand,
+  saveProfile,
+  setKey,
+  shellQuote,
+  staleSources,
+  validateProfile,
+} from '../scripts/lib/profile.mjs';
+import { repoRoot, venDir, workingTreeHash } from '../scripts/lib/repo.mjs';
+import { appendVerify } from '../scripts/lib/state.mjs';
+
+const USAGE = `ven-profile: the repo profile (stack facts + verified commands), stored in <git-common-dir>/ven
+
+  ven-profile path                         print the state directory
+  ven-profile init                         create the state directory skeleton
+  ven-profile detect                       list signal files per source, for onboarding workers
+  ven-profile show | get <key>             print the profile or one key (e.g. commands.test.single)
+  ven-profile set <key> <json|string>      set one key
+  ven-profile write < profile.json         replace the whole profile (validated)
+  ven-profile validate                     check the profile against the schema
+  ven-profile run <key> [--file F]...      run a profile command with {file}/{files} filled in
+  ven-profile prove [<key>...]             run commands once and mark each verified or unverified
+  ven-profile verify <key> [--file F]...   run a verify command and log the result against the current tree
+  ven-profile fresh                        exit 1 if manifests or lockfiles changed after the profile
+  ven-profile packs-for <file>...          list enabled packs whose applies_when matches the files`;
+
+const [command, ...rest] = process.argv.slice(2);
+const { flags, positionals } = parseArgs(rest);
+const cwd = process.cwd();
+
+function requireProfile() {
+  const loaded = loadProfile(cwd);
+  if (!loaded) fail('ven-profile: no profile for this repo; run /ven:onboard first');
+  return loaded;
+}
+
+function print(value) {
+  console.log(typeof value === 'string' ? value : JSON.stringify(value, null, 2));
+}
+
+function readStdin() {
+  return readFileSync(0, 'utf8');
+}
+
+function parseValue(raw) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+}
+
+function execute(spec, files, timeoutSeconds) {
+  const { root } = requireProfile();
+  const quoted = files.map(shellQuote);
+  const commandLine = renderCommand(spec.run, { file: quoted[0] ?? '', files: quoted.join(' ') });
+  const started = Date.now();
+  const result = spawnSync(commandLine, {
+    cwd: join(root, spec.cwd ?? '.'),
+    shell: true,
+    encoding: 'utf8',
+    timeout: (timeoutSeconds ?? spec.timeout_s ?? 600) * 1000,
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+  const exit = result.error?.code === 'ETIMEDOUT' ? 124 : (result.status ?? 1);
+  return { commandLine, exit, seconds: Math.round((Date.now() - started) / 1000), output };
+}
+
+// Signal sources map one-to-one to onboarding detect workers.
+const SIGNALS = {
+  manifests: /(^|\/)(package\.json|pyproject\.toml|setup\.py|requirements[^/]*\.txt|Cargo\.toml|go\.mod|Gemfile|composer\.json|pom\.xml|build\.gradle(\.kts)?|mix\.exs|deno\.jsonc?|\w+\.csproj)$/,
+  lockfiles: /(^|\/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb?|poetry\.lock|uv\.lock|Pipfile\.lock|Cargo\.lock|go\.sum|Gemfile\.lock|composer\.lock|mix\.lock)$/,
+  workspaces: /(^|\/)(pnpm-workspace\.yaml|turbo\.json|nx\.json|lerna\.json|rush\.json|go\.work)$/,
+  ci: /(^\.github\/workflows\/.+\.ya?ml|^\.gitlab-ci\.yml|^\.circleci\/config\.yml|^Jenkinsfile|^azure-pipelines\.yml|^bitbucket-pipelines\.yml)$/,
+  scripts: /(^|\/)(Makefile|Justfile|Taskfile\.ya?ml|Procfile)$|^scripts\//,
+  quality: /(^|\/)(\.?eslint[^/]*|biome\.jsonc?|\.prettierrc[^/]*|prettier\.config\.\w+|tsconfig[^/]*\.json|\.editorconfig|ruff\.toml|\.flake8|mypy\.ini|\.golangci\.ya?ml|rustfmt\.toml|clippy\.toml|\.dependency-cruiser[^/]*|\.rubocop\.yml)$/,
+  tests: /(^|\/)(vitest|jest|playwright|cypress|karma|mocha)[^/]*\.config\.\w+$|(^|\/)(pytest\.ini|conftest\.py|\.mocharc[^/]*)$/,
+  runtime: /(^|\/)(docker-compose[^/]*\.ya?ml|compose\.ya?ml|Dockerfile[^/]*|\.env\.example|\.env\.sample|\.nvmrc|\.node-version|\.tool-versions|\.python-version|\.worktreeinclude)$/,
+  agent_docs: /(^|\/)(CLAUDE\.md|AGENTS\.md|GLOSSARY\.md|CONTEXT\.md|CONTRIBUTING\.md)$|(^|\/)(adr|adrs|decisions)\/.+\.md$|^\.claude\/|^\.cursor\//,
+};
+
+const commands = {
+  path() {
+    print(venDir(cwd) ?? fail('ven-profile: not inside a git repository'));
+  },
+  init() {
+    const dir = venDir(cwd) ?? fail('ven-profile: not inside a git repository');
+    for (const sub of ['solutions', 'baseline', 'packs/.claude-plugin', 'state']) mkdirSync(join(dir, sub), { recursive: true });
+    const marketplace = join(dir, 'packs', '.claude-plugin', 'marketplace.json');
+    if (!existsSync(marketplace)) {
+      const name = `ven-local-${basename(repoRoot(cwd)).replace(/[^a-zA-Z0-9.-]/g, '-')}`;
+      writeFileSync(marketplace, `${JSON.stringify({ name, owner: { name: 'ven' }, description: 'Packs forged for this repo', plugins: [] }, null, 2)}\n`);
+    }
+    print(dir);
+  },
+  detect() {
+    const root = repoRoot(cwd) ?? fail('ven-profile: not inside a git repository');
+    const tracked = spawnSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 });
+    const files = tracked.stdout.split('\n').filter(Boolean);
+    const found = Object.fromEntries(Object.keys(SIGNALS).map((source) => [source, []]));
+    for (const file of files) {
+      for (const [source, pattern] of Object.entries(SIGNALS)) if (pattern.test(file)) found[source].push(file);
+    }
+    const topDirs = [...new Set(files.map((file) => file.split('/')[0]).filter((part) => !part.includes('.')))];
+    print({ root, file_count: files.length, top_level_dirs: topDirs, signals: found });
+  },
+  show() {
+    print(requireProfile().profile);
+  },
+  get() {
+    const value = getKey(requireProfile().profile, positionals[0] ?? fail('usage: ven-profile get <key>'));
+    if (value === undefined) fail(`ven-profile: ${positionals[0]} is not set`);
+    print(value);
+  },
+  set() {
+    const [key, raw] = positionals;
+    if (!key || raw === undefined) fail('usage: ven-profile set <key> <json|string>');
+    const { dir, profile } = requireProfile();
+    setKey(profile, key, parseValue(raw));
+    const errors = validateProfile(profile);
+    if (errors.length > 0) fail(`ven-profile: invalid after set:\n${errors.join('\n')}`);
+    saveProfile(dir, profile);
+  },
+  write() {
+    const dir = venDir(cwd) ?? fail('ven-profile: not inside a git repository');
+    const profile = JSON.parse(readStdin());
+    profile.schema_version ??= PROFILE_SCHEMA_VERSION;
+    profile.generated_at ??= new Date().toISOString();
+    const errors = validateProfile(profile);
+    if (errors.length > 0) fail(`ven-profile: invalid profile:\n${errors.join('\n')}`);
+    saveProfile(dir, profile);
+    print(`profile written to ${dir}/profile.json`);
+  },
+  validate() {
+    const errors = validateProfile(requireProfile().profile);
+    if (errors.length > 0) fail(errors.join('\n'));
+    print('profile is valid');
+  },
+  run() {
+    const key = positionals[0] ?? fail('usage: ven-profile run <key> [--file F]...');
+    const spec = commandSpec(requireProfile().profile, key) ?? fail(`ven-profile: no command at ${key}`);
+    const result = execute(spec, list(flags.file), flags.timeout && Number(flags.timeout));
+    process.stdout.write(result.output);
+    process.exit(result.exit);
+  },
+  prove() {
+    const { dir, profile } = requireProfile();
+    const keys = positionals.length > 0 ? positionals : Object.keys(flattenCommands(profile.commands));
+    for (const key of keys) {
+      const fullKey = key.startsWith('commands.') ? key : `commands.${key}`;
+      const spec = getKey(profile, fullKey);
+      if (!spec?.run) continue;
+      if (spec.status === 'manual' || spec.run.includes('{file')) {
+        console.log(`skip  ${fullKey} (${spec.status === 'manual' ? 'manual' : 'needs a file argument; prove with --file'})`);
+        continue;
+      }
+      const result = execute(spec, list(flags.file), spec.timeout_s);
+      spec.status = result.exit === 0 ? 'verified' : 'unverified';
+      spec.evidence = `exit ${result.exit} in ${result.seconds}s at ${new Date().toISOString()}`;
+      if (result.exit !== 0) spec.failure_tail = result.output.trim().split('\n').slice(-20).join('\n');
+      else delete spec.failure_tail;
+      console.log(`${result.exit === 0 ? 'ok   ' : 'FAIL '} ${fullKey}  \`${result.commandLine}\`  (${spec.evidence})`);
+    }
+    saveProfile(dir, profile);
+  },
+  verify() {
+    const key = positionals[0] ?? fail('usage: ven-profile verify <key> [--file F]...');
+    const { dir, root, profile } = requireProfile();
+    const spec = commandSpec(profile, key) ?? fail(`ven-profile: no command at ${key}`);
+    const result = execute(spec, list(flags.file), flags.timeout && Number(flags.timeout));
+    const tree = workingTreeHash(root);
+    appendVerify(dir, { tree, key, command: result.commandLine, exit: result.exit, seconds: result.seconds, worktree: repoRoot(cwd) });
+    process.stdout.write(result.output);
+    console.log(`\nven-profile verify: ${key} exit ${result.exit}; logged against tree ${tree.slice(0, 12)}`);
+    process.exit(result.exit);
+  },
+  fresh() {
+    const { root, profile } = requireProfile();
+    const stale = staleSources(profile, root);
+    if (stale.length === 0) return print('profile is fresh');
+    fail(`profile is stale: ${stale.join(', ')} changed after ${profile.generated_at}`);
+  },
+  'packs-for'() {
+    const { profile } = requireProfile();
+    const files = positionals;
+    const matching = (profile.packs ?? []).filter((pack) => {
+      const paths = pack.applies_when?.paths ?? [];
+      return paths.length === 0 || files.some((file) => matchesAny(file, paths));
+    });
+    print(matching.map(({ name, plugin, skills, playbooks }) => ({ name, plugin, skills, playbooks })));
+  },
+};
+
+function flattenCommands(node, prefix = '') {
+  if (!node || typeof node !== 'object') return {};
+  if ('run' in node) return { [prefix]: node };
+  return Object.assign({}, ...Object.entries(node).map(([key, child]) => flattenCommands(child, prefix ? `${prefix}.${key}` : key)));
+}
+
+if (!commands[command]) fail(USAGE, command ? 1 : 0);
+commands[command]();

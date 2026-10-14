@@ -1,0 +1,65 @@
+#!/usr/bin/env node
+import { fail, parseArgs } from '../scripts/lib/args.mjs';
+import { repoRoot, venDir } from '../scripts/lib/repo.mjs';
+import { appendDecision, readDecisions, readPlaybookState, writePlaybookState } from '../scripts/lib/state.mjs';
+
+const USAGE = `ven-decisions: the decision log and active playbook for this worktree
+
+  ven-decisions start <playbook>                     mark a playbook active in this worktree
+  ven-decisions add --step S --decision D [--evidence E] [--playbook P]
+  ven-decisions skip --step S --reason R             record a skipped playbook step
+  ven-decisions end [--outcome O]                    close the active playbook
+  ven-decisions active                               print the active playbook state
+  ven-decisions list [--playbook P] [--limit N]      print decision rows (TSV)`;
+
+const [command, ...rest] = process.argv.slice(2);
+const { flags, positionals } = parseArgs(rest);
+const cwd = process.cwd();
+const dir = venDir(cwd);
+const root = repoRoot(cwd);
+if (!dir || !root) fail('ven-decisions: not inside a git repository');
+
+const state = readPlaybookState(dir, root);
+
+function record(step, decision, evidence = '') {
+  const playbook = flags.playbook ?? state?.playbook ?? '';
+  appendDecision(dir, { worktree: root, playbook, step, decision, evidence });
+  if (!state?.playbook) return;
+  const steps = [...(state.steps ?? []), { step, decision, at: new Date().toISOString() }];
+  const reproduced = state.reproduced || (step === 'reproduce' && decision === 'reproduced');
+  writePlaybookState(dir, root, { ...state, steps, reproduced });
+}
+
+const commands = {
+  start() {
+    const playbook = positionals[0];
+    if (!playbook) fail('usage: ven-decisions start <playbook>');
+    writePlaybookState(dir, root, { playbook, started_at: new Date().toISOString(), steps: [], reproduced: false });
+    appendDecision(dir, { worktree: root, playbook, step: 'start', decision: 'started', evidence: '' });
+    console.log(`active playbook: ${playbook}`);
+  },
+  add() {
+    if (!flags.step || !flags.decision) fail('usage: ven-decisions add --step S --decision D [--evidence E]');
+    record(flags.step, flags.decision, flags.evidence);
+  },
+  skip() {
+    if (!flags.step || !flags.reason) fail('usage: ven-decisions skip --step S --reason R');
+    record(flags.step, `skip: ${flags.reason}`);
+  },
+  end() {
+    if (!state?.playbook) fail('ven-decisions: no active playbook in this worktree');
+    appendDecision(dir, { worktree: root, playbook: state.playbook, step: 'end', decision: flags.outcome ?? 'done', evidence: '' });
+    writePlaybookState(dir, root, { playbook: null, ended: state.playbook, ended_at: new Date().toISOString() });
+  },
+  active() {
+    console.log(JSON.stringify(state ?? { playbook: null }, null, 2));
+  },
+  list() {
+    const limit = Number(flags.limit ?? 50);
+    const rows = readDecisions(dir).filter((row) => !flags.playbook || row.playbook === flags.playbook);
+    for (const row of rows.slice(-limit)) console.log(Object.values(row).join('\t'));
+  },
+};
+
+if (!commands[command]) fail(USAGE, command ? 1 : 0);
+commands[command]();

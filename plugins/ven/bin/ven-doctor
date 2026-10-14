@@ -1,0 +1,100 @@
+#!/usr/bin/env node
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { claudeConfigDir } from '../scripts/lib/claude.mjs';
+import { splitFrontmatter } from '../scripts/lib/frontmatter.mjs';
+import { loadProfile, staleSources } from '../scripts/lib/profile.mjs';
+import { repoRoot } from '../scripts/lib/repo.mjs';
+
+const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const cwd = process.cwd();
+const root = repoRoot(cwd);
+const findings = [];
+const note = (level, message) => findings.push(`${level.padEnd(5)} ${message}`);
+
+function readJson(path) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function skillNames(skillsDir) {
+  if (!existsSync(skillsDir)) return [];
+  return readdirSync(skillsDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() || entry.isSymbolicLink())
+    .flatMap((entry) => {
+      const file = join(skillsDir, entry.name, 'SKILL.md');
+      if (!existsSync(file)) return [];
+      const { data } = splitFrontmatter(readFileSync(file, 'utf8'), { strict: false });
+      return [{ name: data?.name ?? entry.name, description: String(data?.description ?? '') }];
+    });
+}
+
+const venSkills = skillNames(join(PLUGIN_ROOT, 'skills'));
+const venNames = new Set(venSkills.map((skill) => skill.name));
+
+const sources = [
+  { label: `personal (${join(claudeConfigDir(), 'skills')})`, skills: skillNames(join(claudeConfigDir(), 'skills')) },
+  ...(root ? [{ label: 'project (.claude/skills)', skills: skillNames(join(root, '.claude', 'skills')) }] : []),
+];
+
+const installed = readJson(join(claudeConfigDir(), 'plugins', 'installed_plugins.json'))?.plugins ?? {};
+for (const [id, installs] of Object.entries(installed)) {
+  if (id.startsWith('ven@')) continue;
+  const active = installs.find((install) => install.scope === 'user' || install.projectPath === root);
+  if (active) sources.push({ label: `plugin ${id}`, skills: skillNames(join(active.installPath, 'skills')) });
+}
+
+const overrides = {};
+for (const { label, skills } of sources) {
+  const overlap = skills.filter((skill) => venNames.has(skill.name));
+  if (overlap.length === 0) continue;
+  note('WARN', `${label} also defines: ${overlap.map((skill) => skill.name).join(', ')}`);
+  if (!label.startsWith('plugin')) for (const skill of overlap) overrides[skill.name] = 'off';
+}
+
+const otherChars = sources.flatMap((source) => source.skills).reduce((sum, skill) => sum + Math.min(skill.description.length, 1536), 0);
+const venChars = venSkills.reduce((sum, skill) => sum + Math.min(skill.description.length, 1536), 0);
+note('INFO', `skill listing: ven ${venChars} chars + others ${otherChars} chars of descriptions (budget is 1% of the context window; overflow drops descriptions of least-used skills)`);
+
+if (!root) {
+  note('INFO', 'not inside a git repository; repo checks skipped');
+} else {
+  const loaded = loadProfile(cwd);
+  if (!loaded) {
+    note('WARN', 'no ven profile for this repo; run /ven:onboard');
+  } else {
+    const stale = staleSources(loaded.profile, root);
+    if (stale.length > 0) note('WARN', `profile stale: ${stale.join(', ')} changed; run /ven:onboard --refresh`);
+    const unverified = [];
+    const walk = (node, path) => {
+      if (node && typeof node === 'object' && 'run' in node) {
+        if (node.status !== 'verified') unverified.push(`${path} (${node.status})`);
+        return;
+      }
+      if (node && typeof node === 'object') for (const [key, child] of Object.entries(node)) walk(child, path ? `${path}.${key}` : key);
+    };
+    walk(loaded.profile.commands, 'commands');
+    if (unverified.length > 0) note('INFO', `commands not verified: ${unverified.join(', ')}`);
+  }
+
+  const settings = [join(root, '.claude', 'settings.json'), join(root, '.claude', 'settings.local.json'), join(claudeConfigDir(), 'settings.json')]
+    .map(readJson)
+    .filter(Boolean);
+  const baseRef = settings.map((value) => value.worktree?.baseRef).find(Boolean);
+  if (baseRef !== 'head') {
+    note('WARN', 'worktree.baseRef is not "head": ven-coder worktrees branch from the default branch and will not see your feature branch. Set it in .claude/settings.local.json');
+  }
+  const allowRules = settings.flatMap((value) => value.permissions?.allow ?? []);
+  const missing = ['ven-profile', 'ven-decisions'].filter((bin) => !allowRules.some((rule) => rule.includes(bin)));
+  if (missing.length > 0) note('INFO', `no permission allow rule for ${missing.join(', ')}; background coders will prompt in your main session`);
+}
+
+if (Object.keys(overrides).length > 0) {
+  note('INFO', `to hide colliding personal/project skills in this repo, add to .claude/settings.local.json:\n${JSON.stringify({ skillOverrides: overrides }, null, 2)}`);
+}
+
+console.log(findings.length > 0 ? findings.join('\n') : 'ok: no problems found');

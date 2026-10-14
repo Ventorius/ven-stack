@@ -1,0 +1,107 @@
+#!/usr/bin/env node
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { basename, join } from 'node:path';
+import { fail, list, parseArgs } from '../scripts/lib/args.mjs';
+import { allConfigDirs } from '../scripts/lib/claude.mjs';
+import { git, repoRoot } from '../scripts/lib/repo.mjs';
+
+const USAGE = `ven-transcripts: extract correction, hook-block and routing evidence from Claude Code transcripts (read-only)
+
+  ven-transcripts [--match SUBSTRING] [--since DAYS] [--kind corrections|blocks|routes|all] [--limit N] [--config-dir DIR]...
+
+  --match  substring of the transcript project directory (default: the repo's main checkout name)
+  --since       only sessions modified in the last N days (default 30)
+  --config-dir  Claude config dirs to scan (default: $CLAUDE_CONFIG_DIR, ~/.claude and every ~/.claude-*)`;
+
+// English and Polish openers; corrections usually lead with the objection.
+const CORRECTION = /^(no\b|nope|don'?t|do not|stop|wrong|actually|instead|not (that|what|like)|why did you|revert|undo|that'?s (not|wrong)|you (should|shouldn'?t|forgot|missed)|never\b|please don'?t|nie\b|źle|zamiast|przestań|cofnij|dlaczego|czemu|to nie|nie tak|zapomniałeś|miałeś)/i;
+const HOOK_BLOCK = /ven (verify-gate|repro-first|no-workaround|git-guardrails)[^\n]*/g;
+const ROUTE = /^\**Playbook:\s*([a-z0-9-]+)/m;
+
+const { flags } = parseArgs(process.argv.slice(2));
+if (flags.help) fail(USAGE, 0);
+
+function mainCheckoutName() {
+  const root = repoRoot(process.cwd());
+  if (!root) return null;
+  const first = git(['worktree', 'list', '--porcelain'], root).split('\n')[0];
+  return basename(first.replace(/^worktree /, ''));
+}
+
+const match = flags.match ?? mainCheckoutName() ?? fail('ven-transcripts: pass --match outside a git repository');
+const sinceMs = Date.now() - Number(flags.since ?? 30) * 86400000;
+const kind = flags.kind ?? 'all';
+const limit = Number(flags.limit ?? 200);
+const configDirs = list(flags['config-dir']).length > 0 ? list(flags['config-dir']) : allConfigDirs();
+
+function textOf(content) {
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return '';
+  return content
+    .map((block) => block.text ?? (typeof block.content === 'string' ? block.content : Array.isArray(block.content) ? textOf(block.content) : ''))
+    .join('\n');
+}
+
+function isHumanTurn(entry) {
+  if (entry.type !== 'user' || entry.isMeta) return false;
+  const content = entry.message?.content;
+  if (typeof content === 'string') return !content.startsWith('<');
+  return Array.isArray(content) && content.some((block) => block.type === 'text') && !content.some((block) => block.type === 'tool_result');
+}
+
+function lastAction(entries, index) {
+  for (let i = index - 1; i >= 0; i--) {
+    const blocks = entries[i].type === 'assistant' ? entries[i].message?.content ?? [] : [];
+    const tool = Array.isArray(blocks) ? blocks.findLast((block) => block.type === 'tool_use') : null;
+    if (tool) return `${tool.name} ${JSON.stringify(tool.input).slice(0, 160)}`;
+    const text = textOf(blocks).trim();
+    if (text) return `said: ${text.slice(0, 160)}`;
+  }
+  return '';
+}
+
+const results = { match, corrections: [], blocks: [], routes: [] };
+const projectDirs = configDirs.flatMap((configDir) => {
+  const projectsDir = join(configDir, 'projects');
+  return existsSync(projectsDir) ? readdirSync(projectsDir).filter((dir) => dir.includes(match)).map((dir) => join(projectsDir, dir)) : [];
+});
+
+for (const dir of projectDirs) {
+  const projectDir = basename(dir);
+  for (const file of readdirSync(dir).filter((name) => name.endsWith('.jsonl'))) {
+    const path = join(dir, file);
+    if (statSync(path).mtimeMs < sinceMs) continue;
+    const entries = readFileSync(path, 'utf8')
+      .split('\n')
+      .filter(Boolean)
+      .flatMap((line) => {
+        try {
+          return [JSON.parse(line)];
+        } catch {
+          return [];
+        }
+      });
+    const session = basename(file, '.jsonl');
+    const picks = [];
+    entries.forEach((entry, index) => {
+      const text = textOf(entry.message?.content ?? entry.content ?? '');
+      if (isHumanTurn(entry) && CORRECTION.test(text.trim())) {
+        results.corrections.push({ project: projectDir, session, at: entry.timestamp, said: text.trim().slice(0, 400), after: lastAction(entries, index) });
+      }
+      for (const [block] of JSON.stringify(entry).replace(/\\n/g, '\n').matchAll(HOOK_BLOCK)) {
+        results.blocks.push({ project: projectDir, session, at: entry.timestamp, hook: block.slice(0, 200) });
+      }
+      const route = entry.type === 'assistant' ? text.match(ROUTE) : null;
+      if (route) picks.push(route[1]);
+    });
+    if (picks.length > 0) {
+      results.routes.push({ project: projectDir, session, picks, rerouted: new Set(picks).size > 1 });
+    }
+  }
+}
+
+const cap = (items) => items.slice(-limit);
+const output = kind === 'all'
+  ? { match, sessions_scanned: projectDirs.length, corrections: cap(results.corrections), blocks: cap(results.blocks), routes: cap(results.routes) }
+  : { match, [kind]: cap(results[kind] ?? fail(`ven-transcripts: unknown --kind ${kind}`)) };
+console.log(JSON.stringify(output, null, 2));

@@ -1,0 +1,206 @@
+#!/usr/bin/env node
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { basename, dirname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { fail, list, parseArgs } from '../scripts/lib/args.mjs';
+import { splitFrontmatter } from '../scripts/lib/frontmatter.mjs';
+
+const USAGE = `ven-lint-skills: check skill composition rules
+
+  ven-lint-skills [--root DIR] [--pack DIR]... [--graph]
+
+  --root   plugin root to lint as core (default: the ven plugin)
+  --pack   a pack plugin directory; its skills may cite core, core may never cite it
+  --graph  print the skill-reference graph as Mermaid instead of linting`;
+
+const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const LAYER_ORDER = { L1: 1, L2: 2, L3: 3, L4: 4, L5: 5 };
+
+const { flags } = parseArgs(process.argv.slice(2));
+if (flags.help) fail(USAGE, 0);
+const coreRoot = resolve(flags.root ?? PLUGIN_ROOT);
+const config = JSON.parse(readFileSync(join(PLUGIN_ROOT, 'lint.json'), 'utf8'));
+
+function walk(dir) {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).flatMap((entry) => {
+    const path = join(dir, entry);
+    return statSync(path).isDirectory() ? walk(path) : [path];
+  });
+}
+
+// A unit is anything the router or another skill can name: a SKILL.md or a playbook file.
+function loadUnits(root, origin) {
+  const skillsDir = join(root, 'skills');
+  const units = [];
+  for (const file of walk(skillsDir).filter((path) => path.endsWith('.md'))) {
+    const text = readFileSync(file, 'utf8');
+    const { data, body } = splitFrontmatter(text);
+    const isSkill = basename(file) === 'SKILL.md';
+    const isPlaybook = /\/playbooks\/[^/]+\.md$/.test(file);
+    const name = isSkill ? (data?.name ?? basename(dirname(file))) : isPlaybook ? basename(file, '.md') : null;
+    units.push({
+      file,
+      origin,
+      name,
+      kind: isSkill ? 'skill' : isPlaybook ? 'playbook' : 'reference',
+      layer: isPlaybook ? 'L4' : data?.metadata?.layer,
+      userInvoked: data?.['disable-model-invocation'] === true,
+      data,
+      body,
+      lines: text.split('\n').length,
+    });
+  }
+  for (const file of walk(join(root, 'agents')).filter((path) => path.endsWith('.md'))) {
+    const text = readFileSync(file, 'utf8');
+    const { data, body } = splitFrontmatter(text);
+    units.push({ file, origin, name: data?.name, kind: 'agent', layer: 'L1', data, body, lines: text.split('\n').length });
+  }
+  return units;
+}
+
+const core = loadUnits(coreRoot, 'core');
+const packs = list(flags.pack).flatMap((dir) => loadUnits(resolve(dir), basename(resolve(dir))));
+const all = [...core, ...packs];
+const named = new Map(all.filter((unit) => unit.name && unit.kind !== 'agent').map((unit) => [unit.name, unit]));
+const coreNames = new Set(core.filter((unit) => unit.name && unit.kind !== 'agent').map((unit) => unit.name));
+const errors = [];
+const where = (unit) => relative(process.cwd(), unit.file);
+
+// References are written as **name**, `name` or plugin:name; only known unit names count.
+function referencesOf(unit) {
+  const found = new Set();
+  const patterns = [/\*\*([a-z0-9][a-z0-9-]*)\*\*/g, /`([a-z0-9][a-z0-9-]*)`/g, /\b[a-z0-9-]+:([a-z0-9][a-z0-9-]*)\b/g];
+  for (const pattern of patterns) {
+    for (const match of unit.body.matchAll(pattern)) {
+      if (named.has(match[1]) && match[1] !== unit.name) found.add(match[1]);
+    }
+  }
+  return [...found];
+}
+
+function ownerOf(unit) {
+  if (unit.kind !== 'reference') return unit;
+  let dir = dirname(unit.file);
+  while (dir.startsWith(coreRoot) || packs.some((pack) => dir.startsWith(dirname(pack.file)))) {
+    const owner = all.find((candidate) => candidate.kind === 'skill' && dirname(candidate.file) === dir);
+    if (owner) return owner;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return null;
+}
+
+const edges = [];
+for (const unit of all) {
+  const owner = ownerOf(unit);
+  if (!owner?.name) continue;
+  for (const target of referencesOf(unit)) edges.push({ from: owner, to: named.get(target), via: unit });
+}
+
+if (flags.graph) {
+  const id = (name) => name.replace(/[^a-zA-Z0-9]/g, '_');
+  const lines = ['flowchart TD'];
+  for (const unit of named.values()) lines.push(`  ${id(unit.name)}["${unit.name} (${unit.layer ?? '?'})"]`);
+  for (const edge of new Set(edges.map(({ from, to }) => `  ${id(from.name)} --> ${id(to.name)}`))) lines.push(edge);
+  console.log(lines.join('\n'));
+  process.exit(0);
+}
+
+for (const unit of all.filter((candidate) => candidate.kind === 'skill')) {
+  if (!unit.data) errors.push(`${where(unit)}: missing frontmatter`);
+  if (!unit.data?.description) errors.push(`${where(unit)}: missing description`);
+  if (!LAYER_ORDER[unit.layer]) errors.push(`${where(unit)}: metadata.layer must be one of L1-L5`);
+}
+
+for (const unit of all.filter((candidate) => candidate.kind === 'skill' || candidate.kind === 'playbook')) {
+  if (unit.lines > config.max_skill_lines) errors.push(`${where(unit)}: ${unit.lines} lines, limit ${config.max_skill_lines}`);
+}
+
+for (const { from, to, via } of edges) {
+  const a = LAYER_ORDER[from.layer];
+  const b = LAYER_ORDER[to.layer];
+  const sideways = from.layer === 'L3' && to.layer === 'L3';
+  if (a && b && !(b < a || sideways)) {
+    errors.push(`${where(via)}: ${from.name} (${from.layer}) references ${to.name} (${to.layer}); references must point down a layer or sideways within L3`);
+  }
+  if (from.userInvoked && to.userInvoked) {
+    errors.push(`${where(via)}: user-invoked ${from.name} references user-invoked ${to.name}; it can only suggest it`);
+  }
+  if (from.origin === 'core' && to.origin !== 'core') {
+    errors.push(`${where(via)}: core ${from.name} references pack skill ${to.name}; core reaches packs only through the router's playbook table`);
+  }
+}
+
+for (const unit of core) {
+  const foreign = [...unit.body.matchAll(/\b([a-z0-9-]+):([a-z0-9][a-z0-9-]*)\b/g)].filter(
+    ([, plugin, name]) => plugin !== 'ven' && !coreNames.has(name) && named.has(name),
+  );
+  for (const [match] of foreign) errors.push(`${where(unit)}: core names pack component ${match}`);
+}
+
+// Cycles in the reference graph.
+const adjacency = new Map();
+for (const { from, to } of edges) adjacency.set(from.name, new Set([...(adjacency.get(from.name) ?? []), to.name]));
+const state = new Map();
+function visit(node, path) {
+  if (state.get(node) === 'done') return;
+  if (state.get(node) === 'active') {
+    errors.push(`cycle: ${[...path.slice(path.indexOf(node)), node].join(' -> ')}`);
+    return;
+  }
+  state.set(node, 'active');
+  for (const next of adjacency.get(node) ?? []) visit(next, [...path, node]);
+  state.set(node, 'done');
+}
+for (const node of adjacency.keys()) visit(node, []);
+
+// References stay one hop deep: a reference file never links to another reference file.
+for (const unit of all.filter((candidate) => candidate.kind === 'reference')) {
+  for (const [, target] of unit.body.matchAll(/\]\(([^)#]+\.md)\)/g)) {
+    if (!/^https?:/.test(target)) errors.push(`${where(unit)}: reference links to ${target}; keep references one hop deep`);
+  }
+}
+
+// Core never names tech, vendors or domains.
+const allowed = new Set(config.allowed_words);
+const deny = Object.values(config.denylist).flat().filter((word) => !allowed.has(word));
+const escape = (word) => word.replace(/[.*+?^${}()|[\]\\#]/g, '\\$&');
+const denyPattern = new RegExp(`(?<![\\w.-])(${deny.map(escape).join('|')})(?![\\w-])`, 'gi');
+for (const unit of core) {
+  const text = `${unit.data?.description ?? ''}\n${unit.body}`;
+  for (const [index, line] of text.split('\n').entries()) {
+    for (const match of line.matchAll(denyPattern)) {
+      errors.push(`${where(unit)}:${index + 1}: core names "${match[1]}"; tech, vendor and domain words belong in packs`);
+    }
+  }
+}
+
+// Name, don't restate: the same run of lines in two files fails.
+const windows = new Map();
+for (const unit of core) {
+  const lines = unit.body
+    .split('\n')
+    .map((line) => line.trim().replace(/\s+/g, ' '))
+    .filter((line) => line.length >= config.duplicate_min_chars && !line.startsWith('|') && !line.startsWith('```'));
+  for (let i = 0; i + config.duplicate_window <= lines.length; i++) {
+    const key = lines.slice(i, i + config.duplicate_window).join('\n');
+    const seen = windows.get(key);
+    if (seen && seen !== unit.file) {
+      errors.push(`${where(unit)}: repeats ${config.duplicate_window}+ lines from ${relative(process.cwd(), seen)}; name the skill instead of restating it`);
+      break;
+    }
+    windows.set(key, unit.file);
+  }
+}
+
+const coreLines = core.reduce((sum, unit) => sum + unit.lines, 0);
+if (coreLines > config.core_line_budget) errors.push(`core skill text is ${coreLines} lines, budget ${config.core_line_budget}; remove lines to add lines`);
+
+if (errors.length > 0) {
+  console.error([...new Set(errors)].join('\n'));
+  console.error(`\n${new Set(errors).size} problem(s) in ${all.length} files`);
+  process.exit(1);
+}
+console.log(`ok: ${named.size} skills/playbooks, ${edges.length} references, ${coreLines}/${config.core_line_budget} core lines`);

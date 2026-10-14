@@ -1,0 +1,12 @@
+{
+  "name": "ven-stack",
+  "owner": { "name": "Sebastian Basznianin" },
+  "description": "ven-stack: the stack-agnostic ven core plugin and generic tech packs",
+  "plugins": [
+    {
+      "name": "ven",
+      "source": "./plugins/ven",
+      "description": "Onboard repos into verified profiles, route work through playbooks, prove every change, forge repo-specific packs"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "name": "ven",
+  "displayName": "ven-stack",
+  "version": "0.1.0",
+  "description": "Claude-only, stack-agnostic engineering workflow: onboard a repo into a verified profile, route work through playbooks, prove every change, and forge repo-specific packs.",
+  "author": { "name": "Sebastian Basznianin" },
+  "license": "MIT",
+  "keywords": ["workflow", "playbooks", "tdd", "verification", "skills", "forge"],
+  "userConfig": {
+    "orchestrator_model": {
+      "type": "string",
+      "title": "Orchestrator model",
+      "description": "Model for judgment-heavy subagents (high-risk review lens, synthesis). Run the main session on this model too.",
+      "options": ["opus", "fable", "sonnet", "haiku", "inherit"],
+      "default": "opus"
+    },
+    "coder_model": {
+      "type": "string",
+      "title": "Coder model",
+      "description": "Model for ven-coder: one ticket end to end with TDD.",
+      "options": ["sonnet", "opus", "fable", "haiku", "inherit"],
+      "default": "sonnet"
+    },
+    "swarm_model": {
+      "type": "string",
+      "title": "Swarm model",
+      "description": "Model for ven-worker and ven-verifier: fully specified edits, fan-out slices, citation checks.",
+      "options": ["haiku", "sonnet", "opus", "fable", "inherit"],
+      "default": "haiku"
+    },
+    "budget_tier": {
+      "type": "string",
+      "title": "Budget tier",
+      "description": "lean, standard or max. Sets effort per role and whether review panels run outside risky playbooks.",
+      "options": ["lean", "standard", "max"],
+      "default": "standard"
+    }
+  }
+}
