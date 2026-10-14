@@ -49,6 +49,7 @@ Run these and mention a result only when it changes the answer:
 | Know how code works now, or why it is shaped this way | `/ven:how`, `/ven:why` |
 | Hand work to another session or person | `/ven:handoff` |
 | Write docs, a PR body or a decision record to a standard | `/ven:technical-writing` |
+| Write or update docs for a repo, module or feature from the code | `/ven:write-docs` |
 | Clean machine tells out of prose | `/ven:unslop` |
 | See the module graph, data model, one request's flow, an entity's states, or the system context | `/ven:diagram-deps`, `/ven:diagram-data`, `/ven:diagram-flow`, `/ven:diagram-state`, `/ven:diagram-arch` |
 | Debug with a tree of hypotheses and the evidence against each | `/ven:diagram-hypotheses` |
@@ -81,6 +82,7 @@ Principles (`/ven:laziness`, `/ven:prove-it-works` and the rest) are one idea ea
 - `/ven:how` explains what code does; `/ven:why` explains the reasons; `/ven:teach` explains a subsystem plainly; `/ven:explain-pr` explains one change.
 - `/ven:review` judges the diff; `/ven:blast-radius` looks outside it for what it could break.
 - `/ven:review` asks whether the change is right; `/ven:quality-review` asks only whether it leaves the code simpler, and blocks when it doesn't.
+- `/ven:technical-writing` is the writing standard for any doc; `/ven:write-docs` documents a repo, module or feature from the code and proves its commands.
 - `/ven:correct` handles one mistake now; `/ven:ratchet` turns it into a check; `/ven:conventions-audit` finds the ones that repeat.
 - `/ven:learning-check` decides whether a session taught anything; `/ven:compound` records a solved problem; `/ven:reflect` edits skills.
 - `/ven:forge-pack` creates a pack; `/ven:forge-skill` adds to one; `/ven:forge-playbook` composes existing skills; `/ven:forge-convention` writes one narrow principle.
