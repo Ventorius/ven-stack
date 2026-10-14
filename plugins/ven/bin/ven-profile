@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { fail, list, parseArgs } from '../scripts/lib/args.mjs';
+import { splitFrontmatter } from '../scripts/lib/frontmatter.mjs';
 import { matchesAny } from '../scripts/lib/globs.mjs';
 import {
   PROFILE_SCHEMA_VERSION,
@@ -35,8 +37,10 @@ const USAGE = `ven-profile: the repo profile (stack facts + verified commands), 
   ven-profile adapters                     print adapters.json (capability → command)
   ven-profile adapter <capability> [--file F] [--var name=value]   run a verified adapter
   ven-profile prove-adapters [<capability>...]                     prove adapters like prove does commands
+  ven-profile playbooks                    list core and pack playbooks with their descriptions
   ven-profile packs-for <file>...          list enabled packs whose applies_when matches the files`;
 
+const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const [command, ...rest] = process.argv.slice(2);
 const { flags, positionals } = parseArgs(rest);
 const cwd = process.cwd();
@@ -225,6 +229,20 @@ const commands = {
       console.log(`${result.exit === 0 ? 'ok   ' : 'FAIL '} ${capability}  \`${result.commandLine}\``);
     }
     writeFileSync(join(dir, 'adapters.json'), `${JSON.stringify(adapters, null, 2)}\n`);
+  },
+  playbooks() {
+    const loaded = loadProfile(cwd);
+    const corePaths = readdirSync(join(PLUGIN_ROOT, 'skills', 'do', 'playbooks'))
+      .filter((file) => file.endsWith('.md'))
+      .map((file) => ({ source: 'core', path: join(PLUGIN_ROOT, 'skills', 'do', 'playbooks', file) }));
+    const packPaths = (loaded?.profile.packs ?? []).flatMap((pack) =>
+      (pack.playbooks ?? []).map((path) => ({ source: `pack ${pack.name}`, path, applies_when: pack.applies_when })),
+    );
+    const playbooks = [...corePaths, ...packPaths].map((entry) => {
+      const { data } = existsSync(entry.path) ? splitFrontmatter(readFileSync(entry.path, 'utf8'), { strict: false }) : { data: null };
+      return { name: data?.name ?? basename(entry.path, '.md'), ...entry, description: data?.description ?? '(missing file)' };
+    });
+    print(playbooks);
   },
   'packs-for'() {
     const { profile } = requireProfile();

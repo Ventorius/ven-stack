@@ -24,9 +24,8 @@ You own the run. Pick one playbook, show the pick, copy its steps, run them in o
 
 ## 2. Build the playbook list
 
-- Core: the frontmatter `description` of each `${CLAUDE_PLUGIN_ROOT}/skills/do/playbooks/*.md`.
-- Packs: `ven-profile get packs` (not set means none). Each pack's `playbooks` are absolute paths; read their frontmatter too.
-- Name the files the task touches (from the task, or a quick search) and run `ven-profile packs-for <files>`. Those packs apply to this task.
+- `ven-profile playbooks` lists every core and pack playbook with its source, path and one-line description. Pick from that list; read a playbook file only once you've picked it.
+- Name the files the task touches (from the task, or a quick search) and run `ven-profile packs-for <files>`. Only those packs apply to this task.
 
 ## 3. Pick
 
