@@ -108,7 +108,7 @@ Start from the base named in `vendoring-map.md`. Keep what makes it work (the ga
 
 ## Done means
 
-- `node plugins/ven/bin/ven-lint-skills` passes for your files (run it; fix every finding in files you own).
+- `bun run lint:skills` passes for your files (run it; fix every finding in files you own).
 - Every skill you reference exists in the catalog below (or you are writing it).
 - No placeholder text, no TODOs.
 

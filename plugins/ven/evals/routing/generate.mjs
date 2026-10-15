@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Regenerates one `claude plugin eval` case directory per entry in cases.json.
-// Run after editing cases.json: node plugins/ven/evals/routing/generate.mjs
+// Run after editing cases.json: bun plugins/ven/evals/routing/generate.mjs
 import { chmodSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
