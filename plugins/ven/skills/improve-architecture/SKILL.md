@@ -40,10 +40,10 @@ For each candidate:
 - **Problem:** the friction, with `file:line` evidence.
 - **Change:** in plain words, no interface proposal yet.
 - **Gain:** in locality and leverage, and how tests improve.
-- **Before and after:** a small Mermaid sketch, captioned `HYPOTHESIS`.
+- **Before and after:** a small sketch, captioned `HYPOTHESIS`.
 - **Strength:** Strong, Worth exploring, or Speculative.
 
-End with your top recommendation and why. Then ask which one to explore (AskUserQuestion when available).
+Draw all the sketches on one page, `arch-candidates`. Render it per **Rendering** in the badge protocol of **diagram-deps**. End with your top recommendation and why. Then ask which one to explore (AskUserQuestion when available).
 
 ## 4. Settle the chosen one
 

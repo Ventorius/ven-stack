@@ -85,7 +85,7 @@ Rules:
    decision: <one line>
    evidence: <command + exit code, or file:line>
    ```
-9. **Diagrams** carry a badge in their caption: `GENERATED <command> @ <sha>`, `HYBRID (n/n edges cited)` or `HYPOTHESIS`. Mermaid is the shared format; self-contained HTML is for things you read rather than commit.
+9. **Diagrams** carry a badge in their caption: `GENERATED <command> @ <sha>`, `HYBRID (n/n edges cited)` or `HYPOTHESIS`. Mermaid is the shared format; self-contained HTML is for things you read rather than commit, and diagrams render to a local HTML page per the badge protocol.
 10. **Ask the user** with AskUserQuestion when a decision is theirs; find facts yourself (or with ven-worker). Subagents cannot ask the user: they return BLOCKED.
 11. **Style.** English. Imperative, short sentences. No filler, no hype, no "it's important to". Headings and lists over walls of text. Examples use neutral nouns (widget, order of operations, account, report), never the denylist.
 
@@ -95,7 +95,7 @@ Evals run with `claude plugin eval` (built into Claude Code). A case is a direct
 
 - Core: `plugins/ven/evals/routing/<case>/` (router picks), `plugins/ven/evals/skills/<skill>/<case>/` (skill behavior and trigger).
 - Packs: `<pack>/evals/<case>/`.
-- Typical run: `claude plugin eval plugins/ven --case <name> --runs 3 --ablation none --scaffold --max-cost-usd 15`. Routing suite cap: `--max-cost-usd 5`.
+- Typical run: `claude plugin eval plugins/ven --case <name> --runs 3 --ablation none --scaffold --max-cost-usd 15`. Routing suite cap: `--max-cost-usd 10`.
 - "Fails without the change" for an edited skill: run the case against a copy of the plugin at the previous commit (`git worktree add <tmp> HEAD`) and against the working copy; compare pass rate and cost from `aggregate-result.json`.
 
 ## Outward-facing actions
@@ -108,7 +108,7 @@ Start from the base named in `vendoring-map.md`. Keep what makes it work (the ga
 
 ## Done means
 
-- `node plugins/ven/bin/ven-lint-skills` passes for your files (run it; fix every finding in files you own).
+- `bun run lint:skills` passes for your files (run it; fix every finding in files you own).
 - Every skill you reference exists in the catalog below (or you are writing it).
 - No placeholder text, no TODOs.
 

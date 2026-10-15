@@ -14,6 +14,7 @@ The design rationale is in [`ven-stack design v2.md`](ven-stack%20design%20v2.md
 
 - Claude Code with plugin support
 - Node.js 22 or later (hooks and `bin/` tools are plain Node scripts with no dependencies)
+- [Bun](https://bun.sh) 1.4 or later, only to develop ven itself (tests, lint)
 - A git repository to work in
 
 ## Install
@@ -172,16 +173,16 @@ docs/build/                       # authoring guide, profile schema, vendoring m
 ## Development
 
 ```sh
-npm test               # unit tests for hooks and bin tools (node --test)
-npm run lint:skills    # composition rules, line budgets, denylist
-npm run validate       # claude plugin validate on the plugin and the marketplace
+bun run test           # unit tests for hooks and bin tools (bun test)
+bun run lint:skills    # composition rules, line budgets, denylist
+bun run validate       # claude plugin validate on the plugin and the marketplace
 ```
 
 The routing eval contains 40 prompts with expected playbooks. Edit [`cases.json`](plugins/ven/evals/routing/cases.json), regenerate the case directories, then run it with Claude Code's eval runner:
 
 ```sh
-node plugins/ven/evals/routing/generate.mjs
-claude plugin eval plugins/ven --scaffold --runs 3 --max-cost-usd 5
+bun plugins/ven/evals/routing/generate.mjs
+claude plugin eval plugins/ven --scaffold --runs 3 --max-cost-usd 10
 ```
 
 Before adding or changing a skill, read [`docs/build/authoring-guide.md`](docs/build/authoring-guide.md). It covers frontmatter, body rules, the agent result trailer, evals and how to adapt upstream skills. A skill change counts as done when `ven-lint-skills` passes and its eval passes with the change and fails without it.

@@ -9,6 +9,8 @@ metadata:
 
 States come from the code that declares them. Transitions come from the code that changes them. A transition you can't point to is inferred, and it must look inferred.
 
+The answer is a page, not a diagram in chat. Before you reply, open **diagram-deps** and write the page its badge protocol calls **Rendering**; the reply is the badge, a short summary and the page's path. A request to keep it short or quick shortens the summary, not this step.
+
 ## 1. Find the states
 
 1. Find the declaration of the entity's states: an enum, a union type, or a set of constants. Map the entity's domain name to code with `$(ven-profile path)/GLOSSARY.md`, then search with `ven-profile adapter code.search --var pattern=<type or field name>`.
@@ -47,3 +49,5 @@ After the diagram, list what the picture reveals:
 - States with no incoming transition (unreachable) and states with no outgoing one that are not meant to be final.
 - Undeclared states, and transitions that skip a guard the others have.
 - Writes that accept any state, since they bypass the machine.
+
+Render it per **Rendering** in the badge protocol of **diagram-deps**.

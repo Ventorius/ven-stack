@@ -49,6 +49,6 @@ flowchart LR
   classDef external stroke-dasharray:4 3
 ```
 
-The claim table that **citation-check** builds gets one row per container (its deploy line) and one per edge. Run **citation-check**; the caption counts edges, `HYBRID (n/n edges cited)`, and a container whose row fails is fixed or removed like an edge. Save it per the badge protocol as `arch-context`.
+The claim table that **citation-check** builds gets one row per container (its deploy line) and one per edge. Run **citation-check**; the caption counts edges, `HYBRID (n/n edges cited)`, and a container whose row fails is fixed or removed like an edge. Save it per the badge protocol as `arch-context`. Render it per **Rendering** in the badge protocol of **diagram-deps**.
 
 Keep it to one level. A request to zoom into one container goes to **diagram-deps** for its modules or **diagram-flow** for one request through it.

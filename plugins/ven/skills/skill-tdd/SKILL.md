@@ -65,7 +65,7 @@ Make the smallest change that addresses the failure you watched, nothing for hyp
 Run each suite against both copies and compare:
 
 ```bash
-claude plugin eval <plugin> --eval-dir evals/routing --runs 3 --ablation none --scaffold --max-cost-usd 5 --no-publish --output-dir <results>/<copy>/routing
+claude plugin eval <plugin> --eval-dir evals/routing --runs 3 --ablation none --scaffold --max-cost-usd 10 --no-publish --output-dir <results>/<copy>/routing
 claude plugin eval <plugin> --eval-dir evals/skills/<skill> --runs 3 --ablation none --scaffold --max-cost-usd 15 --no-publish --output-dir <results>/<copy>/trigger
 ```
 

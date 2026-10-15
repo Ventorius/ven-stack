@@ -44,7 +44,7 @@ Badge it `GENERATED ven-profile adapter schema.read @ <short sha>`, per the badg
 3. Draw only the changed entities plus their direct neighbours as stubs. Mark each change in the attribute comment (`text email "added"`, `int count "type changed: was text"`); draw removed entities with a `removed` comment on their key.
 4. Under the diagram, list each change as one line. Flag the ones that need a data migration or break existing readers.
 
-The badge carries both refs: `@ <base sha>..<head sha>`.
+The badge carries both refs: `@ <base sha>..<head sha>`. Render it per **Rendering** in the badge protocol of **diagram-deps**.
 
 ## Without the adapter
 

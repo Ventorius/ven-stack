@@ -1,6 +1,6 @@
 ---
 name: diagram-deps
-description: Draw the module dependency graph from the repo's import-graph adapter, with boundary violations and cycles highlighted. Use for "what depends on what", before moving code between modules, or to check layering. Its last section is the badge protocol every diagram follows.
+description: Draw the module dependency graph from the repo's import-graph adapter, with boundary violations and cycles highlighted. Use for "what depends on what", before moving code between modules, or to check layering. Its last section is the badge protocol every diagram follows, including how a diagram renders to a local HTML page.
 metadata:
   layer: L3
 ---
@@ -41,7 +41,7 @@ flowchart LR
 
 ## 4. Report
 
-The diagram under its badge, then: each violation (from, to, rule, the profile's reason from `boundaries[].why`, one importing `file:line` when the output has one), each cycle, and what you left out.
+The diagram under its badge, rendered per **Rendering** below, then: each violation (from, to, rule, the profile's reason from `boundaries[].why`, one importing `file:line` when the output has one), each cycle, and what you left out.
 
 ## Badge protocol
 
@@ -87,10 +87,12 @@ flowchart LR
 
 A HYBRID file's `command` lists the searches that found the edges, and its claim table follows the diagram. A HYPOTHESIS file has `command: -`.
 
+**Rendering.** Every diagram you show gets a local page in `$(ven-profile path)/diagrams/`, even when no `.md` is saved and even when the user also asks for the Mermaid source. Read `references/diagram-page.md` before writing it: names, content, safety checks and skeleton. Offer once to publish it with the host's tool that publishes a page privately, and publish only on a yes. The reply is the badge, a short summary and the page's path, with a Mermaid fence only when the user asks for one. A request to keep it short shortens the summary, not the page.
+
 **Reuse and drift.** Before reusing a saved diagram, compare its `sha` (the head side of a two-ref diagram) with `git rev-parse --short HEAD`. If they differ:
 
 - GENERATED: re-run `command`, compare the edge sets, rewrite the file.
 - HYBRID: re-run **citation-check** on the saved claim table, fix or drop each failing edge, rewrite the file.
 - HYPOTHESIS: re-check every status before relying on it.
 
-Always say which it was: "no drift since <sha>" or "drifted since <sha>: <edges added, removed or failing>".
+With no drift, render the page from the saved `.md`. Always say which it was: "no drift since <sha>" or "drifted since <sha>: <edges added, removed or failing>".

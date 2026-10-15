@@ -56,4 +56,4 @@ sequenceDiagram
 
 Run **citation-check** on the table. Fix the citation, redraw the arrow, or remove it until every row passes; then the caption is `HYBRID (n/n edges cited)`. Save and reuse it per the badge protocol in **diagram-deps**, as `flow-<trigger>`.
 
-Under the diagram, list what you folded away and what you could not trace, so the reader knows where the picture stops.
+Render it per **Rendering** in the badge protocol of **diagram-deps**. Under it, list what you folded away and what you could not trace, so the reader knows where the picture stops.

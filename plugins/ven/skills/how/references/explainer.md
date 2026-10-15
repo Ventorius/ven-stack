@@ -14,7 +14,7 @@ The types, modules and abstractions needed to follow the rest. One line each, wi
 
 The longest section. What triggers it, what happens step by step, where data goes, where the decisions are. Prose, not pseudocode. Name the real functions and files so the reader knows where to look; quote code only when a snippet carries the point.
 
-Add a Mermaid diagram only when several components talk to each other or data changes shape through stages. Caption it `HYBRID (n/n edges cited)` when every edge cites `file:line`, otherwise `HYPOTHESIS`.
+Add a Mermaid diagram only when several components talk to each other or data changes shape through stages. Caption it `HYBRID (n/n edges cited)` when every edge cites `file:line`, otherwise `HYPOTHESIS`. Render it per **Rendering** in the badge protocol of **diagram-deps**.
 
 ## Where things live
 

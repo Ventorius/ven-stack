@@ -2,10 +2,11 @@
   "name": "ven-stack",
   "private": true,
   "type": "module",
+  "packageManager": "bun@1.4.3",
   "engines": { "node": ">=22" },
   "scripts": {
-    "test": "node --test \"plugins/ven/evals/**/*.test.mjs\"",
-    "lint:skills": "node plugins/ven/bin/ven-lint-skills",
+    "test": "bun test plugins/ven/evals",
+    "lint:skills": "bun plugins/ven/bin/ven-lint-skills",
     "validate": "claude plugin validate ./plugins/ven && claude plugin validate ."
   }
 }

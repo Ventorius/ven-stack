@@ -33,7 +33,7 @@ Climb from overview to one call path. Skip a rung that doesn't apply and say why
 | 4. Lifecycle | how its main entity changes state | **diagram-state**, if it has states |
 | 5. One call path | the most common request, end to end | **diagram-flow** |
 
-Those skills produce each rung's content and badge. This skill decides the order and the pace. A saved diagram from an earlier run can stand in for a rung once its drift check passes.
+Those skills produce each rung's content and badge, and their diagrams are folded into this skill's page, so they render none of their own. This skill decides the order and the pace. A saved diagram from an earlier run can stand in for a rung once its drift check passes.
 
 ## 4. Build each picture up
 
@@ -52,4 +52,5 @@ Those skills produce each rung's content and badge. This skill decides the order
 
 - Recap in three lines: the parts, the data, the path.
 - Offer **quiz** on what you covered. It is opt-in; don't start it unasked.
-- Offer to save the ladder: the last frame of each rung, with its badge and caption, to `$(ven-profile path)/explain/teach-<subsystem>.md`. Diagrams saved on their own follow the badge protocol in **diagram-deps**.
+- Show the ladder as one page, `$(ven-profile path)/explain/teach-<subsystem>.html`: every frame is a section in order, and the rung diagrams are folded into it. Render it per **Rendering** in the badge protocol of **diagram-deps**.
+- Offer to save the ladder to `teach-<subsystem>.md` beside it, holding the same frames with their badges and captions. Diagrams saved on their own follow the badge protocol in **diagram-deps**.
