@@ -36,7 +36,7 @@ export const flippedCases = (history, entry) => {
   const previous = history.findLast((h) => h.tier === entry.tier);
   if (!previous) return [];
   return Object.entries(entry.cases)
-    .filter(([id, pass]) => id in previous.cases && previous.cases[id] !== pass)
+    .filter(([id, pass]) => Object.hasOwn(previous.cases, id) && previous.cases[id] !== pass)
     .map(([id, pass]) => ({ id, from: previous.cases[id], to: pass }));
 };
 
