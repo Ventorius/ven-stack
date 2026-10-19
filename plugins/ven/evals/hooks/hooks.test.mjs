@@ -133,25 +133,6 @@ test('no-workaround flags added suppressions and removed assertions, honours ven
   assert.equal(post('README.md', { old_string: 'a', new_string: '@ts-ignore in docs is fine' }).code, 0);
 });
 
-test('git-guardrails blocks destructive git and allows the rest', () => {
-  const bash = (command) => runHook('git-guardrails', { tool_name: 'Bash', tool_input: { command } });
-  for (const command of [
-    'git push --force origin main',
-    'git push -f',
-    'git push origin +main',
-    'git push --force-with-lease',
-    'cd x && git reset --hard HEAD~1',
-    'git -C ../repo clean -fd',
-    'git branch -D feature',
-    'git branch --delete feature',
-  ]) {
-    assert.equal(bash(command).code, 2, command);
-  }
-  for (const command of ['git push origin feature', 'git reset --soft HEAD~1', 'git clean -n', 'git branch -a', 'git status', 'echo "git push -f"']) {
-    assert.equal(bash(command).code, 0, command);
-  }
-});
-
 test('decisions-log appends the agent trailer to decisions.tsv', () => {
   const root = makeRepo();
   const message = 'Renamed 30 files.\n\nVEN-RESULT: DONE\nplaybook: migration\nstep: sweep\ndecision: renamed fooBar to fooBaz\nevidence: typecheck exit 0';

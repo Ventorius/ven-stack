@@ -15,7 +15,7 @@ const USAGE = `ven-transcripts: extract correction, hook-block and routing evide
 
 // English and Polish openers; corrections usually lead with the objection.
 const CORRECTION = /^(no\b|nope|don'?t|do not|stop|wrong|actually|instead|not (that|what|like)|why did you|revert|undo|that'?s (not|wrong)|you (should|shouldn'?t|forgot|missed)|never\b|please don'?t|nie\b|źle|zamiast|przestań|cofnij|dlaczego|czemu|to nie|nie tak|zapomniałeś|miałeś)/i;
-const HOOK_BLOCK = /ven (verify-gate|repro-first|no-workaround|git-guardrails)[^\n]*/g;
+const HOOK_BLOCK = /ven (verify-gate|repro-first|no-workaround)[^\n]*/g;
 const ROUTE = /^\**Playbook:\s*([a-z0-9-]+)/m;
 
 const { flags } = parseArgs(process.argv.slice(2));
