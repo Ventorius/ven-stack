@@ -73,3 +73,22 @@ test('ven-transcripts rejects unknown flags and valueless flags with exit 2', ()
   assert.match(valueless.stderr, /--match needs a value/);
   assert.equal(transcripts(['--help']).code, 0);
 });
+
+test('ven-transcripts --limit keeps the newest N items and rejects bad numbers', () => {
+  const configDir = transcriptDir();
+  writeFile(configDir, 'projects/-Users-me-code-acme/def456.jsonl', user('no, use the other one', '2026-10-02T10:00:00Z') + user('wrong again, revert it', '2026-10-02T10:00:01Z'));
+  const all = JSON.parse(transcripts(['--match', 'acme', '--kind', 'corrections', '--config-dir', configDir]).stdout).corrections;
+  assert.equal(all.length, 3);
+  const limited = JSON.parse(transcripts(['--match', 'acme', '--kind', 'corrections', '--limit', '2', '--config-dir', configDir]).stdout).corrections;
+  assert.deepEqual(limited, all.slice(-2));
+  for (const bad of ['x', '0', '1.5']) assert.equal(transcripts(['--match', 'acme', '--limit', bad, '--config-dir', configDir]).code, 2, bad);
+  assert.equal(transcripts(['--match', 'acme', '--since', 'abc', '--config-dir', configDir]).code, 2);
+});
+
+test('ven-transcripts counts sessions scanned, not project directories', () => {
+  const configDir = transcriptDir();
+  writeFile(configDir, 'projects/-Users-me-code-acme/def456.jsonl', user('hello', '2026-10-02T10:00:00Z'));
+  writeFile(configDir, 'projects/-Users-me-code-acme/notes.txt', 'ignored');
+  const output = JSON.parse(transcripts(['--match', 'acme', '--config-dir', configDir]).stdout);
+  assert.equal(output.sessions_scanned, 2);
+});

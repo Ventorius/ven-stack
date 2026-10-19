@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { fail, list, parseStrict } from '../scripts/lib/args.mjs';
+import { fail, intFlag, list, parseStrict } from '../scripts/lib/args.mjs';
 import { allConfigDirs } from '../scripts/lib/claude.mjs';
 import { git, repoRoot } from '../scripts/lib/repo.mjs';
 import { CORRECTION, HOOK_BLOCK } from '../scripts/lib/signals.mjs';
@@ -29,9 +29,9 @@ function mainCheckoutName() {
 }
 
 const match = flags.match ?? mainCheckoutName() ?? fail('ven-transcripts: pass --match outside a git repository', 2);
-const sinceMs = Date.now() - Number(flags.since ?? 30) * 86400000;
+const sinceMs = Date.now() - intFlag(flags, 'since', 30, { min: 0 }) * 86400000;
 const kind = flags.kind ?? 'all';
-const limit = Number(flags.limit ?? 200);
+const limit = intFlag(flags, 'limit', 200);
 const configDirs = list(flags['config-dir']).length > 0 ? list(flags['config-dir']) : allConfigDirs();
 
 function textOf(content) {
@@ -60,6 +60,7 @@ function lastAction(entries, index) {
   return '';
 }
 
+let sessionsScanned = 0;
 const results = { match, corrections: [], blocks: [], routes: [] };
 const projectDirs = configDirs.flatMap((configDir) => {
   const projectsDir = join(configDir, 'projects');
@@ -75,6 +76,7 @@ for (const dir of projectDirs) {
   for (const file of readdirSync(dir).filter((name) => name.endsWith('.jsonl'))) {
     const path = join(dir, file);
     if (statSync(path).mtimeMs < sinceMs) continue;
+    sessionsScanned++;
     const entries = readFileSync(path, 'utf8')
       .split('\n')
       .filter(Boolean)
@@ -106,6 +108,6 @@ for (const dir of projectDirs) {
 
 const cap = (items) => items.slice(-limit);
 const output = kind === 'all'
-  ? { match, sessions_scanned: projectDirs.length, corrections: cap(results.corrections), blocks: cap(results.blocks), routes: cap(results.routes) }
+  ? { match, sessions_scanned: sessionsScanned, corrections: cap(results.corrections), blocks: cap(results.blocks), routes: cap(results.routes) }
   : { match, [kind]: cap(results[kind] ?? fail(`ven-transcripts: unknown --kind ${kind}`, 2)) };
 console.log(JSON.stringify(output, null, 2));

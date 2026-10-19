@@ -99,6 +99,11 @@ export const runQuick = async ({ cases, playbooks, router, runner, concurrency, 
 
 const main = async () => {
   const { values } = parseArgs({ options: { concurrency: { type: 'string', default: '4' }, filter: { type: 'string', default: '' }, runner: { type: 'string' } } });
+  const concurrency = Number(values.concurrency);
+  if (!Number.isInteger(concurrency) || concurrency < 1) {
+    console.error('--concurrency must be a positive integer');
+    process.exit(2);
+  }
   const runner = values.runner ? (await import(pathToFileURL(resolve(values.runner)).href)).default : claudeRunner;
   const cases = JSON.parse(readFileSync(join(here, 'cases.json'), 'utf8'));
   const summary = await runQuick({
@@ -106,7 +111,7 @@ const main = async () => {
     playbooks: loadPlaybooks(),
     router: loadRouter(),
     runner,
-    concurrency: Number(values.concurrency),
+    concurrency,
     filter: values.filter,
     resultsDir: defaultResultsDir,
     now: new Date(),

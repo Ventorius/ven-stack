@@ -6,7 +6,7 @@ import { fail, parseStrict } from '../scripts/lib/args.mjs';
 import { claudeConfigDir } from '../scripts/lib/claude.mjs';
 import { splitFrontmatter } from '../scripts/lib/frontmatter.mjs';
 import { allCommands, loadProfile, staleSources } from '../scripts/lib/profile.mjs';
-import { repoRoot } from '../scripts/lib/repo.mjs';
+import { repoRoot, venDir } from '../scripts/lib/repo.mjs';
 
 const USAGE = `ven-doctor: check the ven install, the repo profile and the Claude settings ven depends on
 
@@ -18,8 +18,11 @@ const USAGE = `ven-doctor: check the ven install, the repo profile and the Claud
   exit codes: 0 ok, 1 an ERROR (or a WARN under --strict), 2 usage error`;
 
 const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const { flags, positionals } = parseStrict(process.argv.slice(2), { booleans: ['strict', 'json', 'help'] });
-if (flags.help) fail(USAGE, 0);
+if (process.argv.slice(2).some((arg) => arg === '--help' || arg === '-h')) {
+  console.log(USAGE);
+  process.exit(0);
+}
+const { flags, positionals } = parseStrict(process.argv.slice(2), { booleans: ['strict', 'json'] });
 if (positionals.length > 0) fail(USAGE, 2);
 
 const cwd = process.cwd();
@@ -42,6 +45,32 @@ function readProfile() {
   } catch (error) {
     note('ERROR', error.message);
     return null;
+  }
+}
+
+// Mirrors DECISION_COLUMNS in scripts/lib/state.mjs, which does not export it.
+const DECISION_HEADER = 'ts\tworktree\tplaybook\tstep\tdecision\tevidence';
+
+function jsonFiles(dir) {
+  return existsSync(dir) ? readdirSync(dir).filter((name) => name.endsWith('.json')).map((name) => join(dir, name)) : [];
+}
+
+function checkState(stateDir) {
+  for (const folder of ['sessions', 'worktrees', 'baselines']) {
+    for (const path of jsonFiles(join(stateDir, 'state', folder))) {
+      try {
+        JSON.parse(readFileSync(path, 'utf8'));
+      } catch {
+        note('ERROR', `corrupt JSON in ${path}; delete the file (ven recreates it on the next session)`);
+      }
+    }
+  }
+  const decisions = join(stateDir, 'decisions.tsv');
+  if (!existsSync(decisions)) return;
+  const [header, ...rows] = readFileSync(decisions, 'utf8').split('\n').filter(Boolean);
+  const columns = DECISION_HEADER.split('\t').length;
+  if (header !== DECISION_HEADER || rows.some((row) => row.split('\t').length !== columns)) {
+    note('ERROR', `malformed decisions.tsv at ${decisions}; move it aside (the next ven-decisions add starts a fresh log)`);
   }
 }
 
@@ -98,6 +127,9 @@ if (!root) {
       .map(([path, command]) => `${path} (${command.status})`);
     if (unverified.length > 0) note('INFO', `commands not verified: ${unverified.join(', ')}`);
   }
+
+  const stateDir = venDir(cwd);
+  if (stateDir) checkState(stateDir);
 
   const settings = [join(root, '.claude', 'settings.json'), join(root, '.claude', 'settings.local.json'), join(claudeConfigDir(), 'settings.json')]
     .map(readJson)

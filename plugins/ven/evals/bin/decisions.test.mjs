@@ -94,3 +94,68 @@ test('ven-decisions exit codes: usage 2, runtime failure 1', () => {
   assert.equal(runBin('ven-decisions', ['list', '--bogus'], { cwd: root }).code, 2);
   assert.equal(runBin('ven-decisions', ['end'], { cwd: root }).code, 1);
 });
+
+test('a value starting with dashes needs --flag=value, and that form records it verbatim', () => {
+  const root = makeRepo();
+  const refused = decisions(root, 'add', '--step', 's', '--decision', 'd', '--evidence', '--- FAIL x');
+  assert.equal(refused.code, 2);
+  assert.match(refused.stderr, /--evidence needs a value/);
+  assert.match(refused.stderr, /--evidence=value/);
+
+  assert.equal(decisions(root, 'add', '--step', 's', '--decision', 'd', '--evidence=--- FAIL x').code, 0);
+  assert.equal(json(decisions(root, 'list', '--json'))[0].evidence, '--- FAIL x');
+});
+
+test('an inline value keeps everything after the first equals sign', () => {
+  const root = makeRepo();
+  decisions(root, 'add', '--step', 's', '--decision', 'd', '--evidence=a=b');
+  assert.equal(json(decisions(root, 'list', '--json'))[0].evidence, 'a=b');
+});
+
+test('unknown flags are usage errors even when a value follows', () => {
+  const root = makeRepo();
+  for (const flag of ['--bogus', '--constructor', '--__proto__', '--toString']) {
+    const result = decisions(root, 'list', flag, 'x');
+    assert.equal(result.code, 2, flag);
+    assert.match(result.stderr, /unknown flag/, flag);
+  }
+});
+
+test('list --limit rejects non-numbers and keeps the last N rows', () => {
+  const root = makeRepo();
+  for (const step of ['a', 'b', 'c']) decisions(root, 'add', '--step', step, '--decision', 'd');
+  assert.equal(decisions(root, 'list', '--limit', 'x').code, 2);
+  assert.equal(decisions(root, 'list', '--limit', '1.5').code, 2);
+  assert.deepEqual(json(decisions(root, 'list', '--limit', '2', '--json')).map((row) => row.step), ['b', 'c']);
+});
+
+test('list --playbook keeps only that playbook', () => {
+  const root = makeRepo();
+  decisions(root, 'add', '--step', 'a', '--decision', 'd', '--playbook', 'fix');
+  decisions(root, 'add', '--step', 'b', '--decision', 'd', '--playbook', 'feature');
+  assert.deepEqual(json(decisions(root, 'list', '--playbook', 'feature', '--json')).map((row) => row.step), ['b']);
+});
+
+test('end only accepts a learning-check step, not any recorded step', () => {
+  const root = makeRepo();
+  decisions(root, 'start', 'fix');
+  decisions(root, 'add', '--step', 'tdd', '--decision', 'green');
+  assert.equal(decisions(root, 'end').code, 1);
+  assert.equal(json(decisions(root, 'active')).playbook, 'fix');
+});
+
+test('end --outcome abandoned or blocked closes without a learning-check and records the outcome', () => {
+  for (const outcome of ['abandoned', 'blocked']) {
+    const root = makeRepo();
+    decisions(root, 'start', 'fix');
+    assert.equal(decisions(root, 'end', '--outcome', outcome).code, 0, outcome);
+    assert.equal(json(decisions(root, 'active')).playbook, null);
+    assert.equal(json(decisions(root, 'list', '--step', 'end', '--json'))[0].decision, outcome);
+  }
+});
+
+test('end --outcome done still requires a learning-check', () => {
+  const root = makeRepo();
+  decisions(root, 'start', 'fix');
+  assert.equal(decisions(root, 'end', '--outcome', 'done').code, 1);
+});

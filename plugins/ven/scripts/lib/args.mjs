@@ -10,7 +10,7 @@ export function parseArgs(argv) {
     }
     const [name, inline] = token.slice(2).split(/=(.*)/s);
     const value = inline ?? (argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true);
-    flags[name] = name in flags ? [].concat(flags[name], value) : value;
+    flags[name] = Object.hasOwn(flags, name) ? [].concat(flags[name], value) : value;
   }
   return { flags, positionals };
 }
@@ -44,10 +44,21 @@ export function parseStrict(argv, { values = [], booleans = [] }) {
       continue;
     }
     const value = inline ?? (argv[i + 1] !== undefined && !argv[i + 1].startsWith('--') ? argv[++i] : undefined);
-    if (value === undefined) fail(`--${name} needs a value`, 2);
-    flags[name] = name in flags ? [].concat(flags[name], value) : value;
+    if (value === undefined) fail(`--${name} needs a value (write --${name}=value for a value that starts with dashes)`, 2);
+    flags[name] = Object.hasOwn(flags, name) ? [].concat(flags[name], value) : value;
   }
   return { flags, positionals };
+}
+
+// A malformed numeric flag is a usage error. Counts and timeouts must be at least 1, so `--timeout 0` fails too.
+export function intFlag(flags, name, fallback, { min = 1 } = {}) {
+  const raw = flags[name];
+  if (raw === undefined) return fallback;
+  const value = Number(raw);
+  if (typeof raw !== 'string' || raw.trim() === '' || !Number.isInteger(value) || value < min) {
+    fail(`--${name} must be an integer of at least ${min}`, 2);
+  }
+  return value;
 }
 
 const HELP_COMMANDS = ['--help', '-h', 'help'];
