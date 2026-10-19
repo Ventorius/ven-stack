@@ -70,7 +70,7 @@ export function runHook(name, input) {
   return { code: result.status, stdout: result.stdout, stderr: result.stderr };
 }
 
-export function runBin(name, args, { cwd, input } = {}) {
-  const result = spawnSync('node', [join(PLUGIN_ROOT, 'bin', name), ...args], { cwd, input, encoding: 'utf8' });
+export function runBin(name, args, { cwd, input, env } = {}) {
+  const result = spawnSync('node', [join(PLUGIN_ROOT, 'bin', name), ...args], { cwd, input, encoding: 'utf8', env: { ...process.env, ...env } });
   return { code: result.status, stdout: result.stdout, stderr: result.stderr };
 }

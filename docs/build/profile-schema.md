@@ -21,7 +21,7 @@ Every repo ven works in has one state directory: `~/.ven/repos/<repo>-<hash of t
 ├── explain/<branch>.html          # explain-pr and teach pages (read, not committed)
 ├── baseline/           # snapshots of existing lint/boundary violations
 ├── decisions.tsv       # ts, worktree, playbook, step, decision, evidence
-├── state/              # active playbook per worktree, sessions, verify.jsonl (written by bin tools only)
+├── state/              # active playbook per worktree, sessions, verify.jsonl (last 500 entries; an entry with `tree_changed` never counts as a pass), written by bin tools only
 └── packs/              # local marketplace: .claude-plugin/marketplace.json + one plugin dir per forged pack
 ```
 
@@ -40,7 +40,8 @@ Every repo ven works in has one state directory: `~/.ven/repos/<repo>-<hash of t
   "stack": {
     "languages": [], "frameworks": [], "package_manager": "", "runtime": {},
     "typed": true,
-    "sources": ["manifest and lockfile paths the profile was built from; freshness compares their mtime"]
+    "sources": ["manifest and lockfile paths the profile was built from"],
+    "source_hashes": { "<source path>": "sha256 of the file when the profile was stamped" }
   },
   "workspaces": [{ "name": "", "path": "", "kind": "app|lib|tool", "commands": { "<same shape as commands>": {} } }],
   "commands": {
@@ -62,6 +63,16 @@ Every repo ven works in has one state directory: `~/.ven/repos/<repo>-<hash of t
   "budget_tier": "optional per-repo override of the userConfig tier"
 }
 ```
+
+### Freshness
+
+`ven-profile write` always sets `generated_at` and records `stack.source_hashes`. The profile is stale when a source's content hash differs from the recorded one, so a checkout or a touch that leaves the content alone does not make it stale. A profile without `source_hashes` (written by an older version) falls back to comparing each source's mtime with `generated_at`.
+
+`ven-profile stamp` rewrites `generated_at` and `source_hashes` and changes nothing else. Use it after checking that the profile still holds for the changed manifests; use `/ven:onboard --refresh` when it does not.
+
+### Validation
+
+`loadProfile` rejects any `schema_version` other than 1. `ven-profile validate` (and `set`/`write`) also require every `verify.<type>` value to name an existing command and every `packs[]` entry to have `name` and `kind`. `ven-profile prove` and `prove-adapters` re-read the file just before saving and update only the `status`, `proof` and `failure_tail` of the commands they ran, so a `set` made during a long prove survives.
 
 ### Command leaf
 
