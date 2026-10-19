@@ -205,3 +205,9 @@ test('ven-profile exit codes: usage 2, unknown flags 2, valueless flags 2, runti
   assert.equal(profile(root, 'get', 'nope').code, 1);
   assert.equal(profile(root, '--help').code, 0);
 });
+
+test('--timeout must be an integer of at least 1', () => {
+  const root = makeRepo();
+  for (const bad of ['0', 'abc', '-3', '1.5']) assert.equal(profile(root, 'run', 'test.all', '--timeout', bad).code, 2, bad);
+  assert.equal(profile(root, 'run', 'test.all', '--timeout', '30').code, 0);
+});

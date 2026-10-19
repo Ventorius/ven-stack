@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dispatch, fail, list, parseStrict } from '../scripts/lib/args.mjs';
+import { dispatch, fail, intFlag, list, parseStrict } from '../scripts/lib/args.mjs';
 import { splitFrontmatter } from '../scripts/lib/frontmatter.mjs';
 import { matchesAny } from '../scripts/lib/globs.mjs';
 import {
@@ -51,6 +51,7 @@ const USAGE = `ven-profile: the repo profile (stack facts + verified commands), 
 const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const [command, ...rest] = process.argv.slice(2);
 const { flags, positionals } = parseStrict(rest, { values: ['file', 'var', 'timeout'], booleans: ['strict'] });
+const timeout = intFlag(flags, 'timeout', undefined);
 const cwd = process.cwd();
 
 function requireProfile() {
@@ -178,7 +179,7 @@ const commands = {
   run() {
     const key = positionals[0] ?? fail('usage: ven-profile run <key> [--file F]...', 2);
     const spec = commandSpec(requireProfile().profile, key) ?? fail(`ven-profile: no command at ${key}`);
-    const result = execute(spec, flags.timeout && Number(flags.timeout));
+    const result = execute(spec, timeout);
     writeAll(1, result.output);
     process.exit(result.exit);
   },
@@ -215,7 +216,7 @@ const commands = {
     const spec = commandSpec(profile, key) ?? fail(`ven-profile: no command at ${key}`);
     const before = workingTreeHash(root);
     const untrackedBefore = new Set(untrackedFiles(root));
-    const result = execute(spec, flags.timeout && Number(flags.timeout));
+    const result = execute(spec, timeout);
     const tree = workingTreeHash(root);
     // A file the command created is output, not drift: only content that existed before must be unchanged.
     const created = untrackedFiles(root).filter((file) => !untrackedBefore.has(file));
@@ -244,7 +245,7 @@ const commands = {
     const spec = readAdapters()[capability];
     if (!spec?.run) fail(`ven-profile: no adapter for ${capability}; fall back to reading files and suggest forge-adapter`, 3);
     if (spec.status !== 'verified') fail(`ven-profile: adapter ${capability} is ${spec.status}; prove it first (ven-profile prove-adapters ${capability})`, 3);
-    const result = execute(spec, flags.timeout && Number(flags.timeout));
+    const result = execute(spec, timeout);
     writeAll(1, result.output);
     process.exit(result.exit);
   },
