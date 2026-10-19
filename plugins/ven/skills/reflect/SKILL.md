@@ -19,6 +19,8 @@ The transcript is the newest `*.jsonl` in `<config dir>/projects/<repo path with
 
 No match: write a digest instead (the requests, corrections, skills used, hook blocks, outcomes).
 
+Count corrections from the decisions log first: `ven-decisions list --step correction` shows what the user objected to this session and earlier. The transcript is the fallback and the source for everything else.
+
 ## 2. Run three blind lenses
 
 Spawn three `ven:ven-reviewer` agents in one message, each with the brief in `references/lenses.md` (shared part plus its lens) and the transcript path or digest:
@@ -35,7 +37,7 @@ Reviewers never see each other's output. On the `lean` budget tier, run the judg
 
 Judge every finding yourself against these tests, in order:
 
-1. **Structural.** If a check could enforce it, route it to **ratchet** instead of skill text (apply **encode-lessons-in-structure**).
+1. **Structural.** If a check could enforce it, route it to **ratchet** instead of skill text (apply **encode-lessons-in-structure**, which also sets the promotion threshold).
 2. **Durable.** Still true after paths, versions and code shapes change.
 3. **Decision-changing.** A future agent acts differently, not just reads more.
 4. **Used.** The target skill ran in this session, or should have fired and didn't (then the change is to its description).

@@ -25,6 +25,11 @@ A check counts only once it fails on the original mistake and passes on the fix.
 
 **Corollary:** If the fix is structural, use only the structural fix and delete the instruction it replaces. The instruction was the symptom.
 
+**Promotion rule.** The single threshold every learning skill uses:
+- A mistake class seen in 2 independent sessions or PRs is promoted to a check, at the highest step above that can state it. Several comments on one PR, or repeats inside one session, count once.
+- A pack skill or playbook needs 3 real instances of the same cause or task shape. Fewer than 3 stays a solution entry or a watch item.
+- Corrections are counted from the decisions log first (`ven-decisions list --step correction`); transcripts are the fallback.
+
 **Close the loop:**
 - One-off: note it and move on. Recurring: encode it on the highest step that holds it. Systemic: raise it as a principle.
 - Apply the fix now, or leave a concrete task naming the step and the file.

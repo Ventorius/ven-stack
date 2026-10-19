@@ -26,7 +26,7 @@ A pack makes ven specific to one technology or one domain of this repo while cor
 
 Fan out read-only `ven:ven-worker` briefs (`model: ${user_config.swarm_model}`), one per source. Each returns instances: source, date, `file:line` or link, what went wrong or was needed, and what fixed it.
 
-- **Transcripts:** `ven-transcripts --kind corrections --since 90` and `--kind routes`, kept to the pack's terms.
+- **Corrections:** `ven-decisions list --step correction` first, kept to the pack's terms; then `ven-transcripts --kind corrections --since 90` and `--kind routes` as the fallback.
 - **Solutions:** entries in `$(ven-profile path)/solutions/` whose symptoms or `files:` touch the area.
 - **Merged PRs:** the code host CLI named by `ven-profile get repo.forge.cli`, read-only subcommands only, plus `git log --grep`. Review comments that repeat count; one-off typos don't.
 - **Code:** where the tech or domain lives (imports, domain nouns) gives `applies_when.paths`, with a match count per glob; dependency names and locked versions give `applies_when.deps`; heavily used libraries are reference candidates.
@@ -37,8 +37,10 @@ Cluster the instances into items:
 |---|---|---|
 | reference | a library whose misuse shows up in the instances | **forge-reference** |
 | adapter | a capability a skill needs that `ven-profile adapters` lacks | **forge-adapter** |
-| skill | one idea with 3+ instances | **forge-skill** |
-| playbook | a task shape seen 3+ times that no core playbook fits | **forge-playbook** |
+| skill | one idea that meets the pack bar | **forge-skill** |
+| playbook | a task shape that meets the pack bar and no core playbook fits | **forge-playbook** |
+
+The pack bar is the promotion rule in **encode-lessons-in-structure**: 3 real instances.
 
 - A correction a type, import rule, lint rule or hook can catch is not a skill. List it as a ratchet candidate; once the pack is enabled, `/ven:ratchet` places it in the pack's `rules/`.
 - A cluster under the bar becomes a proposed **compound** entry, not pack content.

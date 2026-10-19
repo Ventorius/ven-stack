@@ -1,9 +1,9 @@
 ---
 name: explain-the-number
-description: "Apply before you trust, report or act on a measured number: a speedup, a regression, throughput, latency or an eval result. Name what limits it and rule out that it measured something other than the work you think."
+description: "Apply when you measure or vet a number before you trust, report or act on it: a speedup, regression, throughput, latency or eval result. Name what limits it and rule out that it measured something else; benchmarks follow the protocol."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-explain-the-number/SKILL.md
+  source: cursor/plugins@main:pstack/skills/principle-explain-the-number/SKILL.md; cursor/plugins@main:pstack/skills/benchmark-checklist/SKILL.md
   license: MIT
 ---
 
@@ -21,6 +21,8 @@ Before you trust, report or act on a number you measured, say what limits it and
 - **Keep the evidence with the number:** run count, spread, the limiter, and the command that produced it, in the notes or a linked artifact.
 
 **For eval results,** ask the same of the trials: did every run actually do the task, does the gap hold across trials and models, and does the scenario matter.
+
+**Measuring it yourself:** a speedup, a comparison between options, or a keep-or-revert call on a performance change needs the full procedure in `references/benchmark-protocol.md`: claim, baseline, alternating runs, error counts, limiter, verdict. A quick ballpark the user asked for may be one run; say so.
 
 **The test:** Can you say, with evidence, why the number isn't twice as good and why it isn't an artifact? If not, you don't yet know what you measured.
 

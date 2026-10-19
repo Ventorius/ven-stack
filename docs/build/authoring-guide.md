@@ -118,13 +118,13 @@ Start from the base named in `vendoring-map.md`. Keep what makes it work (the ga
 - **L4 playbooks** (`skills/do/playbooks/`): `investigation`, `feature`, `bug-fix`, `refactor`, `perf`, `migration`, `explain`, `autonomous-run`, `pickup`, `pause`, `ship`
 - **L3 align:** `grilling`, `to-spec`, `to-tickets`, `glossary`
 - **L3 build:** `tdd`, `sweep`, `prototype`, `improve-architecture`
-- **L3 prove:** `reproduce`, `verify`, `benchmark-check`, `citation-check`
+- **L3 prove:** `reproduce`, `verify`, `citation-check`
 - **L3 review:** `review`, `blast-radius`, `quality-review`
 - **L3 understand:** `how`, `why`
 - **L3 write:** `handoff`, `technical-writing`, `unslop`, `write-docs`
 - **L3 visual:** `diagram-deps`, `diagram-data`, `diagram-flow`, `diagram-state`, `diagram-arch`, `diagram-hypotheses`, `diagram-change`, `explain-pr`, `teach`
 - **L3 conventions:** `conventions-discover`, `conventions-audit`, `ratchet`, `forge-convention`
-- **L3 learning:** `learning-check`, `correct`, `compound`, `compound-refresh`, `reflect`, `mine-transcripts`, `skill-tdd`, `automate-me`, `quiz`
+- **L3 learning:** `learning-check`, `correct`, `compound`, `compound-refresh`, `reflect`, `skill-tdd`, `automate-me`, `quiz`
 - **L3 forge:** `forge-pack`, `forge-skill`, `forge-playbook`, `forge-adapter`, `forge-reference`, `pack-audit`
 - **L2 principles:** `laziness`, `model-the-domain`, `type-discipline`, `boundary-discipline`, `idempotent-operations`, `deep-modules`, `fix-root-causes`, `prove-it-works`, `sequence-verifiable-units`, `test-behavior`, `explain-the-number`, `encode-lessons-in-structure`, `never-block-on-reversible`, `guard-the-context`, `build-the-lever`
 - **L1 agents:** `ven-lead`, `ven-coder`, `ven-worker`, `ven-reviewer`, `ven-verifier`

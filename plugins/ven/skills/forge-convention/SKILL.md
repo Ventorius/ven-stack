@@ -11,7 +11,7 @@ Some conventions need judgment, such as "a new widget kind gets its own module, 
 
 ## 1. Evidence
 
-Collect three or more real instances: `conventions.md` examples and exceptions, review comments, corrections from `ven-transcripts --kind corrections`, `solutions/` entries. Each with a citation. With fewer than three, record the lesson with **compound** and stop.
+Collect real instances, enough to meet the pack bar in **encode-lessons-in-structure**: `conventions.md` examples and exceptions, review comments, corrections from `ven-decisions list --step correction` (then `ven-transcripts --kind corrections` as the fallback), `solutions/` entries. Each with a citation. Below the bar, record the lesson with **compound** and stop.
 
 ## 2. Scope
 

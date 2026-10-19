@@ -9,7 +9,7 @@ metadata:
 
 # Ratchet
 
-A correction given in conversation is gone by the next session. Turn it into a check placed as high on the ladder as the mistake allows, and prove the check catches the original. Apply **encode-lessons-in-structure**.
+A correction given in conversation is gone by the next session. Turn it into a check placed as high on the ladder as the mistake allows, and prove the check catches the original. Apply **encode-lessons-in-structure**; its promotion rule says when a class is ready for a check (2 independent instances).
 
 ## 1. State the class
 

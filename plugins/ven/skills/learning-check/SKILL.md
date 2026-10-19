@@ -19,7 +19,7 @@ Scan the whole session, subagent results included, for:
 - **Solved problems.** A fix or decision whose reasoning the final code, tests and docs don't show.
 - **Misfires.** A skill or playbook gave wrong guidance, fired when it shouldn't have, or stayed quiet when it should have fired.
 
-Check what is already recorded: `ven-decisions list --limit 20`. A correction already routed earlier in the session is cited, not routed twice.
+Check what is already recorded: `ven-decisions list --limit 20`. Corrections this session are rows with `step=correction` (`ven-decisions list --step correction`); read them before scanning the transcript, and fall back to the transcript only when there are none. A correction already routed earlier in the session is cited, not routed twice.
 
 ## 2. Apply the bar
 
@@ -51,7 +51,7 @@ A session can produce several outcomes: a correction and a solved problem run bo
 
 ## 4. Record
 
-One row per outcome:
+This step is required: `ven-decisions end` refuses to close a playbook that has no `learning-check` row, whether you add one or skip it. Write one row per outcome:
 
 ```bash
 ven-decisions add --step learning-check --decision <compound|correct|none> --evidence "<entry path, check or proposal path, or why nothing qualified>"
