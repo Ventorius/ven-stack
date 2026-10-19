@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bun run test
+      - run: bun run lint:skills
+      - name: Routing cases match cases.json
+        run: |
+          bun plugins/ven/evals/routing/generate.mjs
+          git diff --exit-code -- plugins/ven/evals/routing
