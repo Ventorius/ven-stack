@@ -2,7 +2,7 @@
 import { allow, runHook } from '../lib/hookio.mjs';
 import { loadProfile } from '../lib/profile.mjs';
 import { repoRoot } from '../lib/repo.mjs';
-import { CORRECTION } from '../lib/signals.mjs';
+import { CORRECTION, redactSecrets } from '../lib/signals.mjs';
 import { appendDecision, readPlaybookState } from '../lib/state.mjs';
 
 const MAX_LENGTH = 200;
@@ -23,7 +23,7 @@ function main(input) {
     worktree: root,
     playbook: readPlaybookState(loaded.dir, root)?.playbook ?? '',
     step: 'correction',
-    decision: prompt.replace(/\s+/g, ' ').slice(0, MAX_LENGTH),
+    decision: redactSecrets(prompt.replace(/\s+/g, ' ')).slice(0, MAX_LENGTH),
     evidence: `session ${input.session_id ?? ''}`,
   });
   allow();

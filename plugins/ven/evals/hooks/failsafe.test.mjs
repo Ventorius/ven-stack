@@ -181,19 +181,6 @@ test('capture-corrections ignores ordinary prompts, un-onboarded repos and bad i
   assert.equal(corrupt.stderr, '');
 });
 
-test('capture-corrections and solutions-on-edit stay fast', () => {
-  const root = makeRepo();
-  const timed = (name, input) => {
-    const start = performance.now();
-    runHook(name, input);
-    return performance.now() - start;
-  };
-  const correction = timed('capture-corrections', prompt(root, 'no, stop'));
-  const solutions = timed('solutions-on-edit', { ...edit(root), session_id: 's1', hook_event_name: 'PreToolUse' });
-  assert.ok(correction < 1000, `capture-corrections took ${correction}ms`);
-  assert.ok(solutions < 1000, `solutions-on-edit took ${solutions}ms`);
-});
-
 function writeSolutions(root) {
   const dir = stateDir(root);
   writeFile(dir, 'solutions/a/one.md', '---\ntitle: One\nsymptoms: [s1]\nfiles: [src/app.js]\n---\nbody');

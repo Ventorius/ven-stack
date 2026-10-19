@@ -20,7 +20,7 @@ export function relevantSolutions(dir, touched) {
   return solutionFiles(dir)
     .map((path) => {
       const { data } = splitFrontmatter(readFileSync(path, 'utf8'), { strict: false });
-      const anchors = data?.files ?? [];
+      const anchors = [].concat(data?.files ?? []).filter((anchor) => typeof anchor === 'string');
       const score = touched.filter((file) => anchors.some((anchor) => covers(anchor, file))).length;
       return { path, data, score };
     })

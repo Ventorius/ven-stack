@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import { execSync } from 'node:child_process';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 import { addContext, allow, editedFilePath, runHook } from '../lib/hookio.mjs';
 import { matchesAny } from '../lib/globs.mjs';
 import { commandSpec, loadProfile, renderCommand, shellQuote } from '../lib/profile.mjs';
-import { repoRoot } from '../lib/repo.mjs';
+import { repoRelative, repoRoot } from '../lib/repo.mjs';
 
 await runHook('format', main);
 
@@ -19,7 +19,7 @@ function main(input) {
   const root = repoRoot(cwd);
   const filePath = editedFilePath(input);
   if (!filePath) allow();
-  const file = relative(root, filePath);
+  const file = repoRelative(root, filePath);
   if (file.startsWith('..') || file.startsWith('.git/') || (spec.globs && !matchesAny(file, spec.globs))) allow();
 
   const command = renderCommand(spec.run, { file: shellQuote(file), files: shellQuote(file) });

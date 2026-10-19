@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-import { relative } from 'node:path';
 import { addContext, allow, editedFilePath, runHook } from '../lib/hookio.mjs';
 import { loadProfile } from '../lib/profile.mjs';
-import { repoRoot } from '../lib/repo.mjs';
+import { repoRelative, repoRoot } from '../lib/repo.mjs';
 import { describeSolution, relevantSolutions } from '../lib/solutions.mjs';
 import { readSession, writeSession } from '../lib/state.mjs';
 
@@ -19,7 +18,7 @@ function main(input) {
   if (!loaded) allow();
 
   const { dir } = loaded;
-  const file = relative(repoRoot(cwd), filePath);
+  const file = repoRelative(repoRoot(cwd), filePath);
   if (file.startsWith('..')) allow();
 
   const sessionId = input.session_id ?? 'unknown';
