@@ -17,8 +17,8 @@ All upstream sources below are MIT-licensed. Text was condensed and adapted (Cla
 - cursor/plugins (MIT, Copyright (c) 2026 Lauren Tan) — plugins/ven/skills/reflect/references/lenses.md adapted from pstack/skills/reflect/references/judgment-reviewer.md
 - cursor/plugins (MIT, Copyright (c) 2026 Lauren Tan) — plugins/ven/skills/reflect/references/lenses.md adapted from pstack/skills/reflect/references/tooling-reviewer.md
 - cursor/plugins (MIT, Copyright (c) 2026 Lauren Tan) — plugins/ven/skills/reflect/references/lenses.md adapted from pstack/skills/reflect/references/divergent-reviewer.md
-- poteto/noodle (MIT, Copyright (c) 2026 Lauren Tan) — plugins/ven/skills/mine-transcripts/ adapted from .agents/skills/ruminate/SKILL.md
-- poteto/brainmaxxing (MIT, Copyright (c) 2026 Lauren Tan) — plugins/ven/skills/mine-transcripts/ adapted from .agents/skills/ruminate/SKILL.md
+- poteto/noodle (MIT, Copyright (c) 2026 Lauren Tan) — plugins/ven/skills/conventions-audit/ adapted from .agents/skills/ruminate/SKILL.md
+- poteto/brainmaxxing (MIT, Copyright (c) 2026 Lauren Tan) — plugins/ven/skills/conventions-audit/ adapted from .agents/skills/ruminate/SKILL.md
 - obra/superpowers (MIT, Copyright (c) 2025 Jesse Vincent) — plugins/ven/skills/skill-tdd/ adapted from skills/writing-skills/SKILL.md
 - obra/superpowers (MIT, Copyright (c) 2025 Jesse Vincent) — plugins/ven/skills/skill-tdd/references/pressure-cases.md adapted from skills/writing-skills/testing-skills-with-subagents.md
 - cursor/plugins (MIT, Copyright (c) 2026 Lauren Tan) — plugins/ven/skills/automate-me/ adapted from pstack/skills/automate-me/SKILL.md

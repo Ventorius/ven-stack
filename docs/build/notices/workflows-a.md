@@ -12,4 +12,4 @@
 - obra/superpowers — plugins/ven/skills/reproduce/ adapted from skills/systematic-debugging/SKILL.md (phase 1)
 - cursor/plugins — plugins/ven/skills/verify/ adapted from pstack/skills/create-verification-skill/SKILL.md
 - obra/superpowers — plugins/ven/skills/verify/ adapted from skills/verification-before-completion/SKILL.md
-- cursor/plugins — plugins/ven/skills/benchmark-check/ adapted from pstack/skills/benchmark-checklist/SKILL.md
+- cursor/plugins — plugins/ven/skills/explain-the-number/ (references/benchmark-protocol.md) adapted from pstack/skills/benchmark-checklist/SKILL.md

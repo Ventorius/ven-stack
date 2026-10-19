@@ -1,19 +1,10 @@
----
-name: benchmark-check
-description: "Vet a performance number before reporting or acting on it, with a baseline, alternating runs, variance, error counts and a named limiter. Use when you measure a speedup or regression, compare options, or decide keep-or-revert on a perf change."
-metadata:
-  layer: L3
-  source: cursor/plugins@main:pstack/skills/benchmark-checklist/SKILL.md
-  license: MIT
----
+# Benchmark protocol
 
-# Benchmark check
-
-The procedure for producing a performance number you can stand behind. Apply **explain-the-number** throughout: no verdict without a named limiter.
+The procedure for producing a performance number you can stand behind. No verdict without a named limiter.
 
 ## Tools
 
-Measurement, load and profiling commands come from the profile or the adapters (`ven-profile get commands`, `ven-profile adapters`), or from a pack for this repo. Run them with `ven-profile run <key>`. If none fits, propose one from repo evidence and add it with the user's yes, the same way **verify** handles a missing command. Never time things with a command from memory.
+Measurement, load and profiling commands come from the profile or the adapters (`ven-profile get commands`, `ven-profile adapters`), or from a pack for this repo. Run them with `ven-profile run <key>`. If none fits, propose one from repo evidence and add it with the user's yes, the way any missing command is handled: never guess one. Never time things with a command from memory.
 
 ## Before running
 
@@ -47,4 +38,4 @@ Report shape: "p50 41 ms → 33 ms, median of 7 runs per side, range 32 to 35 ms
 
 A quick ballpark the user asked for may be one run: still count errors, confirm the work happened, and say it was one run. A choice between options is never a ballpark.
 
-Record: `ven-decisions add --step benchmark-check --decision "<verdict>: <number>" --evidence "<runs per side>, range <range>, limiter <limiter>"`.
+Record: `ven-decisions add --step explain-the-number --decision "<verdict>: <number>" --evidence "<runs per side>, range <range>, limiter <limiter>"`.

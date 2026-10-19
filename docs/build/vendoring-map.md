@@ -53,7 +53,7 @@ All MIT except: **AS (skill-creator) is Apache-2.0** (Copyright 2026 Anthropic, 
 | prove-it-works | `prove-it-works` [22]; SP `verification-before-completion` [120] | decisions-log |
 | sequence-verifiable-units | `sequence-verifiable-units` [17] | clean |
 | test-behavior | `test-behavior-not-implementation` [21]; MP `tdd/tests.md` [77] | generic matcher shapes |
-| explain-the-number | `explain-the-number` [17] | benchmark-check |
+| explain-the-number | `explain-the-number` [17]; PS `skills/benchmark-checklist/SKILL.md` [39] as `references/benchmark-protocol.md` | absorbs benchmark-check |
 | encode-lessons-in-structure | BM `brain/principles/encode-lessons-in-structure.md` [23] | + ratchet ladder |
 | never-block-on-reversible | `never-block-on-the-human` [15] | rename |
 | guard-the-context | BM `brain/principles/guard-the-context-window.md` [11] | — |
@@ -71,7 +71,6 @@ All MIT except: **AS (skill-creator) is Apache-2.0** (Copyright 2026 Anthropic, 
 | prototype | MP `engineering/prototype/SKILL.md` [26] + LOGIC [67] + UI [112] | PB `prototype.md` | profile `run` |
 | reproduce | MP `diagnosing-bugs` phases 1–2 | SP systematic-debugging phase 1 | red-capable loop |
 | verify | PS `create-verification-skill` [44] (shape of verify.md) | SP `verification-before-completion` [120]; CTK `skills/verify-this/SKILL.md` [74] | read verify.md, `ven-profile verify` |
-| benchmark-check | PS `skills/benchmark-checklist/SKILL.md` [39] | EV `ce-optimize/references/measurement.md` | tools via profile/adapters |
 | review | PS `skills/interrogate/SKILL.md` [74] + refs rubric/lead-judgment/reviewer-prompt | EV `ce-code-review/references/personas/*`; MP `code-review` [89]; NO `adversarial-review/references/reviewer-lenses.md` | 4 blind lenses, Act on/Consider/Noted/Dismissed |
 | blast-radius | PS `skills/blast-radius/SKILL.md` [50] | — | strip framework names |
 | quality-review | CTK `skills/thermo-nuclear-code-quality-review/SKILL.md` [181] | — | model-invocable; measure step via profile adapters; smells and remedies → reference; never fixes |
@@ -91,7 +90,7 @@ All MIT except: **AS (skill-creator) is Apache-2.0** (Copyright 2026 Anthropic, 
 | explain-pr | CTK `skills/pr-review-canvas/SKILL.md` [176]; EV `ce-explain` [81] + `references/explainer-html.md` [29] | template → reference |
 | teach | PS `skills/teach/SKILL.md` [21] | build diagrams one part at a time |
 | conventions-discover | fresh (MP code-review §3; EV `personas/project-standards-reviewer.md` [77]) | — |
-| conventions-audit | PS `skills/correct/SKILL.md` [32]; MP `engineering/retro/SKILL.md` [44] | class after 2 repeats |
+| conventions-audit | PS `skills/correct/SKILL.md` [32]; MP `engineering/retro/SKILL.md` [44]; NO `ruminate/SKILL.md` [110]; BM ruminate [93] | absorbs mine-transcripts (extraction in `bin/ven-transcripts`) |
 | ratchet | PS `skills/correct/SKILL.md` [32] | map to ven's 6 rungs; prove red on the past mistake |
 | forge-convention | fresh (EV `ce-setup/assets/pack-rule-template.md` [11]) | — |
 | learning check | GS `scripts/resolvers/preamble/generate-completion-status.ts` [88] | "No durable learnings" explicit |
@@ -99,7 +98,6 @@ All MIT except: **AS (skill-creator) is Apache-2.0** (Copyright 2026 Anthropic, 
 | compound | EV `ce-compound/SKILL.md` [79] + `references/schema.yaml`, `yaml-schema.md`, `assets/resolution-template.md`; GS `learn/SKILL.md.tmpl` [197] | add `files:` (from gstack, not Every) |
 | compound-refresh | EV `ce-compound-refresh/SKILL.md` [88] + classify/investigate; GS learn prune | lesson twice → ratchet, cap per area |
 | reflect | PS `skills/reflect/SKILL.md` [67] + 4 reviewer refs | skill-tdd gate |
-| mine-transcripts | NO `ruminate/SKILL.md` [110]; BM ruminate [93] | extraction rewritten as `bin/ven-transcripts` |
 | skill-tdd | SP `writing-skills/SKILL.md` [681] + `testing-skills-with-subagents.md` [384] | AS is Apache; condense |
 | automate-me | PS `skills/automate-me/SKILL.md` [104] | must pass skill-tdd |
 | quiz | fresh (MP `productivity/teach` quiz rules) | — |
