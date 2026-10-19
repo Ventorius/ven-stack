@@ -1,11 +1,10 @@
 {
   "max_skill_lines": 150,
-  "core_line_budget": 6000,
+  "core_line_budget": 7000,
   "duplicate_window": 3,
   "duplicate_min_chars": 24,
-  "allowed_words": [
-    "ratchet"
-  ],
+  "max_description_chars": 350,
+  "description_similarity_max": 0.6,
   "denylist": {
     "frameworks": [
       "react",
