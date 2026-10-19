@@ -57,7 +57,7 @@ metadata:
 ```
 
 Rules:
-- `description`: the key use case first, "<what it does>. Use when <situations>." Under 300 characters; the listing budget is shared with every other installed skill.
+- `description`: the key use case first, "<what it does>. Use when <situations>." Aim for under 300 characters; the lint fails above 350 because the listing budget is shared with every other installed skill. The lint also requires a sentence starting "Use <when/for/before…>" or "Apply <when/to…>" (user-invoked skills are exempt), a `name` equal to the directory name, no near-duplicate descriptions, and no `ven:<name>` that resolves to nothing.
 - `metadata.source` names the upstream repo, ref and path for vendored content (omit for fresh skills). `metadata.license` is the upstream license. Never copy text from Apache or unlicensed sources (anthropics skill-creator, poteto/verification-skill-example); learn from them only.
 - Pack skills may add `paths:` (globs) so they activate only on matching files.
 
