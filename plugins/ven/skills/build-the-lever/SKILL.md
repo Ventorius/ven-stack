@@ -3,7 +3,7 @@ name: build-the-lever
 description: "Apply to any non-trivial edit, sweep, analysis or check, not just bulk work. Build the tool that does or proves it (codemod, script, generator, delegate brief) instead of working by hand; the tool is what a reviewer reruns."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-build-the-lever/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-build-the-lever/SKILL.md
   license: MIT
 ---
 

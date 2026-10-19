@@ -3,7 +3,7 @@ name: unslop
 description: "Cut AI writing tells (filler, model vocabulary, metaphor nouns, hedging, formatting tics) from text while keeping every fact. Use when editing or checking any prose before it ships: docs, PR bodies, reports, skill text."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/unslop/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/unslop/SKILL.md
   license: MIT
 ---
 

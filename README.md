@@ -19,12 +19,27 @@ The design rationale is in [`ven-stack design v2.md`](ven-stack%20design%20v2.md
 
 ## Install
 
-The repo is a plugin marketplace (`.claude-plugin/marketplace.json`) that contains one plugin, `ven`:
+The repo is a plugin marketplace (`.claude-plugin/marketplace.json`) that contains one plugin, `ven`. Install from GitHub inside Claude Code:
+
+```text
+/plugin marketplace add Ventorius/ven-stack
+/plugin install ven@ven-stack
+```
+
+Or from a local checkout, from a shell:
 
 ```sh
 claude plugin marketplace add /path/to/ven-stack
 claude plugin install ven@ven-stack
 ```
+
+To update, refresh the marketplace and reinstall or update the plugin:
+
+```text
+/plugin marketplace update ven-stack
+```
+
+Releases are tagged `vX.Y.Z`; see [`CHANGELOG.md`](CHANGELOG.md) for what changed.
 
 Skills are namespaced under the plugin name, e.g. `/ven:do` and `/ven:onboard`. The plugin's `bin/` tools (`ven-profile`, `ven-decisions`, …) are put on the `PATH` for the session.
 
@@ -63,7 +78,7 @@ Set these in the plugin's `userConfig`:
 | L2 | Principles, one idea each | Model-invoked |
 | L1 | Agents, hooks, `bin/` tools | — |
 
-References only point down a layer, or sideways within L3. Core skills never name a framework, vendor, language or business domain (see the denylist in [`plugins/ven/lint.json`](plugins/ven/lint.json)). Those specifics come from the profile and packs. `ven-lint-skills` enforces these rules, as well as the 150-line skill limit, the no-duplication rule, the absence of cycles and a 6000-line budget for core.
+References only point down a layer, or sideways within L3. Core skills never name a framework, vendor, language or business domain (see the denylist in [`plugins/ven/lint.json`](plugins/ven/lint.json)). Those specifics come from the profile and packs. `ven-lint-skills` enforces these rules, as well as the 150-line skill limit, the no-duplication rule, the absence of cycles and the line budget for core (`core_line_budget` in `lint.json`).
 
 ### Playbooks
 
@@ -73,6 +88,11 @@ References only point down a layer, or sideways within L3. Core skills never nam
 | `feature` | New behavior: grilling → spec → tickets → TDD per ticket → verify → review |
 | `bug-fix` | Something is broken or regressed. A repro must exist before source edits. |
 | `refactor` | Same behavior, new structure |
+| `hotfix` | Production is broken now: the smallest safe fix first, root cause as its own ticket |
+| `flaky-test` | A test that passes and fails without a code change: measure the failure rate, then fix the cause |
+| `spike` | A time-boxed throwaway experiment that answers one question; nothing from it is merged |
+| `dependency-upgrade` | Move a dependency, runtime or toolchain to a newer version, reading the breaking changes first |
+| `docs-only` | A documentation change with no behavior change |
 | `perf` | Slow, with a number to measure |
 | `migration` | One mechanical change across many call sites: codemod first, then a swarm |
 | `explain` | Explain a PR, or teach a subsystem diagram by diagram |
@@ -148,6 +168,7 @@ A pack is a plugin that holds the skills, playbooks, references, rules and adapt
 | `ven-doctor` | Diagnoses skill-name collisions, a stale profile, unverified commands, worktree base and missing permission rules |
 | `ven-lint-skills` | Checks composition rules. `--graph` prints the skill-reference graph as Mermaid. |
 | `ven-transcripts` | Read-only extraction of corrections, hook blocks and routing picks from Claude Code transcripts |
+| `ven-new-skill` | Scaffolds a core skill from the template, with its catalog and notices entries (contributors) |
 
 Run any of them with `--help` for usage.
 
@@ -158,15 +179,17 @@ Run any of them with `--help` for usage.
 plugins/ven/
 ├── .claude-plugin/plugin.json    # manifest and userConfig
 ├── agents/                       # ven-lead, ven-coder, ven-worker, ven-reviewer, ven-verifier
-├── skills/                       # 67 skills; skills/do/playbooks/ holds the core playbooks
+├── skills/                       # one directory per skill; skills/do/playbooks/ holds the core playbooks
 ├── hooks/hooks.json
 ├── scripts/hooks/                # hook implementations
 ├── scripts/lib/                  # shared helpers for hooks and bin tools
-├── bin/                          # ven-profile, ven-decisions, ven-doctor, ven-lint-skills, ven-transcripts
-├── templates/                    # skill, pack, playbook and adapter templates used by the forge
+├── bin/                          # ven-profile, ven-decisions, ven-doctor, ven-lint-skills, ven-transcripts, ven-new-skill
+├── templates/                    # skill (core and pack), pack, playbook and adapter templates
 ├── evals/                        # unit tests for hooks and bin, routing eval cases
 └── lint.json                     # line budgets and the core denylist
+scripts/                          # repo tooling: pin-sources, build-notices
 docs/build/                       # authoring guide, profile schema, vendoring map, notices
+.github/workflows/ci.yml          # tests, skill lint, routing-case drift, notices drift
 ```
 
 ## Development
@@ -175,14 +198,22 @@ docs/build/                       # authoring guide, profile schema, vendoring m
 bun run test           # unit tests for hooks and bin tools (bun test)
 bun run lint:skills    # composition rules, line budgets, denylist
 bun run validate       # claude plugin validate on the plugin and the marketplace
+bun run notices        # rebuild THIRD_PARTY_NOTICES.md from docs/build/notices/
+bun run pin:sources    # pin metadata.source refs to the upstream SHAs
 ```
 
-The routing eval contains 40 prompts with expected playbooks. Edit [`cases.json`](plugins/ven/evals/routing/cases.json), regenerate the case directories, then run it with Claude Code's eval runner:
+CI (`.github/workflows/ci.yml`) runs on every pull request and push to `main`: `bun run test` (which includes a check that `THIRD_PARTY_NOTICES.md` matches its generator), `bun run lint:skills`, and a check that the generated routing cases match `cases.json`. For contributing, see [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+The routing eval has one prompt per case in [`cases.json`](plugins/ven/evals/routing/cases.json), each with an expected playbook. It runs in two tiers. Edit `cases.json`, regenerate the case directories, then pick a tier:
 
 ```sh
 bun plugins/ven/evals/routing/generate.mjs
-claude plugin eval plugins/ven --scaffold --runs 3 --max-cost-usd 10
+bun run eval:routing:quick   # cheap: one tool-less Haiku call per case
+bun run eval:history <result file>   # append the run to history.jsonl and list cases that flipped
+claude plugin eval plugins/ven --scaffold --runs 3 --max-cost-usd 10   # full suite, run manually
 ```
+
+The quick tier is for iterating on router wording. The full suite costs several dollars; run it before a release or when a quick run flips a case.
 
 Before adding or changing a skill, read [`docs/build/authoring-guide.md`](docs/build/authoring-guide.md). It covers frontmatter, body rules, the agent result trailer, evals and how to adapt upstream skills. A skill change counts as done when `ven-lint-skills` passes and its eval passes with the change and fails without it.
 

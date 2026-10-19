@@ -5,7 +5,7 @@ argument-hint: <task>
 disable-model-invocation: true
 metadata:
   layer: L5
-  source: cursor/plugins@main:pstack/skills/poteto-mode/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/SKILL.md
   license: MIT
 ---
 

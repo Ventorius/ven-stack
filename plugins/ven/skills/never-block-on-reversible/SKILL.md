@@ -3,7 +3,7 @@ name: never-block-on-reversible
 description: "Apply when tempted to ask 'should I do X?' about work that can be undone and reviewed. Decide, do it, and report why; ask first only for hard-to-reverse actions or for direction that is the human's call."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-never-block-on-the-human/SKILL.md + poteto/brainmaxxing@main:brain/principles/never-block-on-the-human.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-never-block-on-the-human/SKILL.md + poteto/brainmaxxing@ec4d8e4:brain/principles/never-block-on-the-human.md
   license: MIT
 ---
 

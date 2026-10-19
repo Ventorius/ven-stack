@@ -3,7 +3,7 @@ name: skill-tdd
 description: Prove a skill change with evals before it lands, a pressure case that fails without the change and passes with it, then the routing and trigger suites with no regression. Use before creating or editing any skill, pack skill, playbook or description, and to apply a queued proposal.
 metadata:
   layer: L3
-  source: obra/superpowers@main:skills/writing-skills/SKILL.md
+  source: obra/superpowers@bb92a77:skills/writing-skills/SKILL.md
   license: MIT
 ---
 

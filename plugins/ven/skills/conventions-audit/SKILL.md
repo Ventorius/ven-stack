@@ -3,7 +3,7 @@ name: conventions-audit
 description: "Find the mistake classes that keep recurring in this repo, from merged PRs, review comments, the corrections log, past session transcripts and hook blocks, and propose a ratchet, skill edit or routing case for each. Use before a refactor, on a schedule, or when the same comment keeps coming back."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/correct/SKILL.md; mattpocock/skills@main:skills/engineering/retro/SKILL.md; poteto/noodle@main:.agents/skills/ruminate/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/correct/SKILL.md; mattpocock/skills@49dd158:skills/engineering/retro/SKILL.md; poteto/noodle@82d2921:.agents/skills/ruminate/SKILL.md
   license: MIT
 ---
 

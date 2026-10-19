@@ -3,7 +3,7 @@ name: review
 description: "Review a diff with a blind panel of lens reviewers (correctness, design and depth, security and data, test honesty) and rank their findings into Act on, Consider, Noted and Dismissed. Use when a change is ready for review, before shipping, or when asked to review a branch or PR."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/interrogate/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/interrogate/SKILL.md
   license: MIT
 ---
 

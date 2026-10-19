@@ -3,7 +3,7 @@ name: ratchet
 description: "Turn one correction or mistake class into the strongest check that can state it (type, boundary rule, lint rule, hook, skill line, map pointer) and prove the check fails on the original mistake. Use after a correction, a repeated review comment, or a class from conventions-audit."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/correct/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/correct/SKILL.md
   license: MIT
 ---
 

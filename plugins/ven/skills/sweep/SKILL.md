@@ -3,7 +3,7 @@ name: sweep
 description: "Fan a mechanical or partitionable job out to parallel ven-workers, one complete brief per slice, and aggregate one evidenced report. Use for renames across many files, per-package migration batches, applying a codemod in slices, or parallel probes."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/swarm/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/swarm/SKILL.md
   license: MIT
 ---
 

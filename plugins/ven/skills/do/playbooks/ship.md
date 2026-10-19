@@ -2,7 +2,7 @@
 name: ship
 description: "Turn finished work into a pull request with a briefing body and the decision log, such as ship it, open a PR, or make this reviewable."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/opening-a-pr.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/opening-a-pr.md
   license: MIT
 ---
 

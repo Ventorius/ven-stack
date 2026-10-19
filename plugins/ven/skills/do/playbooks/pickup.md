@@ -2,7 +2,7 @@
 name: pickup
 description: "Resume in-flight work from a handoff note, a branch or an active playbook, such as continue, pick up where we left off, or take over this branch."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/session-pickup.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/session-pickup.md
   license: MIT
 ---
 

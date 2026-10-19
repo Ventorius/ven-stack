@@ -3,7 +3,7 @@ name: tdd
 description: "Build behavior test-first, one red-green cycle at a time, testing through public interfaces. Use when implementing a ticket or a fix, when the user asks for TDD or a failing test first, or when a coder needs the rules of the loop."
 metadata:
   layer: L3
-  source: mattpocock/skills@main:skills/engineering/tdd/SKILL.md + mocking.md; obra/superpowers@main:skills/test-driven-development/SKILL.md; cursor/plugins@main:pstack/skills/tdd/SKILL.md
+  source: mattpocock/skills@49dd158:skills/engineering/tdd/SKILL.md + mocking.md; obra/superpowers@bb92a77:skills/test-driven-development/SKILL.md; cursor/plugins@1e5c90a:pstack/skills/tdd/SKILL.md
   license: MIT
 ---
 

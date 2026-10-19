@@ -3,7 +3,7 @@ name: boundary-discipline
 description: "Apply when wiring validation, error handling, config loading or adapters to the outside world. Parse and check data where it enters or leaves the system, trust it inside, and keep decisions in pure functions behind a thin shell."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-boundary-discipline/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-boundary-discipline/SKILL.md
   license: MIT
 ---
 

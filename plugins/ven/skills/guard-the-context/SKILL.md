@@ -3,7 +3,7 @@ name: guard-the-context
 description: "Apply when context is filling up: large outputs, long files, repeated reads, broad searches or fan-out planning. Make every token earn its place; send bulk to subagents and keep conclusions, not raw payloads, in the main thread."
 metadata:
   layer: L2
-  source: poteto/brainmaxxing@main:brain/principles/guard-the-context-window.md
+  source: poteto/brainmaxxing@ec4d8e4:brain/principles/guard-the-context-window.md
   license: MIT
 ---
 

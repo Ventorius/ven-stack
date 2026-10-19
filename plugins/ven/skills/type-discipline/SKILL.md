@@ -3,7 +3,7 @@ name: type-discipline
 description: "Apply when designing types or data shapes, reviewing a signature, or handling outside data, in any language. Make wrong states fail early: in the compiler for typed languages, in validated runtime contracts for untyped ones."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-type-system-discipline/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-type-system-discipline/SKILL.md
   license: MIT
 ---
 

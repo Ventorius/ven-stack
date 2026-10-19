@@ -3,7 +3,7 @@ name: why
 description: "Find why code is shaped the way it is (design rationale, trade-offs, regressions, odd thresholds) from history, tickets, docs and chat, citing every claim and stating its confidence. Use for 'why does X work this way', 'why did we pick Y', or before changing code whose purpose is unclear."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/why/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/why/SKILL.md
   license: MIT
 ---
 

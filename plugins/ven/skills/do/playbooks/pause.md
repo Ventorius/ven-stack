@@ -2,7 +2,7 @@
 name: pause
 description: "Stop in-flight work cleanly so a later session can resume it, such as pause, stop here for today, or context is running out. Only on an explicit pause."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/pause-safely.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/pause-safely.md
   license: MIT
 ---
 

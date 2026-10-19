@@ -3,7 +3,7 @@ name: fix-root-causes
 description: "Apply when debugging or when a fix makes a symptom go away without explaining it. Trace the symptom to its cause and fix it there; guards, retries and suppressions that hide it are not fixes."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-fix-root-causes/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-fix-root-causes/SKILL.md
   license: MIT
 ---
 

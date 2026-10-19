@@ -3,7 +3,7 @@ name: idempotent-operations
 description: "Apply when designing commands, jobs, startup steps or processing loops that can crash, restart or be retried. Make every state-changing operation converge to the same end state however many times it runs and wherever the last run stopped."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-make-operations-idempotent/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-make-operations-idempotent/SKILL.md
   license: MIT
 ---
 

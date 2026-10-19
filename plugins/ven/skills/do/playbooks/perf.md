@@ -2,7 +2,7 @@
 name: perf
 description: "Make something measurably faster or lighter (latency, throughput, memory, build or test time) against a baseline. Needs a number or a symptom you can measure."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/perf-issue.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/perf-issue.md
   license: MIT
 ---
 

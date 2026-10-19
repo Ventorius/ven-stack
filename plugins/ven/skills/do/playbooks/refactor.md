@@ -2,7 +2,7 @@
 name: refactor
 description: "A behavior-preserving change to structure, such as rename, extract, inline, dedupe, move code or reshape a module. No new behavior."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/refactoring.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/refactoring.md
   license: MIT
 ---
 

@@ -3,7 +3,7 @@ name: improve-architecture
 description: "Find shallow modules worth deepening, present ranked candidates, choose one with the user and plan it as small green steps. Use when code is hard to change or test, before a refactor, or when the user asks where the architecture hurts."
 metadata:
   layer: L3
-  source: mattpocock/skills@main:skills/engineering/improve-codebase-architecture/SKILL.md
+  source: mattpocock/skills@49dd158:skills/engineering/improve-codebase-architecture/SKILL.md
   license: MIT
 ---
 

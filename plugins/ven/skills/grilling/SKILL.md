@@ -3,7 +3,7 @@ name: grilling
 description: "Interview the user in rounds over a design tree until every decision is settled, giving a recommended answer for each question. Use before building anything non-trivial, when a plan needs stress-testing, or when the user says grill."
 metadata:
   layer: L3
-  source: mattpocock/skills@main:skills/productivity/grilling/SKILL.md
+  source: mattpocock/skills@49dd158:skills/productivity/grilling/SKILL.md
   license: MIT
 ---
 

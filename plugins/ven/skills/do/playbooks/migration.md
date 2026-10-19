@@ -2,7 +2,7 @@
 name: migration
 description: "One mechanical change applied across many files or call sites, such as replacing an API, renaming across modules, swapping a pattern or dependency, or changing a format, ending with the old path deleted."
 metadata:
-  source: cursor/plugins@main:pstack/skills/principle-build-the-lever/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-build-the-lever/SKILL.md
   license: MIT
 ---
 

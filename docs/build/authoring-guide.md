@@ -104,7 +104,13 @@ Opening PRs, posting comments, pushing branches, creating tracker tickets and in
 
 ## Adapting upstream skills
 
-Start from the base named in `vendoring-map.md`. Keep what makes it work (the gates, the stop conditions, the output shapes). Then apply X1–X5 from the map: Cursor → Claude Code, model-invocable, cite by name, commands from the profile, no tech/domain nouns. Remove references to tools ven doesn't have. Keep it shorter than the original whenever possible. Record provenance in `metadata.source` and list each adapted file in `docs/build/notices/<your group>.md` as `- <upstream repo> — plugins/ven/skills/<name>/ adapted from <upstream path>` (these are merged into `THIRD_PARTY_NOTICES.md` later; don't edit that file directly).
+Start from the base named in `vendoring-map.md`. Keep what makes it work (the gates, the stop conditions, the output shapes). Then apply X1–X5 from the map: Cursor → Claude Code, model-invocable, cite by name, commands from the profile, no tech/domain nouns. Remove references to tools ven doesn't have. Keep it shorter than the original whenever possible. Record provenance in `metadata.source` and list each adapted file in `docs/build/notices/<your group>.md` as `- <upstream repo> — plugins/ven/skills/<name>/ adapted from <upstream path>`. `THIRD_PARTY_NOTICES.md` is generated from those files: run `bun run notices` and commit the result (never edit it by hand; a test fails when it drifts). A new upstream needs an entry with its commit SHA and copyright line in `docs/build/notices/_upstreams.json`.
+
+Provenance is pinned. Write `metadata.source` as `<owner/repo>@main:<path>`, then run `bun run pin:sources`, which replaces `@main` with the SHA recorded for that upstream in `_upstreams.json`. It is idempotent and touches only the `source:` frontmatter line.
+
+## Starting a new skill
+
+`ven-new-skill <name> --layer L1..L5 [--notice-group <group> --source <owner/repo@ref:path>]` copies `plugins/ven/templates/skill/core/SKILL.md` into `plugins/ven/skills/<name>/`, fills in `name`, `layer` and `source`, adds the name to the catalog below on a `<layer> new` line, records the upstream in `docs/build/notices/<group>.md`, and runs `ven-lint-skills`. It refuses to overwrite an existing skill. Then write the body, add evals under `plugins/ven/evals/skills/<name>/`, run the trigger eval and move the catalog entry into its group. The template at `templates/skill/SKILL.md` is for pack skills only (it uses `paths:`, `metadata.pack` and pack references).
 
 ## Done means
 

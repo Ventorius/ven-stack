@@ -3,7 +3,7 @@ name: learning-check
 description: Close a playbook by reviewing the session for durable learnings and recording a solution entry, a correction, or an explicit none. Use as the last step of every playbook, before reporting the task done.
 metadata:
   layer: L3
-  source: garrytan/gstack@main:scripts/resolvers/preamble/generate-completion-status.ts
+  source: garrytan/gstack@47d639a:scripts/resolvers/preamble/generate-completion-status.ts
   license: MIT
 ---
 

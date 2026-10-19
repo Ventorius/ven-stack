@@ -3,7 +3,7 @@ name: compound-refresh
 description: Prune and merge the repo's solution entries, drop those whose files are gone, merge duplicates, promote lessons seen twice to checks, digest pending proposals and cap each area. Use weekly, on demand, or when surfaced solution entries look stale, duplicated or crowded.
 metadata:
   layer: L3
-  source: EveryInc/compound-engineering-plugin@main:skills/ce-compound-refresh/SKILL.md
+  source: EveryInc/compound-engineering-plugin@7a68002:skills/ce-compound-refresh/SKILL.md
   license: MIT
 ---
 
