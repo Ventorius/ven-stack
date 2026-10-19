@@ -101,7 +101,6 @@ Work moves to a cheaper tier only when its brief is complete: inputs, exact file
 | `verify-gate` | Stop, SubagentStop | Blocks finishing when code changed and no passing verify is logged for the current tree. Skips docs-only diffs. Releases after 3 blocks and logs the change as UNVERIFIED. |
 | `repro-first` | PreToolUse Edit/Write | During a bug fix, blocks source edits until a reproduction is logged |
 | `no-workaround` | PostToolUse Edit/Write | Blocks suppression patterns from the profile (ignore comments, skipped tests, deleted assertions) unless the line carries `ven-allow: <reason>` |
-| `git-guardrails` | PreToolUse Bash | Blocks force-push, hard reset, `clean` and branch deletion |
 | `format` | PostToolUse Edit/Write | Runs the profile's `format` command on touched files |
 | `decisions-log` | SubagentStop | Appends the agent's `VEN-RESULT` to `decisions.tsv` |
 | `context-inject` | SessionStart | Injects `map.md`, profile freshness, the active playbook and relevant solutions |
