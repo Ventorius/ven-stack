@@ -8,6 +8,8 @@ metadata:
 
 # Migration
 
+review: panel
+
 Build the tool that makes the change; don't hand-edit call sites. Old and new paths don't outlive the wave.
 
 1. Lever first (apply **build-the-lever**)

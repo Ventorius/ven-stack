@@ -1,4 +1,4 @@
 schema_version: "1.1"
-name: routing-bugfix-flaky-test
+name: routing-near-perf-vs-bugfix-perf
 context:
   scaffold_script: scaffold.sh

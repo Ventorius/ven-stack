@@ -23,7 +23,7 @@ If you are a `ven:ven-reviewer` with this skill preloaded: your brief carries yo
 
 ## 2. Pick the panel
 
-The budget tier is `${user_config.budget_tier}`; a profile `budget_tier` overrides it.
+Whether to run a panel at all is decided by the playbook's `review:` line; this section only sizes the panel you were asked for. The budget tier is `${user_config.budget_tier}`; a profile `budget_tier` overrides it.
 
 | Budget | Not risky | Risky |
 |---|---|---|
