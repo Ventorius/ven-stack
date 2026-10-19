@@ -3,7 +3,7 @@ name: encode-lessons-in-structure
 description: "Apply when you write the same instruction a second time, get corrected for a repeat mistake, or see a recurring failure. Encode the lesson in the strongest mechanism that can hold it, not in more text."
 metadata:
   layer: L2
-  source: poteto/brainmaxxing@main:brain/principles/encode-lessons-in-structure.md
+  source: poteto/brainmaxxing@ec4d8e4:brain/principles/encode-lessons-in-structure.md
   license: MIT
 ---
 

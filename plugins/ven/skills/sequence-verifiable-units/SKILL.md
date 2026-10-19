@@ -3,7 +3,7 @@ name: sequence-verifiable-units
 description: "Apply to multi-step work (runs of similar edits, staged changes, long refactors) and to how commits and pull requests are stacked. Split work into small units that each end in a checkable state, check each before the next, and order delivery so it proves itself."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-sequence-verifiable-units/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-sequence-verifiable-units/SKILL.md
   license: MIT
 ---
 

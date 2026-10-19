@@ -3,7 +3,7 @@ name: forge-pack
 description: "Forge a pack for one technology or business domain of this repo: skills, playbooks, references and adapters built from evidence, enabled only when every eval passes. Use when onboarding proposes a pack or the user asks for one."
 metadata:
   layer: L3
-  source: EveryInc/compound-engineering-plugin@main:skills/ce-setup/references/pack-scaffold.md + garrytan/gstack@main:skillify/SKILL.md.tmpl
+  source: EveryInc/compound-engineering-plugin@7a68002:skills/ce-setup/references/pack-scaffold.md + garrytan/gstack@47d639a:skillify/SKILL.md.tmpl
   license: MIT
 ---
 

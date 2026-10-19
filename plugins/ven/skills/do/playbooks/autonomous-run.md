@@ -2,7 +2,7 @@
 name: autonomous-run
 description: "Drive specified, sliced work to done without stopping, one ticket per iteration, such as run until done, finish these tickets overnight, or keep going while I'm away."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/autonomous-run.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/autonomous-run.md
   license: MIT
 ---
 

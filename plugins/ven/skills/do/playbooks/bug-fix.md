@@ -2,7 +2,7 @@
 name: bug-fix
 description: "A reported defect to reproduce, root-cause and fix with evidence, such as wrong output, a crash or error, a regression, or a flaky failure."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/bug-fix.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/bug-fix.md
   license: MIT
 ---
 

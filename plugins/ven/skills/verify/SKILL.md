@@ -3,7 +3,7 @@ name: verify
 description: "Prove a change works with the check that matches its type, do the read-back, and log the pass against the exact tree. Use when a change is ready to call done, before review, commit or stopping, and whenever the verify-gate blocks."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/create-verification-skill/SKILL.md; obra/superpowers@main:skills/verification-before-completion/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/create-verification-skill/SKILL.md; obra/superpowers@bb92a77:skills/verification-before-completion/SKILL.md
   license: MIT
 ---
 

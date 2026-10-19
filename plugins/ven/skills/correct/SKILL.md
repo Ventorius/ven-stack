@@ -3,7 +3,7 @@ name: correct
 description: Turn a user's correction into the strongest lasting fix, a check when the mistake is checkable and a tested skill edit when it needs judgment. Use when the user corrects you, repeats an instruction or undoes your work, and when learning-check finds a correction.
 metadata:
   layer: L3
-  source: poteto/brainmaxxing@main:brain/principles/encode-lessons-in-structure.md
+  source: poteto/brainmaxxing@ec4d8e4:brain/principles/encode-lessons-in-structure.md
   license: MIT
 ---
 

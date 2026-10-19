@@ -3,7 +3,7 @@ name: forge-adapter
 description: "Write a capability adapter (import graph, boundaries, schema, search, symbols, workspaces, custom rules) as a script with a fixture test, register it in adapters.json and prove it. Use when a skill reports a missing or unproven adapter, or a pack needs a capability."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/create-verification-skill/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/create-verification-skill/SKILL.md
   license: MIT
 ---
 

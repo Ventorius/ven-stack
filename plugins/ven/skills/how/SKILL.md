@@ -3,7 +3,7 @@ name: how
 description: "Explain how part of this codebase works (components, runtime flow, where things live) with every claim citing code. Use for 'how does X work', walkthroughs before changing code, and placement questions like 'where should this live' or 'which module owns this'."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/how/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/how/SKILL.md
   license: MIT
 ---
 

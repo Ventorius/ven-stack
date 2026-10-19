@@ -3,7 +3,7 @@ name: test-behavior
 description: "Apply when writing, changing, reviewing or keeping a test. Call the code the way its users do and assert the exact result they see; rewrite or delete any test that would pass if the code under test returned nothing."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-test-behavior-not-implementation/SKILL.md + mattpocock/skills@main:skills/engineering/tdd/tests.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-test-behavior-not-implementation/SKILL.md + mattpocock/skills@49dd158:skills/engineering/tdd/tests.md
   license: MIT
 ---
 

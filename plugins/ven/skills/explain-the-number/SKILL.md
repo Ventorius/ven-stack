@@ -3,7 +3,7 @@ name: explain-the-number
 description: "Apply when you measure or vet a number before you trust, report or act on it: a speedup, regression, throughput, latency or eval result. Name what limits it and rule out that it measured something else; benchmarks follow the protocol."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-explain-the-number/SKILL.md; cursor/plugins@main:pstack/skills/benchmark-checklist/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-explain-the-number/SKILL.md; cursor/plugins@1e5c90a:pstack/skills/benchmark-checklist/SKILL.md
   license: MIT
 ---
 

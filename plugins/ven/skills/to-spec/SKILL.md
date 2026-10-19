@@ -3,7 +3,7 @@ name: to-spec
 description: "Turn a settled design into a written spec, saved in the state directory or the repo's tracker. Use after grilling, when the user asks for a spec or requirements doc, or before slicing work into tickets."
 metadata:
   layer: L3
-  source: mattpocock/skills@main:skills/engineering/to-spec/SKILL.md
+  source: mattpocock/skills@49dd158:skills/engineering/to-spec/SKILL.md
   license: MIT
 ---
 

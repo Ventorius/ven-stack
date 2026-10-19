@@ -3,7 +3,7 @@ name: forge-reference
 description: "Distill one library into a pack reference for the version this repo locks: its idioms as the repo uses them, pitfalls and version notes, every claim cited to official docs or file:line. Use when a pack skill needs library facts, or corrections show the agent misusing a library."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/typescript-best-practices/SKILL.md + EveryInc/compound-engineering-plugin@main:skills/ce-plan/references/agents/framework-docs-researcher.md + mattpocock/skills@main:skills/engineering/research/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/typescript-best-practices/SKILL.md + EveryInc/compound-engineering-plugin@7a68002:skills/ce-plan/references/agents/framework-docs-researcher.md + mattpocock/skills@49dd158:skills/engineering/research/SKILL.md
   license: MIT
 ---
 

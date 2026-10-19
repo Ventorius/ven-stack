@@ -1,0 +1,59 @@
+[
+  {
+    "repo": "cursor/plugins",
+    "sha": "1e5c90a",
+    "copyright": [
+      "Copyright (c) 2026 Lauren Tan (pstack). Licensed under the MIT License (below).",
+      "Copyright (c) 2026 Cursor (orchestrate, ralph-loop, cursor-team-kit, continual-learning). Licensed under the MIT License (below)."
+    ]
+  },
+  {
+    "repo": "EveryInc/compound-engineering-plugin",
+    "sha": "7a68002",
+    "copyright": [
+      "Copyright (c) 2025 Every. Licensed under the MIT License (below)."
+    ]
+  },
+  {
+    "repo": "garrytan/gstack",
+    "sha": "47d639a",
+    "copyright": [
+      "Copyright (c) 2026 Garry Tan. Licensed under the MIT License (below)."
+    ]
+  },
+  {
+    "repo": "mattpocock/skills",
+    "sha": "49dd158",
+    "copyright": [
+      "Copyright (c) 2026 Matt Pocock. Licensed under the MIT License (below)."
+    ]
+  },
+  {
+    "repo": "obra/superpowers",
+    "sha": "bb92a77",
+    "copyright": [
+      "Copyright (c) 2025 Jesse Vincent. Licensed under the MIT License (below)."
+    ]
+  },
+  {
+    "repo": "poteto/brainmaxxing",
+    "sha": "ec4d8e4",
+    "copyright": [
+      "Copyright (c) 2026 Lauren Tan. Licensed under the MIT License (below)."
+    ]
+  },
+  {
+    "repo": "poteto/how",
+    "sha": "b1ef429",
+    "copyright": [
+      "Copyright (c) 2026 Lauren Tan. Licensed under the MIT License (below)."
+    ]
+  },
+  {
+    "repo": "poteto/noodle",
+    "sha": "82d2921",
+    "copyright": [
+      "Copyright (c) 2026 Lauren Tan. Licensed under the MIT License (below)."
+    ]
+  }
+]

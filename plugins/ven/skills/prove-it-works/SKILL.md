@@ -3,7 +3,7 @@ name: prove-it-works
 description: "Apply before calling any task done, fixed or passing. Observe the real thing doing what was asked, with the proof that matches the change type; a build, a proxy or a self-report is not proof."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-prove-it-works/SKILL.md + obra/superpowers@main:skills/verification-before-completion/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-prove-it-works/SKILL.md + obra/superpowers@bb92a77:skills/verification-before-completion/SKILL.md
   license: MIT
 ---
 

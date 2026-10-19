@@ -3,7 +3,7 @@ name: reflect
 description: Review a long session through independent lenses and propose edits to existing skills, packs or checks, applied only after they pass skill-tdd. Use at the end of a long or rocky session, or when the user asks to reflect on what the skills got wrong.
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/reflect/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/reflect/SKILL.md
   license: MIT
 ---
 

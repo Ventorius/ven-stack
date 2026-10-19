@@ -3,7 +3,7 @@ name: explain-pr
 description: Build one self-contained HTML page explaining a branch or PR (change map, data diff, new flows, risks, a linear walkthrough, each panel badged) plus a Markdown summary for the PR body. Use when asked to explain, walk through or visualize what a branch or PR changes, or to write its description. It explains; it does not review.
 metadata:
   layer: L3
-  source: cursor/plugins@main:cursor-team-kit/skills/pr-review-canvas/SKILL.md; EveryInc/compound-engineering-plugin@main:skills/ce-explain/SKILL.md, skills/ce-explain/references/explainer-html.md
+  source: cursor/plugins@1e5c90a:cursor-team-kit/skills/pr-review-canvas/SKILL.md; EveryInc/compound-engineering-plugin@7a68002:skills/ce-explain/SKILL.md, skills/ce-explain/references/explainer-html.md
   license: MIT
 ---
 

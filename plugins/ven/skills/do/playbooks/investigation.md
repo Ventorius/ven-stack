@@ -2,7 +2,7 @@
 name: investigation
 description: "A read-only question that needs a cited answer or a recommendation, such as how does X work, why is Y built this way, are we sure about Z, should we do A or B."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/investigation.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/investigation.md
   license: MIT
 ---
 

@@ -3,7 +3,7 @@ name: pack-audit
 description: "Audit this repo's packs: skills and playbooks never used, failing evals, references behind the locked version, applies_when matching no files. Reports and proposes removals. Use periodically, after a dependency upgrade, or when a pack feels noisy or slow."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/maintain-verification-skill/SKILL.md + garrytan/gstack@main:learn/SKILL.md.tmpl
+  source: cursor/plugins@1e5c90a:pstack/skills/maintain-verification-skill/SKILL.md + garrytan/gstack@47d639a:learn/SKILL.md.tmpl
   license: MIT
 ---
 

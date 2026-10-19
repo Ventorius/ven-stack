@@ -3,7 +3,7 @@ name: forge-skill
 description: "Forge one skill into a repo pack from three or more real instances, proven by a scenario that fails without it and passes with it. Use when a correction or pitfall keeps recurring in one technology or domain, or the user asks for a pack skill."
 metadata:
   layer: L3
-  source: obra/superpowers@main:skills/writing-skills/SKILL.md + mattpocock/skills@main:skills/productivity/writing-for-agents/SKILL.md
+  source: obra/superpowers@bb92a77:skills/writing-skills/SKILL.md + mattpocock/skills@49dd158:skills/productivity/writing-for-agents/SKILL.md
   license: MIT
 ---
 

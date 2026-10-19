@@ -3,7 +3,7 @@ name: forge-playbook
 description: "Compose a pack playbook for a task shape that keeps recurring in this repo, using only skills that already exist, and register it with the router. Use when no core playbook fits a repeated kind of task, or the user asks for a domain playbook."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/figure-it-out/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/figure-it-out/SKILL.md
   license: MIT
 ---
 

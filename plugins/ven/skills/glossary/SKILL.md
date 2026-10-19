@@ -3,7 +3,7 @@ name: glossary
 description: "Keep the domain glossary and decision records current as terms and hard choices settle. Use when a term is defined, renamed or disputed, when code names and domain words disagree, or when a hard-to-reverse decision deserves an ADR."
 metadata:
   layer: L3
-  source: mattpocock/skills@main:skills/engineering/domain-modeling/SKILL.md + GLOSSARY-FORMAT.md + ADR-FORMAT.md
+  source: mattpocock/skills@49dd158:skills/engineering/domain-modeling/SKILL.md + GLOSSARY-FORMAT.md + ADR-FORMAT.md
   license: MIT
 ---
 

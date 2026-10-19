@@ -8,6 +8,23 @@ Prefixes: PS=`cursor_plugins/pstack/`, PB=`PS/skills/poteto-mode/playbooks/`, MP
 
 All MIT except: **AS (skill-creator) is Apache-2.0** (Copyright 2026 Anthropic, PBC); copying its text requires shipping the license and marking changes. `poteto_verification-skill-example` has **no license**: pattern only, never copy text. pstack, poteto_how, noodle, brainmaxxing © 2026 Lauren Tan; CP continual-learning/orchestrate/teaching/thermos/ralph-loop/cursor-team-kit © 2026 Cursor; mattpocock © 2026 Matt Pocock; superpowers © 2025 Jesse Vincent; gstack © 2026 Garry Tan; Every © 2025 Every.
 
+## Upstream sources and pinned commits
+
+`metadata.source` in every skill and playbook carries the SHA below instead of `@main` (`bun run pin:sources`). The SHAs come from `docs/build/notices/_upstreams.json`, the same data that builds `THIRD_PARTY_NOTICES.md`.
+
+| Upstream | Prefix | License | Pinned SHA |
+|---|---|---|---|
+| cursor/plugins | PS, CP, CTK | MIT | `1e5c90a` |
+| mattpocock/skills | MP | MIT | `49dd158` |
+| obra/superpowers | SP | MIT | `bb92a77` |
+| EveryInc/compound-engineering-plugin | EV | MIT | `7a68002` |
+| garrytan/gstack | GS | MIT | `47d639a` |
+| poteto/brainmaxxing | BM | MIT | `ec4d8e4` |
+| poteto/noodle | NO | MIT | `82d2921` |
+| poteto/how | HW | MIT | `b1ef429` |
+| anthropics/skills | AS | Apache-2.0 | none (design only, no text copied) |
+| poteto/verification-skill-example | — | none | none (pattern only) |
+
 ## Adaptations that apply almost everywhere
 
 - **X1 Cursor → Claude Code:** Task/`subagent_type`/readonly/model slugs/AskQuestion/`agent-transcripts`/`/loop`/cloud agents become the Agent tool, `ven:ven-*` agents, `${user_config.*}` models, AskUserQuestion, `~/.claude/projects/`.

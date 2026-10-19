@@ -3,7 +3,7 @@ name: handoff
 description: "Write a handoff note a fresh session can resume from: goal, state, decisions, next step, open questions. Use when pausing work, before the context fills up, or when passing work to another session or person."
 metadata:
   layer: L3
-  source: mattpocock/skills@main:skills/productivity/handoff/SKILL.md
+  source: mattpocock/skills@49dd158:skills/productivity/handoff/SKILL.md
   license: MIT
 ---
 

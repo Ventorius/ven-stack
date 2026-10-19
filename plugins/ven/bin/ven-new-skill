@@ -1,0 +1,137 @@
+#!/usr/bin/env node
+import { spawnSync } from 'node:child_process';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const USAGE = `ven-new-skill: scaffold a core skill
+
+  ven-new-skill <name> --layer L1..L5 [--notice-group <group>] [--source <owner/repo@ref:path>] [--repo DIR]
+
+  --notice-group  docs/build/notices/<group>.md to record the upstream in; required with --source
+  --source        upstream the skill is adapted from; omit for a fresh skill
+  --repo          repository root to scaffold into (default: this checkout)`;
+
+const BIN_DIR = dirname(fileURLToPath(import.meta.url));
+const LAYERS = ['L1', 'L2', 'L3', 'L4', 'L5'];
+const SOURCE_PATTERN = /^([\w.-]+\/[\w.-]+)@([\w./-]+):(.+)$/;
+
+class UsageError extends Error {}
+
+function parseArgs(argv) {
+  const flags = {};
+  const positionals = [];
+  for (let i = 0; i < argv.length; i++) {
+    if (!argv[i].startsWith('--')) {
+      positionals.push(argv[i]);
+      continue;
+    }
+    const value = argv[i + 1];
+    if (value === undefined || value.startsWith('--')) throw new UsageError(`${argv[i]} needs a value`);
+    flags[argv[i].slice(2)] = value;
+    i++;
+  }
+  return { flags, positionals };
+}
+
+function validate({ flags, positionals }) {
+  const [name, ...extra] = positionals;
+  if (!name || extra.length) throw new UsageError('give exactly one skill name');
+  if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(name)) throw new UsageError(`${name}: use lowercase words joined by hyphens`);
+  if (!LAYERS.includes(flags.layer)) throw new UsageError(`--layer must be one of ${LAYERS.join(', ')}`);
+  const source = flags.source && SOURCE_PATTERN.exec(flags.source);
+  if (flags.source && !source) throw new UsageError('--source must look like owner/repo@ref:path');
+  if (flags.source && !flags['notice-group']) throw new UsageError('--source needs --notice-group');
+  return { name, layer: flags.layer, source: flags.source, sourceParts: source, group: flags['notice-group'] };
+}
+
+const titleOf = (name) => name.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
+
+function renderSkill(template, { name, layer, source }) {
+  const sourceLines = source ? `  source: ${source}\n  license: MIT\n` : '';
+  return template
+    .replaceAll('{{name}}', name)
+    .replaceAll('{{layer}}', layer)
+    .replace('{{source}}', sourceLines)
+    .replace('{{Title}}', titleOf(name));
+}
+
+// Each layer's new skills collect on one "new" line until a maintainer files them into the real catalog groups.
+function addCatalogLine(guide, layer, name) {
+  const label = `- **${layer} new:**`;
+  const lines = guide.split('\n');
+  const index = lines.findIndex((line) => line.startsWith(label));
+  if (index === -1) return `${guide.trimEnd()}\n${label} \`${name}\`\n`;
+  lines[index] += `, \`${name}\``;
+  return lines.join('\n');
+}
+
+function scaffold(args, repo) {
+  const pluginRoot = join(repo, 'plugins', 'ven');
+  const skillDir = join(pluginRoot, 'skills', args.name);
+  const guidePath = join(repo, 'docs', 'build', 'authoring-guide.md');
+  const noticePath = args.group && join(repo, 'docs', 'build', 'notices', `${args.group}.md`);
+
+  if (existsSync(skillDir)) throw new Error(`${args.name} already exists at ${skillDir}`);
+  if (noticePath && !existsSync(noticePath)) throw new Error(`no notice group file ${noticePath}`);
+  const templatePath = join(pluginRoot, 'templates', 'skill', 'core', 'SKILL.md');
+  if (!existsSync(templatePath)) throw new Error(`missing template ${templatePath}`);
+
+  mkdirSync(skillDir, { recursive: true });
+  writeFileSync(join(skillDir, 'SKILL.md'), renderSkill(readFileSync(templatePath, 'utf8'), args));
+  writeFileSync(guidePath, addCatalogLine(readFileSync(guidePath, 'utf8'), args.layer, args.name));
+
+  if (noticePath) {
+    const [, upstream, , path] = args.sourceParts;
+    const text = readFileSync(noticePath, 'utf8');
+    const separator = text.endsWith('\n') ? '' : '\n';
+    appendFileSync(noticePath, `${separator}- ${upstream} — plugins/ven/skills/${args.name}/ adapted from ${path}\n`);
+  }
+  return pluginRoot;
+}
+
+function lint(pluginRoot) {
+  const result = spawnSync(process.execPath, [join(BIN_DIR, 'ven-lint-skills'), '--root', pluginRoot], { encoding: 'utf8' });
+  return { ok: result.status === 0, output: `${result.stdout}${result.stderr}`.trim() };
+}
+
+function nextSteps(args) {
+  const pin = args.source ? ['  - run `bun run pin:sources` and `bun run notices` to pin the upstream and rebuild the notices'] : [];
+  return [
+    'Next steps:',
+    `  - write the body and description in plugins/ven/skills/${args.name}/SKILL.md (replace every {{placeholder}})`,
+    `  - add evals under plugins/ven/evals/skills/${args.name}/ (a case that fails without the skill, plus a trigger case)`,
+    '  - run the trigger eval for the new skill, then `bun run lint:skills` and `bun run test`',
+    ...pin,
+  ].join('\n');
+}
+
+function main() {
+  if (process.argv.includes('--help')) {
+    console.log(USAGE);
+    return 0;
+  }
+  let args;
+  try {
+    const parsed = parseArgs(process.argv.slice(2));
+    args = { ...validate(parsed), repo: resolve(parsed.flags.repo ?? join(BIN_DIR, '..', '..', '..')) };
+  } catch (error) {
+    if (!(error instanceof UsageError)) throw error;
+    process.stderr.write(`${error.message}\n\n${USAGE}\n`);
+    return 2;
+  }
+
+  try {
+    const pluginRoot = scaffold(args, args.repo);
+    console.log(`created plugins/ven/skills/${args.name}/SKILL.md`);
+    const result = lint(pluginRoot);
+    console.log(result.ok ? 'ven-lint-skills: clean' : `ven-lint-skills reported:\n${result.output}`);
+    console.log(nextSteps(args));
+    return result.ok ? 0 : 1;
+  } catch (error) {
+    process.stderr.write(`${error.message}\n`);
+    return 1;
+  }
+}
+
+process.exitCode = main();

@@ -2,7 +2,7 @@
 name: feature
 description: "New or changed behavior, such as add a capability, change what existing code does, or build something from an idea or a request. Aligns first, then builds ticket by ticket."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/feature.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/feature.md
   license: MIT
 ---
 
