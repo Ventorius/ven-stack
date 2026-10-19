@@ -7,6 +7,11 @@
   "scripts": {
     "test": "bun test plugins/ven/evals",
     "lint:skills": "bun plugins/ven/bin/ven-lint-skills",
+    "notices": "node scripts/build-notices.mjs",
+    "pin:sources": "node scripts/pin-sources.mjs",
+    "release:check": "bun run test && bun run lint:skills",
+    "eval:routing:quick": "bun plugins/ven/evals/routing/quick.mjs",
+    "eval:history": "bun plugins/ven/evals/routing/history.mjs",
     "validate": "claude plugin validate ./plugins/ven && claude plugin validate ."
   }
 }

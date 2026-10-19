@@ -3,7 +3,7 @@ name: reflect
 description: Review a long session through independent lenses and propose edits to existing skills, packs or checks, applied only after they pass skill-tdd. Use at the end of a long or rocky session, or when the user asks to reflect on what the skills got wrong.
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/reflect/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/reflect/SKILL.md
   license: MIT
 ---
 
@@ -18,6 +18,8 @@ Nothing is applied to a skill in this session. Skill edits become proposals that
 The transcript is the newest `*.jsonl` in `<config dir>/projects/<repo path with every non-alphanumeric character replaced by ->/`, where `<config dir>` is `$CLAUDE_CONFIG_DIR` or `~/.claude`. Confirm it by matching its first user message to this session's opening request. Stay in this repo's project directory; never read other projects' transcripts.
 
 No match: write a digest instead (the requests, corrections, skills used, hook blocks, outcomes).
+
+Count corrections from the decisions log first: `ven-decisions list --step correction` shows what the user objected to this session and earlier. The transcript is the fallback and the source for everything else.
 
 ## 2. Run three blind lenses
 
@@ -35,7 +37,7 @@ Reviewers never see each other's output. On the `lean` budget tier, run the judg
 
 Judge every finding yourself against these tests, in order:
 
-1. **Structural.** If a check could enforce it, route it to **ratchet** instead of skill text (apply **encode-lessons-in-structure**).
+1. **Structural.** If a check could enforce it, route it to **ratchet** instead of skill text (apply **encode-lessons-in-structure**, which also sets the promotion threshold).
 2. **Durable.** Still true after paths, versions and code shapes change.
 3. **Decision-changing.** A future agent acts differently, not just reads more.
 4. **Used.** The target skill ran in this session, or should have fired and didn't (then the change is to its description).

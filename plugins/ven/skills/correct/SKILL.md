@@ -3,7 +3,7 @@ name: correct
 description: Turn a user's correction into the strongest lasting fix, a check when the mistake is checkable and a tested skill edit when it needs judgment. Use when the user corrects you, repeats an instruction or undoes your work, and when learning-check finds a correction.
 metadata:
   layer: L3
-  source: poteto/brainmaxxing@main:brain/principles/encode-lessons-in-structure.md
+  source: poteto/brainmaxxing@ec4d8e4:brain/principles/encode-lessons-in-structure.md
   license: MIT
 ---
 
@@ -29,11 +29,11 @@ If the rule was already written down (a skill line, `map.md`) and the agent brok
 
 ## 3. Route it
 
-Apply **encode-lessons-in-structure**: can a machine tell the wrong version from the right one?
+Apply **encode-lessons-in-structure**: can a machine tell the wrong version from the right one? **ratchet** holds the ladder of checks, strongest first; do not restate it here.
 
 | The rule | Route | Gate |
 |---|---|---|
-| Checkable: a type, a module boundary, a pattern a rule tool can match, something visible at edit time | **ratchet**, preferring rungs 1–4 (type or architecture, boundary rule, lint or structural rule, hook) | The check fails on the original mistake |
+| Checkable: a type, a module boundary, a pattern a rule tool can match, something visible at edit time | **ratchet**, preferring its upper rungs | The check fails on the original mistake |
 | Needs judgment: intent, context, taste | A proposal to edit the skill that should have prevented it | **skill-tdd**, in a later session |
 | Repo knowledge, not a rule about how to work | **compound** | Its durable bar |
 
@@ -46,7 +46,10 @@ Apply **encode-lessons-in-structure**: can a machine tell the wrong version from
 
 Write the smallest change that would have prevented the mistake as a proposal file in the format **skill-tdd** defines. Do not edit the skill in this session.
 
-## 4. Record
+## 4. Count and record
+
+The hook appends each user correction to the decisions log as `step=correction`. Count this class there first: `ven-decisions list --step correction`. Use transcripts (`ven-transcripts --kind corrections`) only when the log has nothing. Two independent instances meet the promotion rule in **encode-lessons-in-structure**; with one, route as above and note it is the first.
+
 
 ```bash
 ven-decisions add --step correct --decision <ratchet|proposal|compound|one-off> --evidence "<check, proposal or entry path; or the quoted correction>"

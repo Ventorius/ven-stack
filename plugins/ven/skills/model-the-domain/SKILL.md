@@ -3,7 +3,7 @@ name: model-the-domain
 description: "Apply when writing stateful logic, or when code branches a lot, keeps flags in sync, or repeats a shape assumption across files. Encode the domain in a data structure so invalid states can't be built and branches disappear."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-model-the-domain/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-model-the-domain/SKILL.md
   license: MIT
 ---
 

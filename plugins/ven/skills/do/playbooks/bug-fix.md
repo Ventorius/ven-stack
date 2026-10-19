@@ -2,18 +2,20 @@
 name: bug-fix
 description: "A reported defect to reproduce, root-cause and fix with evidence, such as wrong output, a crash or error, a regression, or a flaky failure."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/bug-fix.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/bug-fix.md
   license: MIT
 ---
 
 # Bug fix
+
+review: own-read
 
 Every shipped line traces to evidence. A change that only "might help" is a hypothesis: when the evidence refutes it, revert it.
 
 1. **reproduce** (gate)
    Done: one command fails for the reported reason, recorded with `ven-decisions add --step reproduce --decision reproduced --evidence "<command> fails with <error>"`. Until then the repro-first hook blocks source edits. Can't reproduce: record `--decision cannot-reproduce` with what you tried, and ask the user.
 2. **diagram-hypotheses**
-   Done: a hypothesis tree, badged HYPOTHESIS: the symptom, three or more candidate causes, and the evidence that would falsify each.
+   Done: a hypothesis tree, badged HYPOTHESIS: the symptom, three or more candidate causes, and the evidence that would falsify each. A one-line fix with an obvious cause may skip the three-cause minimum, never step 1.
 3. Bisect with evidence
    Done: one cause survives, confirmed by a run, a log line or a bisected commit; every other branch is marked falsified with its evidence. Independent probes can fan out to `ven:ven-worker`, one hypothesis each.
 4. Failing test, with **tdd**

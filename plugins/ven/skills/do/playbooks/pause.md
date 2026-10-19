@@ -2,7 +2,7 @@
 name: pause
 description: "Stop in-flight work cleanly so a later session can resume it, such as pause, stop here for today, or context is running out. Only on an explicit pause."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/pause-safely.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/pause-safely.md
   license: MIT
 ---
 
@@ -19,6 +19,6 @@ Leave a checkpoint a cold-start agent can resume from. "Keep going" or "don't st
 4. Record the pause
    Done: `ven-decisions add --step pause --decision paused --evidence "<note path>"` is logged, and the playbook stays active (no `ven-decisions end`) so the next pickup finds it.
 5. **learning-check**
-   Done: its result is stated in the reply; silence is not a result.
+   Done: its result is stated in the reply; silence is not a result. This is the only place it runs for paused work; pickup does not repeat it.
 
 **Reply:** where you stopped, what is on disk and what isn't, the commit you made, the note path, and the first action on resume.

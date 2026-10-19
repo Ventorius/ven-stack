@@ -1,4 +1,0 @@
-schema_version: "1.1"
-name: routing-bugfix-flaky-test
-context:
-  scaffold_script: scaffold.sh

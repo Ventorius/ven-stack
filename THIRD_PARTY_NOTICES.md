@@ -10,7 +10,6 @@ Copyright (c) 2026 Lauren Tan (pstack). Licensed under the MIT License (below).
 Copyright (c) 2026 Cursor (orchestrate, ralph-loop, cursor-team-kit, continual-learning). Licensed under the MIT License (below).
 
 - plugins/ven/skills/automate-me/ adapted from pstack/skills/automate-me/SKILL.md
-- plugins/ven/skills/benchmark-check/ adapted from pstack/skills/benchmark-checklist/SKILL.md
 - plugins/ven/skills/blast-radius/ adapted from pstack/skills/blast-radius/SKILL.md
 - plugins/ven/skills/boundary-discipline/ adapted from pstack/skills/principle-boundary-discipline/SKILL.md
 - plugins/ven/skills/build-the-lever/ adapted from pstack/skills/principle-build-the-lever/SKILL.md
@@ -29,6 +28,7 @@ Copyright (c) 2026 Cursor (orchestrate, ralph-loop, cursor-team-kit, continual-l
 - plugins/ven/skills/do/playbooks/ship.md adapted from pstack/skills/poteto-mode/playbooks/opening-a-pr.md
 - plugins/ven/skills/do/references/principles.md adapted from pstack/skills/poteto-mode/SKILL.md (Principles section)
 - plugins/ven/skills/explain-pr/ adapted from cursor-team-kit/skills/pr-review-canvas/SKILL.md
+- plugins/ven/skills/explain-the-number/ (references/benchmark-protocol.md) adapted from pstack/skills/benchmark-checklist/SKILL.md
 - plugins/ven/skills/explain-the-number/ adapted from pstack/skills/principle-explain-the-number/SKILL.md
 - plugins/ven/skills/fix-root-causes/ adapted from pstack/skills/principle-fix-root-causes/SKILL.md
 - plugins/ven/skills/forge-adapter/ adapted from pstack/skills/create-verification-skill/SKILL.md
@@ -139,10 +139,10 @@ Copyright (c) 2025 Jesse Vincent. Licensed under the MIT License (below).
 
 Copyright (c) 2026 Lauren Tan. Licensed under the MIT License (below).
 
+- plugins/ven/skills/conventions-audit/ adapted from .agents/skills/ruminate/SKILL.md
 - plugins/ven/skills/correct/ adapted from brain/principles/encode-lessons-in-structure.md
 - plugins/ven/skills/encode-lessons-in-structure/ adapted from brain/principles/encode-lessons-in-structure.md
 - plugins/ven/skills/guard-the-context/ adapted from brain/principles/guard-the-context-window.md
-- plugins/ven/skills/mine-transcripts/ adapted from .agents/skills/ruminate/SKILL.md
 - plugins/ven/skills/never-block-on-reversible/ adapted from brain/principles/never-block-on-the-human.md
 
 ## poteto/how @ b1ef429
@@ -155,7 +155,7 @@ Copyright (c) 2026 Lauren Tan. Licensed under the MIT License (below).
 
 Copyright (c) 2026 Lauren Tan. Licensed under the MIT License (below).
 
-- plugins/ven/skills/mine-transcripts/ adapted from .agents/skills/ruminate/SKILL.md
+- plugins/ven/skills/conventions-audit/ adapted from .agents/skills/ruminate/SKILL.md
 - plugins/ven/skills/review/references/lenses.md adapted from .agents/skills/adversarial-review/references/reviewer-lenses.md
 
 ## MIT License

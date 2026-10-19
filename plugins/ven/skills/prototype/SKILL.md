@@ -3,7 +3,7 @@ name: prototype
 description: "Build throwaway code that answers one design question, either a clickable state-model demo or switchable visual variants. Use when the user wants to feel out logic, a state model or a screen before committing to a design."
 metadata:
   layer: L3
-  source: mattpocock/skills@main:skills/engineering/prototype/SKILL.md + LOGIC.md + UI.md
+  source: mattpocock/skills@49dd158:skills/engineering/prototype/SKILL.md + LOGIC.md + UI.md
   license: MIT
 ---
 

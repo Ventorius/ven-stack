@@ -57,7 +57,7 @@ metadata:
 ```
 
 Rules:
-- `description`: the key use case first, "<what it does>. Use when <situations>." Under 300 characters; the listing budget is shared with every other installed skill.
+- `description`: the key use case first, "<what it does>. Use when <situations>." Aim for under 300 characters; the lint fails above 350 because the listing budget is shared with every other installed skill. The lint also requires a sentence starting "Use <when/for/before…>" or "Apply <when/to…>" (user-invoked skills are exempt), a `name` equal to the directory name, no near-duplicate descriptions, and no `ven:<name>` that resolves to nothing.
 - `metadata.source` names the upstream repo, ref and path for vendored content (omit for fresh skills). `metadata.license` is the upstream license. Never copy text from Apache or unlicensed sources (anthropics skill-creator, poteto/verification-skill-example); learn from them only.
 - Pack skills may add `paths:` (globs) so they activate only on matching files.
 
@@ -104,7 +104,13 @@ Opening PRs, posting comments, pushing branches, creating tracker tickets and in
 
 ## Adapting upstream skills
 
-Start from the base named in `vendoring-map.md`. Keep what makes it work (the gates, the stop conditions, the output shapes). Then apply X1–X5 from the map: Cursor → Claude Code, model-invocable, cite by name, commands from the profile, no tech/domain nouns. Remove references to tools ven doesn't have. Keep it shorter than the original whenever possible. Record provenance in `metadata.source` and list each adapted file in `docs/build/notices/<your group>.md` as `- <upstream repo> — plugins/ven/skills/<name>/ adapted from <upstream path>` (these are merged into `THIRD_PARTY_NOTICES.md` later; don't edit that file directly).
+Start from the base named in `vendoring-map.md`. Keep what makes it work (the gates, the stop conditions, the output shapes). Then apply X1–X5 from the map: Cursor → Claude Code, model-invocable, cite by name, commands from the profile, no tech/domain nouns. Remove references to tools ven doesn't have. Keep it shorter than the original whenever possible. Record provenance in `metadata.source` and list each adapted file in `docs/build/notices/<your group>.md` as `- <upstream repo> — plugins/ven/skills/<name>/ adapted from <upstream path>`. `THIRD_PARTY_NOTICES.md` is generated from those files: run `bun run notices` and commit the result (never edit it by hand; a test fails when it drifts). A new upstream needs an entry with its commit SHA and copyright line in `docs/build/notices/_upstreams.json`.
+
+Provenance is pinned. Write `metadata.source` as `<owner/repo>@main:<path>`, then run `bun run pin:sources`, which replaces `@main` with the SHA recorded for that upstream in `_upstreams.json`. It is idempotent and touches only the `source:` frontmatter line.
+
+## Starting a new skill
+
+`ven-new-skill <name> --layer L1..L5 [--notice-group <group> --source <owner/repo@ref:path>]` copies `plugins/ven/templates/skill/core/SKILL.md` into `plugins/ven/skills/<name>/`, fills in `name`, `layer` and `source`, adds the name to the catalog below on a `<layer> new` line, records the upstream in `docs/build/notices/<group>.md`, and runs `ven-lint-skills`. It refuses to overwrite an existing skill. Then write the body, add evals under `plugins/ven/evals/skills/<name>/`, run the trigger eval and move the catalog entry into its group. The template at `templates/skill/SKILL.md` is for pack skills only (it uses `paths:`, `metadata.pack` and pack references).
 
 ## Done means
 
@@ -118,13 +124,13 @@ Start from the base named in `vendoring-map.md`. Keep what makes it work (the ga
 - **L4 playbooks** (`skills/do/playbooks/`): `investigation`, `feature`, `bug-fix`, `refactor`, `perf`, `migration`, `explain`, `autonomous-run`, `pickup`, `pause`, `ship`
 - **L3 align:** `grilling`, `to-spec`, `to-tickets`, `glossary`
 - **L3 build:** `tdd`, `sweep`, `prototype`, `improve-architecture`
-- **L3 prove:** `reproduce`, `verify`, `benchmark-check`, `citation-check`
+- **L3 prove:** `reproduce`, `verify`, `citation-check`
 - **L3 review:** `review`, `blast-radius`, `quality-review`
 - **L3 understand:** `how`, `why`
 - **L3 write:** `handoff`, `technical-writing`, `unslop`, `write-docs`
 - **L3 visual:** `diagram-deps`, `diagram-data`, `diagram-flow`, `diagram-state`, `diagram-arch`, `diagram-hypotheses`, `diagram-change`, `explain-pr`, `teach`
 - **L3 conventions:** `conventions-discover`, `conventions-audit`, `ratchet`, `forge-convention`
-- **L3 learning:** `learning-check`, `correct`, `compound`, `compound-refresh`, `reflect`, `mine-transcripts`, `skill-tdd`, `automate-me`, `quiz`
+- **L3 learning:** `learning-check`, `correct`, `compound`, `compound-refresh`, `reflect`, `skill-tdd`, `automate-me`, `quiz`
 - **L3 forge:** `forge-pack`, `forge-skill`, `forge-playbook`, `forge-adapter`, `forge-reference`, `pack-audit`
 - **L2 principles:** `laziness`, `model-the-domain`, `type-discipline`, `boundary-discipline`, `idempotent-operations`, `deep-modules`, `fix-root-causes`, `prove-it-works`, `sequence-verifiable-units`, `test-behavior`, `explain-the-number`, `encode-lessons-in-structure`, `never-block-on-reversible`, `guard-the-context`, `build-the-lever`
 - **L1 agents:** `ven-lead`, `ven-coder`, `ven-worker`, `ven-reviewer`, `ven-verifier`

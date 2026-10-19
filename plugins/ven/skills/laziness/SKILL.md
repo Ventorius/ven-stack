@@ -3,7 +3,7 @@ name: laziness
 description: "Apply when sizing a change, reviewing a diff that grew, or tempted to add an abstraction, layer, option or helper. Make the smallest change that solves the problem, and delete before you add."
 metadata:
   layer: L2
-  source: cursor/plugins@main:pstack/skills/principle-laziness-protocol/SKILL.md + pstack/skills/principle-subtract-before-you-add/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/principle-laziness-protocol/SKILL.md + pstack/skills/principle-subtract-before-you-add/SKILL.md
   license: MIT
 ---
 

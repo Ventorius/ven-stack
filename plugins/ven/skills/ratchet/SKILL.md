@@ -3,13 +3,13 @@ name: ratchet
 description: "Turn one correction or mistake class into the strongest check that can state it (type, boundary rule, lint rule, hook, skill line, map pointer) and prove the check fails on the original mistake. Use after a correction, a repeated review comment, or a class from conventions-audit."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/correct/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/correct/SKILL.md
   license: MIT
 ---
 
 # Ratchet
 
-A correction given in conversation is gone by the next session. Turn it into a check placed as high on the ladder as the mistake allows, and prove the check catches the original. Apply **encode-lessons-in-structure**.
+A correction given in conversation is gone by the next session. Turn it into a check placed as high on the ladder as the mistake allows, and prove the check catches the original. Apply **encode-lessons-in-structure**; its promotion rule says when a class is ready for a check (2 independent instances).
 
 ## 1. State the class
 

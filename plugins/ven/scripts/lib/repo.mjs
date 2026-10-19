@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, realpathSync, rmSync, statSync, utimesSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
-import { basename, dirname, isAbsolute, join } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 
 export function git(args, cwd, options = {}) {
   return execFileSync('git', args, {
@@ -53,9 +53,41 @@ export function defaultBranch(cwd) {
   return null;
 }
 
+export class TreeHashError extends Error {
+  constructor(cause) {
+    super(`could not hash the working tree (git add -A failed: ${String(cause.stderr ?? cause.message).trim().split('\n')[0]})`);
+    this.name = 'TreeHashError';
+  }
+}
+
+export function untrackedFiles(cwd) {
+  const out = tryGit(['ls-files', '--others', '--exclude-standard', '-z'], cwd);
+  return out ? out.split('\0').filter(Boolean) : [];
+}
+
+// Path of a file relative to the repo root, resolving symlinks. repoRoot is a realpath, so a file_path
+// that arrives through a symlink (/tmp vs /private/tmp) would otherwise look like it is outside the repo.
+// A file that does not exist yet resolves through its nearest existing parent.
+export function repoRelative(root, filePath) {
+  const rest = [];
+  let current = resolve(filePath);
+  for (;;) {
+    try {
+      return relative(root, join(realpathSync(current), ...rest.reverse()));
+    } catch {
+      const parent = dirname(current);
+      if (parent === current) return relative(root, resolve(filePath));
+      rest.push(basename(current));
+      current = parent;
+    }
+  }
+}
+
 // Hashes the working tree (tracked changes + untracked, non-ignored files) without touching the real index.
 // Copying the real index keeps git's stat cache, so only changed files are rehashed.
-export function workingTreeHash(cwd) {
+// `exclude` drops those untracked paths from the hash, so `ven-profile verify` can ignore files a
+// command created while still hashing everything that existed before it ran.
+export function workingTreeHash(cwd, { exclude = [] } = {}) {
   const root = repoRoot(cwd);
   if (!root) return null;
   const realIndex = git(['rev-parse', '--path-format=absolute', '--git-path', 'index'], root);
@@ -69,7 +101,12 @@ export function workingTreeHash(cwd) {
       const { atime, mtime } = statSync(realIndex);
       utimesSync(tempIndex, atime, mtime);
     }
-    git(['add', '-A'], root, { env });
+    try {
+      git(['add', '-A'], root, { env });
+    } catch (error) {
+      throw new TreeHashError(error);
+    }
+    if (exclude.length > 0) git(['rm', '-q', '--cached', '--ignore-unmatch', '--pathspec-from-file=-', '--pathspec-file-nul'], root, { env, input: `${exclude.join('\0')}\0`, stdio: ['pipe', 'pipe', 'pipe'] });
     return git(['write-tree'], root, { env });
   } finally {
     rmSync(tempIndex, { force: true });
@@ -82,11 +119,15 @@ export function changedFilesBetween(cwd, fromTree, toTree) {
   return out ? out.split('\n').filter(Boolean) : [];
 }
 
+export function mergeBaseWithDefault(cwd) {
+  const base = defaultBranch(cwd);
+  return base ? tryGit(['merge-base', 'HEAD', base], cwd) : null;
+}
+
 // Files this branch touches relative to the default branch, plus uncommitted work.
 export function branchTouchedFiles(cwd) {
   const files = new Set();
-  const base = defaultBranch(cwd);
-  const mergeBase = base ? tryGit(['merge-base', 'HEAD', base], cwd) : null;
+  const mergeBase = mergeBaseWithDefault(cwd);
   if (mergeBase) {
     const committed = tryGit(['diff', '--name-only', mergeBase, 'HEAD'], cwd);
     for (const file of committed ? committed.split('\n') : []) if (file) files.add(file);

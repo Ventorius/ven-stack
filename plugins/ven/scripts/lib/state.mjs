@@ -1,14 +1,26 @@
 import { createHash } from 'node:crypto';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-function readJson(path, fallback) {
-  return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : fallback;
+export function readJson(path, fallback, resetHint = 'delete it to reset') {
+  if (!existsSync(path)) return fallback;
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch (error) {
+    throw new Error(`corrupt JSON in ${path}: ${error.message}; ${resetHint}`);
+  }
 }
 
-function writeJson(path, value) {
+// Temp file in the same directory, then rename: a crash or a concurrent reader never sees half a file.
+export function writeFileAtomic(path, text) {
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
+  const temp = `${path}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;
+  writeFileSync(temp, text);
+  renameSync(temp, path);
+}
+
+export function writeJson(path, value) {
+  writeFileAtomic(path, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function worktreeKey(worktreeRoot) {
@@ -17,11 +29,30 @@ function worktreeKey(worktreeRoot) {
 
 // The active playbook is per worktree, not per session: bin tools run by Claude can't see the session id.
 export function readPlaybookState(dir, worktreeRoot) {
-  return readJson(join(dir, 'state', 'worktrees', `${worktreeKey(worktreeRoot)}.json`), null);
+  return readJson(join(dir, 'state', 'worktrees', `${worktreeKey(worktreeRoot)}.json`), null, 'delete it or run ven-decisions start <playbook> to reset');
 }
 
 export function writePlaybookState(dir, worktreeRoot, state) {
   writeJson(join(dir, 'state', 'worktrees', `${worktreeKey(worktreeRoot)}.json`), { root: worktreeRoot, ...state });
+}
+
+// The verify-gate baseline outlives sessions: /clear starts a new session in the same dirty worktree.
+function baselinePath(dir, worktreeRoot) {
+  return join(dir, 'state', 'baselines', `${worktreeKey(worktreeRoot)}.json`);
+}
+
+export function readBaseline(dir, worktreeRoot) {
+  return readJson(baselinePath(dir, worktreeRoot), null);
+}
+
+// `head` ties the baseline to the commit it was taken at: after a checkout, pull or merge the
+// tree differs for reasons Claude never caused, so a baseline from another HEAD is not inherited.
+export function writeBaseline(dir, worktreeRoot, startTree, head) {
+  writeJson(baselinePath(dir, worktreeRoot), { root: worktreeRoot, start_tree: startTree, head });
+}
+
+export function clearBaseline(dir, worktreeRoot) {
+  rmSync(baselinePath(dir, worktreeRoot), { force: true });
 }
 
 export function readSession(dir, sessionId) {
@@ -32,19 +63,36 @@ export function writeSession(dir, sessionId, session) {
   writeJson(join(dir, 'state', 'sessions', `${sessionId}.json`), session);
 }
 
-export function appendVerify(dir, entry) {
-  mkdirSync(join(dir, 'state'), { recursive: true });
-  appendFileSync(join(dir, 'state', 'verify.jsonl'), `${JSON.stringify({ ts: new Date().toISOString(), ...entry })}\n`);
+const VERIFY_LOG_LIMIT = 500;
+
+function verifyLines(path) {
+  return existsSync(path) ? readFileSync(path, 'utf8').split('\n').filter(Boolean) : [];
 }
 
+// Append-only with rotation: a rename moves whole entries to verify.jsonl.1, so a concurrent append
+// lands in one file or the other. Rewriting a trimmed copy could silently drop it.
+export function appendVerify(dir, entry) {
+  const path = join(dir, 'state', 'verify.jsonl');
+  mkdirSync(dirname(path), { recursive: true });
+  appendFileSync(path, `${JSON.stringify({ ts: new Date().toISOString(), ...entry })}\n`);
+  if (verifyLines(path).length > VERIFY_LOG_LIMIT) renameSync(path, `${path}.1`);
+}
+
+// A torn line from a concurrent append must not take the verify gate down with it.
 export function verifyEntries(dir) {
   const path = join(dir, 'state', 'verify.jsonl');
-  if (!existsSync(path)) return [];
-  return readFileSync(path, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line));
+  return [...verifyLines(`${path}.1`), ...verifyLines(path)].flatMap((line) => {
+    try {
+      return [JSON.parse(line)];
+    } catch {
+      return [];
+    }
+  });
 }
 
+// An entry flagged tree_changed ran against a tree that moved under it, so it proves nothing.
 export function passedVerifyFor(dir, tree) {
-  return verifyEntries(dir).find((entry) => entry.tree === tree && entry.exit === 0) ?? null;
+  return verifyEntries(dir).find((entry) => entry.tree === tree && entry.exit === 0 && !entry.tree_changed) ?? null;
 }
 
 const DECISION_COLUMNS = ['ts', 'worktree', 'playbook', 'step', 'decision', 'evidence'];
@@ -56,7 +104,11 @@ function tsvCell(value) {
 export function appendDecision(dir, row) {
   const path = join(dir, 'decisions.tsv');
   mkdirSync(dir, { recursive: true });
-  if (!existsSync(path)) writeFileSync(path, `${DECISION_COLUMNS.join('\t')}\n`);
+  try {
+    writeFileSync(path, `${DECISION_COLUMNS.join('\t')}\n`, { flag: 'wx' });
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+  }
   const record = { ts: new Date().toISOString(), ...row };
   appendFileSync(path, `${DECISION_COLUMNS.map((column) => tsvCell(record[column])).join('\t')}\n`);
 }

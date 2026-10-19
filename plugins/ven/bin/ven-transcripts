@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { fail, list, parseArgs } from '../scripts/lib/args.mjs';
+import { fail, intFlag, list, parseStrict } from '../scripts/lib/args.mjs';
 import { allConfigDirs } from '../scripts/lib/claude.mjs';
 import { git, repoRoot } from '../scripts/lib/repo.mjs';
+import { CORRECTION, HOOK_BLOCK } from '../scripts/lib/signals.mjs';
 
 const USAGE = `ven-transcripts: extract correction, hook-block and routing evidence from Claude Code transcripts (read-only)
 
@@ -11,14 +12,13 @@ const USAGE = `ven-transcripts: extract correction, hook-block and routing evide
 
   --match  substring of the transcript project directory (default: the repo's main checkout name)
   --since       only sessions modified in the last N days (default 30)
-  --config-dir  Claude config dirs to scan (default: $CLAUDE_CONFIG_DIR, ~/.claude and every ~/.claude-*)`;
+  --config-dir  Claude config dirs to scan (default: $CLAUDE_CONFIG_DIR, ~/.claude and every ~/.claude-*)
 
-// English and Polish openers; corrections usually lead with the objection.
-const CORRECTION = /^(no\b|nope|don'?t|do not|stop|wrong|actually|instead|not (that|what|like)|why did you|revert|undo|that'?s (not|wrong)|you (should|shouldn'?t|forgot|missed)|never\b|please don'?t|nie\b|źle|zamiast|przestań|cofnij|dlaczego|czemu|to nie|nie tak|zapomniałeś|miałeś)/i;
-const HOOK_BLOCK = /ven (verify-gate|repro-first|no-workaround)[^\n]*/g;
+  exit codes: 0 ok (a warning on stderr means no project matched --match), 1 failure, 2 usage error`;
+
 const ROUTE = /^\**Playbook:\s*([a-z0-9-]+)/m;
 
-const { flags } = parseArgs(process.argv.slice(2));
+const { flags } = parseStrict(process.argv.slice(2), { values: ['match', 'since', 'kind', 'limit', 'config-dir'], booleans: ['help'] });
 if (flags.help) fail(USAGE, 0);
 
 function mainCheckoutName() {
@@ -28,10 +28,10 @@ function mainCheckoutName() {
   return basename(first.replace(/^worktree /, ''));
 }
 
-const match = flags.match ?? mainCheckoutName() ?? fail('ven-transcripts: pass --match outside a git repository');
-const sinceMs = Date.now() - Number(flags.since ?? 30) * 86400000;
+const match = flags.match ?? mainCheckoutName() ?? fail('ven-transcripts: pass --match outside a git repository', 2);
+const sinceMs = Date.now() - intFlag(flags, 'since', 30, { min: 0 }) * 86400000;
 const kind = flags.kind ?? 'all';
-const limit = Number(flags.limit ?? 200);
+const limit = intFlag(flags, 'limit', 200);
 const configDirs = list(flags['config-dir']).length > 0 ? list(flags['config-dir']) : allConfigDirs();
 
 function textOf(content) {
@@ -60,17 +60,23 @@ function lastAction(entries, index) {
   return '';
 }
 
+let sessionsScanned = 0;
 const results = { match, corrections: [], blocks: [], routes: [] };
 const projectDirs = configDirs.flatMap((configDir) => {
   const projectsDir = join(configDir, 'projects');
   return existsSync(projectsDir) ? readdirSync(projectsDir).filter((dir) => dir.includes(match)).map((dir) => join(projectsDir, dir)) : [];
 });
 
+if (projectDirs.length === 0) {
+  process.stderr.write(`ven-transcripts: no transcript directory matches "${match}" in ${configDirs.join(', ') || 'any Claude config dir'}; pass --match or --config-dir\n`);
+}
+
 for (const dir of projectDirs) {
   const projectDir = basename(dir);
   for (const file of readdirSync(dir).filter((name) => name.endsWith('.jsonl'))) {
     const path = join(dir, file);
     if (statSync(path).mtimeMs < sinceMs) continue;
+    sessionsScanned++;
     const entries = readFileSync(path, 'utf8')
       .split('\n')
       .filter(Boolean)
@@ -102,6 +108,6 @@ for (const dir of projectDirs) {
 
 const cap = (items) => items.slice(-limit);
 const output = kind === 'all'
-  ? { match, sessions_scanned: projectDirs.length, corrections: cap(results.corrections), blocks: cap(results.blocks), routes: cap(results.routes) }
-  : { match, [kind]: cap(results[kind] ?? fail(`ven-transcripts: unknown --kind ${kind}`)) };
+  ? { match, sessions_scanned: sessionsScanned, corrections: cap(results.corrections), blocks: cap(results.blocks), routes: cap(results.routes) }
+  : { match, [kind]: cap(results[kind] ?? fail(`ven-transcripts: unknown --kind ${kind}`, 2)) };
 console.log(JSON.stringify(output, null, 2));

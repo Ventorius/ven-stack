@@ -3,7 +3,7 @@ name: technical-writing
 description: "Layered writing standard for docs, specs, ADRs, READMEs, PR descriptions and commit messages: pick the document mode, then write plain sentences a tired engineer understands on the first read. Use when writing or reviewing any technical document."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/technical-writing/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/technical-writing/SKILL.md
   license: MIT
 ---
 

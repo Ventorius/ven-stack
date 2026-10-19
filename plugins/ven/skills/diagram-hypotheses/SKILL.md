@@ -3,7 +3,7 @@ name: diagram-hypotheses
 description: Draw a debug tree for a reproduced bug (symptom, ranked falsifiable causes, the evidence that would falsify each, a status per cause) and keep it current as probes run. Use when debugging, after the bug reproduces and before testing any theory.
 metadata:
   layer: L3
-  source: mattpocock/skills@main:skills/engineering/diagnosing-bugs/SKILL.md; obra/superpowers@main:skills/systematic-debugging/SKILL.md
+  source: mattpocock/skills@49dd158:skills/engineering/diagnosing-bugs/SKILL.md; obra/superpowers@bb92a77:skills/systematic-debugging/SKILL.md
   license: MIT
 ---
 

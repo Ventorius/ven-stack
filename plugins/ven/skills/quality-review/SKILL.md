@@ -1,9 +1,9 @@
 ---
 name: quality-review
-description: "Run a strict maintainability review of a branch: hunt for restructurings that delete complexity, file-size blowups, ad-hoc branching and leaky boundaries, and return a block or approve verdict. Use when asked for a harsh, deep or thermo-nuclear code quality review."
+description: "Run a strict maintainability review of a branch: hunt for restructurings that delete complexity, file-size blowups, ad-hoc branching and leaky boundaries, and return a block or approve verdict. Use only when the user explicitly asks for a harsh, deep or thermo-nuclear maintainability verdict."
 metadata:
   layer: L3
-  source: cursor/plugins@main:cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md
+  source: cursor/plugins@1e5c90a:cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md
   license: MIT
 ---
 

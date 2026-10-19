@@ -2,11 +2,13 @@
 name: refactor
 description: "A behavior-preserving change to structure, such as rename, extract, inline, dedupe, move code or reshape a module. No new behavior."
 metadata:
-  source: cursor/plugins@main:pstack/skills/poteto-mode/playbooks/refactoring.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/playbooks/refactoring.md
   license: MIT
 ---
 
 # Refactor
+
+review: panel when a changed file matches a `risk_areas` glob; own-read otherwise
 
 The structure changes; the behavior does not. A missing feature or a real bug found on the way is split out as its own task, not folded in.
 

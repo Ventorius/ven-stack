@@ -3,7 +3,7 @@ name: quiz
 description: Ask one multiple-choice retrieval card per session from a five-card deck built from recent solution entries and decision records. Use only when the user opts in, after a teaching session or a new solution entry.
 metadata:
   layer: L3
-  source: mattpocock/skills@main:skills/productivity/teach/SKILL.md
+  source: mattpocock/skills@49dd158:skills/productivity/teach/SKILL.md
   license: MIT
 ---
 

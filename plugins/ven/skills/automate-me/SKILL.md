@@ -3,7 +3,7 @@ name: automate-me
 description: Draft a personal <name>-mode overlay skill from the user's own transcripts and answers, and prove it with evals before installing it. Use when the user asks to capture their working style, preferences or conventions as a skill, or to refresh their mode skill.
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/automate-me/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/automate-me/SKILL.md
   license: MIT
 ---
 

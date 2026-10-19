@@ -3,7 +3,7 @@ name: blast-radius
 description: "Find what a change can break beyond its diff (callers, data, contracts, config), cite each risk at file:line, and prove the one fact its safety rests on by running code. Use for 'what could this break', before merging risky work, or for a small diff you don't trust."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/blast-radius/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/blast-radius/SKILL.md
   license: MIT
 ---
 

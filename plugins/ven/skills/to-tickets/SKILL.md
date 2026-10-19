@@ -3,7 +3,7 @@ name: to-tickets
 description: "Slice a spec into vertical tickets, each a complete brief a coder can finish without asking anything, with dependencies and file overlaps marked. Use after to-spec, when the user asks for tickets, or before handing work to ven-coder agents."
 metadata:
   layer: L3
-  source: mattpocock/skills@main:skills/engineering/to-tickets/SKILL.md
+  source: mattpocock/skills@49dd158:skills/engineering/to-tickets/SKILL.md
   license: MIT
 ---
 

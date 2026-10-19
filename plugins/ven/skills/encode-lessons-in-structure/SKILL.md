@@ -3,7 +3,7 @@ name: encode-lessons-in-structure
 description: "Apply when you write the same instruction a second time, get corrected for a repeat mistake, or see a recurring failure. Encode the lesson in the strongest mechanism that can hold it, not in more text."
 metadata:
   layer: L2
-  source: poteto/brainmaxxing@main:brain/principles/encode-lessons-in-structure.md
+  source: poteto/brainmaxxing@ec4d8e4:brain/principles/encode-lessons-in-structure.md
   license: MIT
 ---
 
@@ -24,6 +24,11 @@ Turn a recurring fix into a mechanism that enforces it, not another line of inst
 A check counts only once it fails on the original mistake and passes on the fix. Run it against the bad version before you trust it.
 
 **Corollary:** If the fix is structural, use only the structural fix and delete the instruction it replaces. The instruction was the symptom.
+
+**Promotion rule.** The single threshold every learning skill uses:
+- A mistake class seen in 2 independent sessions or PRs is promoted to a check, at the highest step above that can state it. Several comments on one PR, or repeats inside one session, count once.
+- A pack skill or playbook needs 3 real instances of the same cause or task shape. Fewer than 3 stays a solution entry or a watch item.
+- Corrections are counted from the decisions log first (`ven-decisions list --step correction`); transcripts are the fallback.
 
 **Close the loop:**
 - One-off: note it and move on. Recurring: encode it on the highest step that holds it. Systemic: raise it as a principle.

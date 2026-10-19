@@ -3,27 +3,27 @@ name: forge-skill
 description: "Forge one skill into a repo pack from three or more real instances, proven by a scenario that fails without it and passes with it. Use when a correction or pitfall keeps recurring in one technology or domain, or the user asks for a pack skill."
 metadata:
   layer: L3
-  source: obra/superpowers@main:skills/writing-skills/SKILL.md + mattpocock/skills@main:skills/productivity/writing-for-agents/SKILL.md
+  source: obra/superpowers@bb92a77:skills/writing-skills/SKILL.md + mattpocock/skills@49dd158:skills/productivity/writing-for-agents/SKILL.md
   license: MIT
 ---
 
 # Forge a skill
 
-A pack skill earns its place by stopping a mistake the agent really made, three times or more, and by proving that it does. Run the six steps in order; each ends on a check.
+A pack skill earns its place by stopping a mistake the agent really made, often enough to meet the pack bar, and by proving that it does. Run the six steps in order; each ends on a check.
 
 **Input:** a pack and a recurring task, a cluster of corrections, or the user's request. `<pack dir>` is `$(ven-profile path)/packs/<pack>/` and `<ven root>` is `${CLAUDE_PLUGIN_ROOT}`. No pack yet: stop and suggest `/ven:forge-pack <name>`. A caller that already settled the evidence and the scope (an approved pack plan, a convention draft) starts at step 3. A change to one of ven's own skills goes through **skill-tdd** alone.
 
 ## 1. Evidence first
 
-Collect three or more real instances of the same mistake or need:
+Collect real instances of the same mistake or need, enough to meet the pack bar in **encode-lessons-in-structure**:
 
-- corrections from `ven-transcripts --kind corrections --since 90`;
+- corrections from `ven-decisions list --step correction`, then `ven-transcripts --kind corrections --since 90` as the fallback;
 - entries in `$(ven-profile path)/solutions/`;
 - review comments on merged PRs, read with the code host CLI from `ven-profile get repo.forge.cli` (read-only subcommands), and `git log`.
 
-Each instance records source, date, `file:line`, what went wrong and what fixed it. Done when three instances share one cause.
+Each instance records source, date, `file:line`, what went wrong and what fixed it. Done when the instances share one cause.
 
-- Fewer than three: forge nothing. Propose a **compound** entry for what you found, and say the skill can be forged once it recurs.
+- Below the bar: forge nothing. Propose a **compound** entry for what you found, and say the skill can be forged once it recurs.
 - A type, import rule, lint rule or hook could catch it: it belongs lower on the ladder. Apply **encode-lessons-in-structure** and stop.
 
 ## 2. Grill the scope

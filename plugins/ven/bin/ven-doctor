@@ -2,22 +2,75 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fail, parseStrict } from '../scripts/lib/args.mjs';
 import { claudeConfigDir } from '../scripts/lib/claude.mjs';
 import { splitFrontmatter } from '../scripts/lib/frontmatter.mjs';
-import { loadProfile, staleSources } from '../scripts/lib/profile.mjs';
-import { repoRoot } from '../scripts/lib/repo.mjs';
+import { allCommands, loadProfile, staleSources } from '../scripts/lib/profile.mjs';
+import { repoRoot, venDir } from '../scripts/lib/repo.mjs';
+
+const USAGE = `ven-doctor: check the ven install, the repo profile and the Claude settings ven depends on
+
+  ven-doctor [--strict] [--json]
+
+  --strict  exit 1 when any WARN is reported
+  --json    print {"findings":[{"level","message"}]} instead of text
+
+  exit codes: 0 ok, 1 an ERROR (or a WARN under --strict), 2 usage error`;
 
 const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+if (process.argv.slice(2).some((arg) => arg === '--help' || arg === '-h')) {
+  console.log(USAGE);
+  process.exit(0);
+}
+const { flags, positionals } = parseStrict(process.argv.slice(2), { booleans: ['strict', 'json'] });
+if (positionals.length > 0) fail(USAGE, 2);
+
 const cwd = process.cwd();
 const root = repoRoot(cwd);
 const findings = [];
-const note = (level, message) => findings.push(`${level.padEnd(5)} ${message}`);
+const note = (level, message) => findings.push({ level, message });
 
 function readJson(path) {
   try {
     return JSON.parse(readFileSync(path, 'utf8'));
   } catch {
     return null;
+  }
+}
+
+// null: unreadable (already reported as an ERROR); undefined: no profile yet.
+function readProfile() {
+  try {
+    return loadProfile(cwd) ?? undefined;
+  } catch (error) {
+    note('ERROR', error.message);
+    return null;
+  }
+}
+
+// Mirrors DECISION_COLUMNS in scripts/lib/state.mjs, which does not export it.
+const DECISION_HEADER = 'ts\tworktree\tplaybook\tstep\tdecision\tevidence';
+
+function jsonFiles(dir) {
+  return existsSync(dir) ? readdirSync(dir).filter((name) => name.endsWith('.json')).map((name) => join(dir, name)) : [];
+}
+
+function checkState(stateDir) {
+  for (const folder of ['sessions', 'worktrees', 'baselines']) {
+    for (const path of jsonFiles(join(stateDir, 'state', folder))) {
+      try {
+        JSON.parse(readFileSync(path, 'utf8'));
+      } catch {
+        note('ERROR', `corrupt JSON in ${path}; delete the file (ven recreates it on the next session)`);
+      }
+    }
+  }
+  const decisions = join(stateDir, 'decisions.tsv');
+  if (!existsSync(decisions)) return;
+  const [header, ...rows] = readFileSync(decisions, 'utf8').split('\n').filter(Boolean);
+  const columns = DECISION_HEADER.split('\t').length;
+  if (header !== DECISION_HEADER || rows.some((row) => row.split('\t').length !== columns)) {
+    note('ERROR', `malformed decisions.tsv at ${decisions}; move it aside (the next ven-decisions add starts a fresh log)`);
   }
 }
 
@@ -63,24 +116,20 @@ note('INFO', `skill listing: ven ${venChars} chars + others ${otherChars} chars 
 if (!root) {
   note('INFO', 'not inside a git repository; repo checks skipped');
 } else {
-  const loaded = loadProfile(cwd);
-  if (!loaded) {
+  const loaded = readProfile();
+  if (loaded === undefined) {
     note('WARN', 'no ven profile for this repo; run /ven:onboard');
-  } else {
+  } else if (loaded) {
     const stale = staleSources(loaded.profile, root);
     if (stale.length > 0) note('WARN', `profile stale: ${stale.join(', ')} changed; run /ven:onboard --refresh`);
-    const unverified = [];
-    const walk = (node, path) => {
-      if (node && typeof node === 'object' && typeof node.run === 'string') {
-        if (node.status !== 'verified') unverified.push(`${path} (${node.status})`);
-        return;
-      }
-      if (node && typeof node === 'object') for (const [key, child] of Object.entries(node)) walk(child, path ? `${path}.${key}` : key);
-    };
-    walk(loaded.profile.commands, 'commands');
-    for (const workspace of loaded.profile.workspaces ?? []) walk(workspace.commands, `workspaces.${workspace.name}.commands`);
+    const unverified = Object.entries(allCommands(loaded.profile))
+      .filter(([, command]) => command.status !== 'verified')
+      .map(([path, command]) => `${path} (${command.status})`);
     if (unverified.length > 0) note('INFO', `commands not verified: ${unverified.join(', ')}`);
   }
+
+  const stateDir = venDir(cwd);
+  if (stateDir) checkState(stateDir);
 
   const settings = [join(root, '.claude', 'settings.json'), join(root, '.claude', 'settings.local.json'), join(claudeConfigDir(), 'settings.json')]
     .map(readJson)
@@ -98,4 +147,8 @@ if (Object.keys(overrides).length > 0) {
   note('INFO', `to hide colliding personal/project skills in this repo, add to .claude/settings.local.json:\n${JSON.stringify({ skillOverrides: overrides }, null, 2)}`);
 }
 
-console.log(findings.length > 0 ? findings.join('\n') : 'ok: no problems found');
+if (flags.json) console.log(JSON.stringify({ findings }, null, 2));
+else console.log(findings.map(({ level, message }) => `${level.padEnd(5)} ${message}`).join('\n'));
+
+const failing = findings.some(({ level }) => level === 'ERROR' || (flags.strict && level === 'WARN'));
+process.exit(failing ? 1 : 0);

@@ -3,7 +3,7 @@ name: reproduce
 description: "Build a red-capable loop for a reported bug, a test or script that fails for the reported reason, and record it to open the edit gate. Use first in any bug fix, before forming theories from the code or touching source."
 metadata:
   layer: L3
-  source: mattpocock/skills@main:skills/engineering/diagnosing-bugs/SKILL.md (phases 1-2); obra/superpowers@main:skills/systematic-debugging/SKILL.md (phase 1)
+  source: mattpocock/skills@49dd158:skills/engineering/diagnosing-bugs/SKILL.md (phases 1-2); obra/superpowers@bb92a77:skills/systematic-debugging/SKILL.md (phase 1)
   license: MIT
 ---
 

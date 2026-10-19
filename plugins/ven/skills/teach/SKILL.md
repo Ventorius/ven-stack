@@ -3,7 +3,7 @@ name: teach
 description: Explain a subsystem diagram by diagram, from the system overview down to one call path, building each picture up one part at a time, then offer a quiz. Use for "teach me X", "help me really understand this subsystem", or onboarding someone onto an area of code.
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/teach/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/teach/SKILL.md
   license: MIT
 ---
 

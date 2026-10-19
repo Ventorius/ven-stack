@@ -3,7 +3,7 @@ name: compound
 description: Record one solved problem as a solution entry anchored to the files it touches, so later sessions on those files see it first. Use after a fix or decision whose reasoning the final code does not show, or when learning-check finds a durable learning.
 metadata:
   layer: L3
-  source: EveryInc/compound-engineering-plugin@main:skills/ce-compound/SKILL.md
+  source: EveryInc/compound-engineering-plugin@7a68002:skills/ce-compound/SKILL.md
   license: MIT
 ---
 

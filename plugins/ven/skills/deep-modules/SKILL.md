@@ -3,7 +3,7 @@ name: deep-modules
 description: "Apply when designing or reshaping a module's interface, deciding where a seam goes, or making code easier to test. Put a lot of behavior behind a small interface, at a seam where something really varies, and test through it."
 metadata:
   layer: L2
-  source: mattpocock/skills@main:skills/engineering/codebase-design/SKILL.md + DEEPENING.md + DESIGN-IT-TWICE.md
+  source: mattpocock/skills@49dd158:skills/engineering/codebase-design/SKILL.md + DEEPENING.md + DESIGN-IT-TWICE.md
   license: MIT
 ---
 

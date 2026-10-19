@@ -5,7 +5,7 @@ argument-hint: "[--refresh]"
 disable-model-invocation: true
 metadata:
   layer: L5
-  source: "cursor/plugins@main:pstack/skills/create-verification-skill/SKILL.md; EveryInc/compound-engineering-plugin@main:skills/ce-setup/SKILL.md; mattpocock/skills@main:skills/engineering/setup-matt-pocock-skills/SKILL.md (patterns only)"
+  source: "cursor/plugins@1e5c90a:pstack/skills/create-verification-skill/SKILL.md; EveryInc/compound-engineering-plugin@7a68002:skills/ce-setup/SKILL.md; mattpocock/skills@49dd158:skills/engineering/setup-matt-pocock-skills/SKILL.md (patterns only)"
   license: MIT
 ---
 

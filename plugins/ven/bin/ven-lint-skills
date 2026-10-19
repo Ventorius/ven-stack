@@ -15,6 +15,9 @@ const USAGE = `ven-lint-skills: check skill composition rules
 
 const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const LAYER_ORDER = { L1: 1, L2: 2, L3: 3, L4: 4, L5: 5 };
+// A sentence that opens "Use <word>" or "Apply <word>" tells the router when the skill fires.
+const TRIGGER = /(^|[.!?]\s+)(Use|Apply) [a-z]+/;
+const STOPWORDS = new Set('a an the of to and or for in on at is are be it its this that with as by from when use apply into than then one any each your you not no'.split(' '));
 
 const { flags } = parseArgs(process.argv.slice(2));
 if (flags.help) fail(USAGE, 0);
@@ -113,6 +116,46 @@ for (const unit of all.filter((candidate) => candidate.kind === 'skill')) {
   if (!unit.data) errors.push(`${where(unit)}: missing frontmatter`);
   if (!unit.data?.description) errors.push(`${where(unit)}: missing description`);
   if (!LAYER_ORDER[unit.layer]) errors.push(`${where(unit)}: metadata.layer must be one of L1-L5`);
+  const description = unit.data?.description;
+  if (!description) continue;
+  if (description.length > config.max_description_chars) {
+    errors.push(`${where(unit)}: description is ${description.length} chars, limit ${config.max_description_chars}`);
+  }
+  if (!unit.userInvoked && !TRIGGER.test(description)) {
+    errors.push(`${where(unit)}: description has no trigger phrase; add a sentence starting "Use when", "Use for" or "Apply when"`);
+  }
+  const directory = basename(dirname(unit.file));
+  if (unit.data.name !== directory) errors.push(`${where(unit)}: name "${unit.data.name}" must equal directory name "${directory}"`);
+}
+
+// A bare "ven:name" is the one reference form with no false positives; `name` and **name** also match ordinary words.
+const resolvable = new Set([
+  ...named.keys(),
+  ...all.filter((unit) => unit.kind === 'agent' && unit.name).map((unit) => unit.name),
+  ...(existsSync(join(coreRoot, 'bin')) ? readdirSync(join(coreRoot, 'bin')) : []),
+]);
+for (const unit of all) {
+  for (const [, name] of unit.body.matchAll(/\bven:([a-z0-9][a-z0-9-]*)/g)) {
+    if (!resolvable.has(name)) errors.push(`${where(unit)}: dead reference ven:${name}; no skill, playbook, agent or bin tool has that name`);
+  }
+}
+
+const wordSets = new Map(
+  all
+    .filter((unit) => unit.kind === 'skill' && unit.data?.description)
+    .map((unit) => [unit.name, new Set((unit.data.description.toLowerCase().match(/[a-z0-9]+/g) ?? []).filter((word) => !STOPWORDS.has(word)))]),
+);
+const similarityNames = [...wordSets.keys()];
+for (const [i, first] of similarityNames.entries()) {
+  for (const second of similarityNames.slice(i + 1)) {
+    const a = wordSets.get(first);
+    const b = wordSets.get(second);
+    const shared = [...a].filter((word) => b.has(word)).length;
+    const score = shared / (a.size + b.size - shared);
+    if (score > config.description_similarity_max) {
+      errors.push(`descriptions of ${first} and ${second} are too similar (${score.toFixed(2)} > ${config.description_similarity_max}); make each say when only its skill applies`);
+    }
+  }
 }
 
 for (const unit of all.filter((candidate) => candidate.kind === 'skill' || candidate.kind === 'playbook')) {
@@ -166,8 +209,7 @@ for (const unit of all.filter((candidate) => candidate.kind === 'reference')) {
 }
 
 // Core never names tech, vendors or domains.
-const allowed = new Set(config.allowed_words);
-const deny = Object.values(config.denylist).flat().filter((word) => !allowed.has(word));
+const deny = Object.values(config.denylist).flat();
 const escape = (word) => word.replace(/[.*+?^${}()|[\]\\#]/g, '\\$&');
 const denyPattern = new RegExp(`(?<![\\w.-])(${deny.map(escape).join('|')})(?![\\w-])`, 'gi');
 for (const unit of core) {

@@ -3,7 +3,7 @@ name: forge-playbook
 description: "Compose a pack playbook for a task shape that keeps recurring in this repo, using only skills that already exist, and register it with the router. Use when no core playbook fits a repeated kind of task, or the user asks for a domain playbook."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/figure-it-out/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/figure-it-out/SKILL.md
   license: MIT
 ---
 
@@ -15,13 +15,14 @@ A playbook is an ordered list of existing skills for one task shape, so the rout
 
 ## 1. Confirm the shape repeats
 
-Find three or more real tasks of this shape:
+Find real tasks of this shape, enough to meet the pack bar in **encode-lessons-in-structure**:
 
+- corrections in `ven-decisions list --step correction` that point at the same missing step;
 - sessions in `ven-transcripts --kind routes --since 90` that were rerouted or ran a playbook with steps that didn't fit;
 - `ven-decisions list` rows where the same steps keep ending in `skip:` for the same reason;
 - merged PRs that followed the same sequence by hand.
 
-Fewer than three, or a core playbook fits with at most one skipped step: write nothing, and name the core playbook to use.
+Below the bar, or a core playbook fits with at most one skipped step: write nothing, and name the core playbook to use.
 
 ## 2. Frame it
 

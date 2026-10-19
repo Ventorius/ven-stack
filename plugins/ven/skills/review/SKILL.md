@@ -3,7 +3,7 @@ name: review
 description: "Review a diff with a blind panel of lens reviewers (correctness, design and depth, security and data, test honesty) and rank their findings into Act on, Consider, Noted and Dismissed. Use when a change is ready for review, before shipping, or when asked to review a branch or PR."
 metadata:
   layer: L3
-  source: cursor/plugins@main:pstack/skills/interrogate/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/interrogate/SKILL.md
   license: MIT
 ---
 
@@ -23,7 +23,7 @@ If you are a `ven:ven-reviewer` with this skill preloaded: your brief carries yo
 
 ## 2. Pick the panel
 
-The budget tier is `${user_config.budget_tier}`; a profile `budget_tier` overrides it.
+Whether to run a panel at all is decided by the playbook's `review:` line; this section only sizes the panel you were asked for. The budget tier is `${user_config.budget_tier}`; a profile `budget_tier` overrides it.
 
 | Budget | Not risky | Risky |
 |---|---|---|

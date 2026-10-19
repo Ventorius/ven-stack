@@ -5,7 +5,7 @@ argument-hint: <task>
 disable-model-invocation: true
 metadata:
   layer: L5
-  source: cursor/plugins@main:pstack/skills/poteto-mode/SKILL.md
+  source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/SKILL.md
   license: MIT
 ---
 
@@ -19,7 +19,7 @@ You own the run. Pick one playbook, show the pick, copy its steps, run them in o
 
 - `ven-profile show`. If it fails, the repo has no profile. A question you can answer by reading code alone may still run the **investigation** playbook. Anything else: tell the user to run `/ven:onboard` and stop.
 - `ven-profile fresh` exits 1: say the profile is stale, suggest `/ven:onboard --refresh`, and treat commands tied to the changed files as unverified.
-- `ven-decisions active` shows a playbook in this worktree: a task that continues it routes to **pickup**, a pause routes to **pause**. A new task closes it first with `ven-decisions end --outcome <done|abandoned|blocked>`, whichever it reached.
+- `ven-decisions active` shows a playbook in this worktree: a task that continues it routes to **pickup**, a pause routes to **pause**. A new task while a playbook is active (running or paused) is not silent: ask the user (AskUserQuestion) whether to finish, abandon or keep the old one paused, and record the answer. Close it with `ven-decisions end --outcome <done|abandoned|blocked>` only on finish or abandon. A paused playbook keeps its state; run the new task in a separate worktree or branch, or after the pickup.
 - Commands come only from the profile. A missing or `unverified` key: say so and don't rely on it.
 
 ## 2. Build the playbook list
@@ -40,8 +40,13 @@ When two fit, take the one that asks more of the evidence. Close calls:
 
 - Broken, wrong or regressed → **bug-fix**, even when the fix looks like new behavior.
 - Same behavior, new structure → **refactor**. One mechanical change across many call sites → **migration**.
-- Slow, with a number or a measurable symptom → **perf**. "Is this slow?" with nothing to measure → **investigation** first.
-- A question, no change → **investigation**. "Explain this PR", "teach me X" → **explain**.
+- "X got slower": a baseline number exists or the user wants a speed target → **perf**; a functional break (timeouts, wrong results) → **bug-fix**. "Is this slow?" with nothing to measure → **investigation** first.
+- A question, no change → **investigation** when it asks a specific question and wants findings; **explain** when it teaches or builds understanding for a person ("explain this PR", "teach me X", "walk me through").
+- Production is down or erroring right now, user-facing, needs a fast fix → **hotfix**. A defect with no live fire → **bug-fix**.
+- A test that fails intermittently with no code change → **flaky-test**. A test that fails every time → **bug-fix**.
+- "Can we do X?", "try it and tell me", a throwaway experiment → **spike**.
+- Bump a dependency, runtime or toolchain version → **dependency-upgrade**. Swap one API or pattern across call sites → **migration**.
+- Only documentation files change → **docs-only**. Docs plus behavior → **feature**.
 - "Run until done" over existing tickets → **autonomous-run**. No spec or tickets yet → **feature**.
 - "Continue", "pick up" → **pickup**. "Stop here", "pause" → **pause**. "Open a PR", "ship it" → **ship**.
 
@@ -74,15 +79,21 @@ Delegate by the ambiguity left, not by size:
 - Budget tier: `${user_config.budget_tier}`, unless `ven-profile get budget_tier` sets one for this repo. `lean`: pass `effort: low` and skip optional panels. `max`: pass `effort: high`. `standard`: the agent's default.
 - A brief drops a tier only when complete: inputs, exact files, expected output shape, a check command from the profile, and the `playbook` and `step` for its result trailer. A brief that says "decide" or "figure out" stays with you.
 - Pack skills: agent preloads are static. For each pack that `ven-profile packs-for <brief files>` returns, add "load skill `<plugin name>:<skill>` before you start" to the brief for each of its `skills`. Load them yourself when you work on those files.
-- Parallelize only work on disjoint files. Shared writes run in order.
-- Read every `VEN-RESULT` trailer. On `BLOCKED: <question>`, answer from the spec or the code, or ask the user if the call is theirs, then spawn a fresh agent with the consolidated brief. Never let an agent guess.
+- Parallelize independent work. Tickets follow the blocker graph (feature playbook); direct writes to the same files run in order.
+- Read every `VEN-RESULT` trailer. On `BLOCKED: <question>`, answer from the spec or the code, or ask the user if the call is theirs, then continue the same agent with SendMessage (it keeps its worktree and context); never spawn a new one for the answer. Never let an agent guess. A coder's trailer carries `worktree:` and `branch:`; use them to merge.
 - You own what agents return. Read the diff and check the logged verify pass (`ven-decisions list`) before you merge a worktree; a trailer is a claim, not proof.
 - Ask the user (AskUserQuestion) only for calls that are theirs: product decisions, and irreversible or outward-facing actions (PRs, pushes, comments, tracker tickets, installs). Find facts yourself. Apply **never-block-on-reversible** to the rest.
 - Apply the principles in [references/principles.md](references/principles.md) when their trigger fits. Name each one that changed a decision in your reply, and the choice it changed.
 
 ## 6. Review panels
 
-Run **review** as a panel of blind lenses only when a changed file matches a profile `risk_areas` glob (`ven-profile get risk_areas`), when the playbook asks for a panel, or when the budget tier is `max`. Otherwise the review step is your own read of the diff against the spec or ticket, recorded with `ven-decisions add --step review`. The budget tier never removes a panel from risky work.
+Each playbook declares `review: panel` or `review: own-read` in its own text. Feature and migration declare panel; refactor and perf declare panel only when a changed file matches a `risk_areas` glob (`ven-profile get risk_areas`); bug-fix, hotfix, docs-only and spike declare own-read. Budget tier `max` forces a panel. A risk-area match upgrades own-read to panel too. The budget tier never removes a panel from risky work.
+
+Panel: run **review**. Own-read: read the diff against the spec or ticket and record it with `ven-decisions add --step review`.
+
+## 6a. Small-task fast path
+
+A task that touches at most two files, has a known check command, and matches no `risk_areas` glob skips the per-step task-list items and the per-step `ven-decisions add` rows. It still runs `ven-decisions start`, **verify** (`ven-profile verify <key>`), one **learning-check** row and `ven-decisions end`. Say `fast path` in the announce line's reason. A one-line bug fix with an obvious cause may skip diagram-hypotheses' three-cause minimum, never **reproduce**.
 
 ## 7. No playbook fits
 
