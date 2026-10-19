@@ -125,7 +125,10 @@ Work moves to a cheaper tier only when its brief is complete: inputs, exact file
 | `decisions-log` | SubagentStop | Appends the agent's `VEN-RESULT` to `decisions.tsv` |
 | `context-inject` | SessionStart | Injects `map.md`, profile freshness, the active playbook and relevant solutions |
 
-All hooks are generic and read their patterns and commands from the profile.
+| `capture-corrections` | UserPromptSubmit | Logs prompts that read as corrections to `decisions.tsv` for `learning-check`; never blocks or prints |
+| `solutions-on-edit` | PreToolUse Edit/Write | Shows up to 2 solution entries covering the file about to change, once per session and file |
+
+All hooks are generic and read their patterns and commands from the profile. The gate hooks (`verify-gate` on stop, `repro-first`) block with the cause and the fix when they hit an internal error such as a corrupt profile; every other hook allows and writes a one-line warning to stderr.
 
 ### Repo state
 
