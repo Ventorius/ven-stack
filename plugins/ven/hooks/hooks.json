@@ -21,6 +21,19 @@
         "hooks": [
           { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/hooks/repro-first.mjs"], "timeout": 10, "onFailure": "block" }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/hooks/solutions-on-edit.mjs"], "timeout": 10 }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/hooks/capture-corrections.mjs"], "timeout": 5 }
+        ]
       }
     ],
     "PostToolUse": [
@@ -35,14 +48,14 @@
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/hooks/verify-gate.mjs"], "timeout": 60 }
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/hooks/verify-gate.mjs"], "timeout": 60, "onFailure": "block" }
         ]
       }
     ],
     "SubagentStop": [
       {
         "hooks": [
-          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/hooks/verify-gate.mjs"], "timeout": 60 },
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/hooks/verify-gate.mjs"], "timeout": 60, "onFailure": "block" },
           { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/hooks/decisions-log.mjs"], "timeout": 10 }
         ]
       }

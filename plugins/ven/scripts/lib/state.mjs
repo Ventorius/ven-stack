@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 export function readJson(path, fallback) {
@@ -34,6 +34,23 @@ export function readPlaybookState(dir, worktreeRoot) {
 
 export function writePlaybookState(dir, worktreeRoot, state) {
   writeJson(join(dir, 'state', 'worktrees', `${worktreeKey(worktreeRoot)}.json`), { root: worktreeRoot, ...state });
+}
+
+// The verify-gate baseline outlives sessions: /clear starts a new session in the same dirty worktree.
+function baselinePath(dir, worktreeRoot) {
+  return join(dir, 'state', 'baselines', `${worktreeKey(worktreeRoot)}.json`);
+}
+
+export function readBaseline(dir, worktreeRoot) {
+  return readJson(baselinePath(dir, worktreeRoot), null);
+}
+
+export function writeBaseline(dir, worktreeRoot, startTree) {
+  writeJson(baselinePath(dir, worktreeRoot), { root: worktreeRoot, start_tree: startTree });
+}
+
+export function clearBaseline(dir, worktreeRoot) {
+  rmSync(baselinePath(dir, worktreeRoot), { force: true });
 }
 
 export function readSession(dir, sessionId) {

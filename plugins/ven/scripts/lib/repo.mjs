@@ -82,11 +82,15 @@ export function changedFilesBetween(cwd, fromTree, toTree) {
   return out ? out.split('\n').filter(Boolean) : [];
 }
 
+export function mergeBaseWithDefault(cwd) {
+  const base = defaultBranch(cwd);
+  return base ? tryGit(['merge-base', 'HEAD', base], cwd) : null;
+}
+
 // Files this branch touches relative to the default branch, plus uncommitted work.
 export function branchTouchedFiles(cwd) {
   const files = new Set();
-  const base = defaultBranch(cwd);
-  const mergeBase = base ? tryGit(['merge-base', 'HEAD', base], cwd) : null;
+  const mergeBase = mergeBaseWithDefault(cwd);
   if (mergeBase) {
     const committed = tryGit(['diff', '--name-only', mergeBase, 'HEAD'], cwd);
     for (const file of committed ? committed.split('\n') : []) if (file) files.add(file);
