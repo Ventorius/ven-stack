@@ -105,6 +105,17 @@ test('pin-sources replaces @main with the pinned SHA on the source line only, an
   assert.match(second.stdout, /0 files changed/);
 });
 
+test('pin-sources --check exits 1 for an unpinned @main and leaves every file unchanged', () => {
+  const root = pinTree('source: a/one@main:x.md');
+  const skillPath = join(root, 'plugins/ven/skills/s/SKILL.md');
+  const playbookPath = join(root, 'plugins/ven/skills/do/playbooks/p.md');
+  const before = [readFileSync(skillPath, 'utf8'), readFileSync(playbookPath, 'utf8')];
+  const result = run(script('pin-sources.mjs'), ['--root', root, '--check']);
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /2 files need pinning/);
+  assert.deepEqual([readFileSync(skillPath, 'utf8'), readFileSync(playbookPath, 'utf8')], before);
+});
+
 test('no shipped skill or playbook still pins @main for an upstream with a SHA', () => {
   const result = run(script('pin-sources.mjs'), ['--check']);
   assert.equal(result.status, 0, result.stdout + result.stderr);
@@ -152,6 +163,19 @@ test('ven-new-skill creates a lint-clean skill, a catalog line and a notice line
   );
   assert.match(result.stdout, /Next steps/);
   assert.match(result.stdout, /evals\/skills\/widget-check/);
+  assert.match(result.stdout, /^ven-lint-skills: clean$/m);
+  assert.doesNotMatch(result.stdout, /ven-lint-skills reported/);
+});
+
+test('ven-new-skill exits 1 and prints the linter findings when the tree fails lint', () => {
+  const root = scaffoldTree();
+  write(root, 'plugins/ven/skills/broken/SKILL.md', '---\nname: broken\ndescription: Breaks things. Use when testing.\nmetadata:\n  layer: L2\n---\nSee ven:ghost-skill.\n');
+  const result = scaffold(root, ['fresh-two', '--layer', 'L3']);
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /ven-lint-skills reported:/);
+  assert.match(result.stdout, /dead reference ven:ghost-skill/);
+  assert.doesNotMatch(result.stdout, /ven-lint-skills: clean/);
+  assert.equal(existsSync(join(root, 'plugins/ven/skills/fresh-two/SKILL.md')), true);
 });
 
 test('ven-new-skill without --source writes no source line and no notice', () => {
@@ -186,6 +210,7 @@ test('ven-new-skill exits 2 on bad usage', () => {
     ['x-skill', '--layer', 'L9'],
     ['Bad_Name', '--layer', 'L2'],
     ['x-skill', '--layer', 'L2', '--source', 'a/b@main:p.md'],
+    ['x-skill', '--layer', 'L2', '--source', 'not-a-source', '--notice-group', 'principles'],
   ]) {
     const result = scaffold(root, args);
     assert.equal(result.status, 2, `${args.join(' ')}: ${result.stderr}`);

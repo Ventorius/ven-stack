@@ -76,5 +76,53 @@ test('ven-doctor usage errors exit 2', () => {
   assert.equal(doctor(root, ['--bogus']).code, 2);
   assert.equal(doctor(root, ['extra']).code, 2);
   assert.equal(doctor(root, ['--strict=1']).code, 2);
-  assert.equal(doctor(root, ['--help']).code, 0);
+});
+
+test('ven-doctor --help and -h print usage to stdout and exit 0', () => {
+  const root = makeRepo();
+  for (const flag of ['--help', '-h']) {
+    const result = doctor(root, [flag]);
+    assert.equal(result.code, 0, flag);
+    assert.match(result.stdout, /ven-doctor: check the ven install/, flag);
+    assert.equal(result.stderr, '', flag);
+  }
+});
+
+test('ven-doctor names corrupt state files and how to fix them', () => {
+  for (const folder of ['sessions', 'worktrees', 'baselines']) {
+    const root = healthyRepo();
+    const path = writeState(root, `state/${folder}/broken.json`, '{ nope');
+    const result = doctor(root);
+    assert.equal(result.code, 1, folder);
+    assert.match(result.stdout, /ERROR +/, folder);
+    assert.ok(result.stdout.includes(`corrupt JSON in ${path}`), folder);
+    assert.match(result.stdout, /delete the file/, folder);
+  }
+});
+
+test('ven-doctor accepts valid state files', () => {
+  const root = healthyRepo();
+  writeState(root, 'state/sessions/ok.json', '{"a":1}');
+  writeState(root, 'state/baselines/ok.json', '{}');
+  assert.equal(doctor(root, ['--strict']).code, 0);
+});
+
+test('ven-doctor flags a decisions.tsv with a wrong header or ragged rows', () => {
+  const header = 'ts\tworktree\tplaybook\tstep\tdecision\tevidence';
+  const cases = {
+    'missing header': 'a\tb\tc\td\te\tf\n',
+    'ragged row': `${header}\n2026-01-01\troot\tfix\tstep\n`,
+  };
+  for (const [name, content] of Object.entries(cases)) {
+    const root = healthyRepo();
+    const path = writeState(root, 'decisions.tsv', content);
+    const result = doctor(root);
+    assert.equal(result.code, 1, name);
+    assert.match(result.stdout, /ERROR +.*malformed decisions\.tsv/, name);
+    assert.ok(result.stdout.includes(path), name);
+    assert.match(result.stdout, /move it aside/, name);
+  }
+  const root = healthyRepo();
+  writeState(root, 'decisions.tsv', `${header}\n2026-01-01\troot\tfix\tstep\tdone\t\n`);
+  assert.equal(doctor(root, ['--strict']).code, 0);
 });

@@ -20,9 +20,35 @@ const skillFile = ({ name, description, body = 'Do it.', extra = '' }) =>
 const lint = (files) => runBin('ven-lint-skills', ['--root', makePlugin(files)]);
 const config = JSON.parse(readFileSync(join(PLUGIN_ROOT, 'lint.json'), 'utf8'));
 
-test('lint.json sets the core budget and has no dead allowances', () => {
-  assert.equal(config.core_line_budget, 7000);
-  assert.equal(config.allowed_words, undefined);
+function bulkSkills(totalLines) {
+  const perSkill = config.max_skill_lines - 10;
+  const count = Math.ceil(totalLines / perSkill);
+  return Object.fromEntries(
+    Array.from({ length: count }, (_, i) => {
+      const body = Array.from({ length: perSkill }, (_, j) => `Unique filler sentence ${i}-${j} with token zq${i}x${j}.`).join('\n');
+      const description = `Handles kind${i}a kind${i}b kind${i}c kind${i}d kind${i}e kind${i}f. Use when kind${i}z appears.`;
+      return [`skills/s${i}/SKILL.md`, skillFile({ name: `s${i}`, description, body })];
+    }),
+  );
+}
+
+test('a tree over the core line budget fails and names the budget', () => {
+  const result = lint(bulkSkills(config.core_line_budget + 200));
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, new RegExp(`core skill text is \\d+ lines, budget ${config.core_line_budget}`));
+});
+
+test('a tree under the core line budget passes', () => {
+  const result = lint(bulkSkills(config.core_line_budget - 800));
+  assert.equal(result.code, 0, result.stderr);
+});
+
+test('a ven: reference to an existing skill passes', () => {
+  const result = lint({
+    'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing. Use when testing.', body: 'Then apply ven:b.' }),
+    'skills/b/SKILL.md': skillFile({ name: 'b', description: 'Draws another picture entirely. Use for pictures.' }),
+  });
+  assert.equal(result.code, 0, result.stderr);
 });
 
 test('description needs a trigger phrase unless the skill is user-invoked', () => {

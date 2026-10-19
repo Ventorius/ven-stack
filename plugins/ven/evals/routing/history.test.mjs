@@ -32,6 +32,24 @@ test('flippedCases compares against the latest entry of the same tier only', () 
   assert.deepEqual(flippedCases([], entry), []);
 });
 
+test('flips compare against the latest earlier entry of the tier, not older ones', () => {
+  const history = [
+    { tier: 'quick', cases: { a: false, b: true } },
+    { tier: 'quick', cases: { a: true, b: true } },
+    { tier: 'full', cases: { a: false, b: false } },
+    { tier: 'quick', cases: { a: true, b: false } },
+  ];
+  assert.deepEqual(flippedCases(history, toEntry(quick, 'x')), []);
+  const entry = { tier: 'quick', cases: { a: false, b: false } };
+  assert.deepEqual(flippedCases(history, entry), [{ id: 'a', from: true, to: false }]);
+});
+
+test('a case new in this run is not reported as a flip', () => {
+  const history = [{ tier: 'quick', cases: { a: true } }, { tier: 'quick', cases: { a: true, old: false } }];
+  const entry = { tier: 'quick', cases: { a: true, brand_new: false, toString: false } };
+  assert.deepEqual(flippedCases(history, entry), []);
+});
+
 test('appendHistory appends a JSON line and reports flips', () => {
   const dir = mkdtempSync(join(tmpdir(), 'hist-'));
   const historyPath = join(dir, 'history.jsonl');
