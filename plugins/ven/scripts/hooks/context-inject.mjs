@@ -29,7 +29,7 @@ function main(input) {
 
   const stale = staleSources(profile, root);
   if (stale.length > 0) {
-    sections.push(`Profile may be stale: ${stale.join(', ')} changed after ${profile.generated_at}. Run /ven:onboard --refresh before relying on its commands.`);
+    sections.push(`Profile may be stale: ${stale.join(', ')} changed after ${profile.generated_at}. Run ven-profile stamp if the profile still holds, else /ven:onboard --refresh, before relying on its commands.`);
   }
 
   const state = readPlaybookState(dir, root);

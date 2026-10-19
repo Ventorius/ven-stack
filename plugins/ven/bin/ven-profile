@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dispatch, fail, list, parseStrict } from '../scripts/lib/args.mjs';
+import { dispatch, fail, intFlag, list, parseStrict } from '../scripts/lib/args.mjs';
 import { splitFrontmatter } from '../scripts/lib/frontmatter.mjs';
 import { matchesAny } from '../scripts/lib/globs.mjs';
 import {
@@ -20,7 +20,8 @@ import {
   staleSources,
   validateProfile,
 } from '../scripts/lib/profile.mjs';
-import { repoRoot, venDir, workingTreeHash } from '../scripts/lib/repo.mjs';
+import { writeAll } from '../scripts/lib/hookio.mjs';
+import { repoRoot, untrackedFiles, venDir, workingTreeHash } from '../scripts/lib/repo.mjs';
 import { appendVerify, readJson, writeJson } from '../scripts/lib/state.mjs';
 
 const USAGE = `ven-profile: the repo profile (stack facts + verified commands), stored in <git-common-dir>/ven
@@ -36,7 +37,8 @@ const USAGE = `ven-profile: the repo profile (stack facts + verified commands), 
   ven-profile run <key> [--file F]... [--var name=value]...   run a profile command, filling {file}/{files}/{name}
   ven-profile prove [<key>...] [--strict]  run commands once and mark each verified or unverified (--strict: exit 1 on any FAIL)
   ven-profile verify <key> [--file F]...   run a verify command and log the result against the current tree
-                                           (exit 1 and no pass if the tree changed while it ran)
+                                           (exit 1 and no pass if existing files changed while it ran;
+                                           files the command newly creates are fine)
   ven-profile fresh                        exit 1 if manifests or lockfiles changed since the profile was stamped
   ven-profile adapters                     print adapters.json (capability → command)
   ven-profile adapter <capability> [--file F] [--var name=value]   run a verified adapter
@@ -49,6 +51,7 @@ const USAGE = `ven-profile: the repo profile (stack facts + verified commands), 
 const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const [command, ...rest] = process.argv.slice(2);
 const { flags, positionals } = parseStrict(rest, { values: ['file', 'var', 'timeout'], booleans: ['strict'] });
+const timeout = intFlag(flags, 'timeout', undefined);
 const cwd = process.cwd();
 
 function requireProfile() {
@@ -176,8 +179,8 @@ const commands = {
   run() {
     const key = positionals[0] ?? fail('usage: ven-profile run <key> [--file F]...', 2);
     const spec = commandSpec(requireProfile().profile, key) ?? fail(`ven-profile: no command at ${key}`);
-    const result = execute(spec, flags.timeout && Number(flags.timeout));
-    process.stdout.write(result.output);
+    const result = execute(spec, timeout);
+    writeAll(1, result.output);
     process.exit(result.exit);
   },
   prove() {
@@ -212,11 +215,15 @@ const commands = {
     const { dir, root, profile } = requireProfile();
     const spec = commandSpec(profile, key) ?? fail(`ven-profile: no command at ${key}`);
     const before = workingTreeHash(root);
-    const result = execute(spec, flags.timeout && Number(flags.timeout));
+    const untrackedBefore = new Set(untrackedFiles(root));
+    const result = execute(spec, timeout);
     const tree = workingTreeHash(root);
+    // A file the command created is output, not drift: only content that existed before must be unchanged.
+    const created = untrackedFiles(root).filter((file) => !untrackedBefore.has(file));
+    const unchanged = tree === before || workingTreeHash(root, { exclude: created }) === before;
     const entry = { tree, key, command: result.commandLine, exit: result.exit, seconds: result.seconds, worktree: repoRoot(cwd) };
-    process.stdout.write(result.output);
-    if (before !== tree) {
+    writeAll(1, result.output);
+    if (!unchanged) {
       appendVerify(dir, { ...entry, tree_changed: true });
       fail(`ven-profile verify: the tree changed while ${key} ran (exit ${result.exit}), so no pass is logged. Re-run: ven-profile verify ${key}`);
     }
@@ -238,8 +245,8 @@ const commands = {
     const spec = readAdapters()[capability];
     if (!spec?.run) fail(`ven-profile: no adapter for ${capability}; fall back to reading files and suggest forge-adapter`, 3);
     if (spec.status !== 'verified') fail(`ven-profile: adapter ${capability} is ${spec.status}; prove it first (ven-profile prove-adapters ${capability})`, 3);
-    const result = execute(spec, flags.timeout && Number(flags.timeout));
-    process.stdout.write(result.output);
+    const result = execute(spec, timeout);
+    writeAll(1, result.output);
     process.exit(result.exit);
   },
   'prove-adapters'() {

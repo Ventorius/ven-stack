@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-import { relative } from 'node:path';
 import { allow, editDelta, editedFilePath, lineDelta, runHook } from '../lib/hookio.mjs';
 import { matchesAny } from '../lib/globs.mjs';
 import { loadProfile } from '../lib/profile.mjs';
-import { repoRoot, tryGit } from '../lib/repo.mjs';
-import { appendDecision, readPlaybookState } from '../lib/state.mjs';
+import { repoRelative, repoRoot, tryGit } from '../lib/repo.mjs';
+import { appendDecision, readPlaybookState, readSession, writeSession } from '../lib/state.mjs';
 
 const ALLOW_MARKER = /ven-allow:\s*\S+/;
 
@@ -31,6 +30,16 @@ function deltaFor(input, root, file) {
   return head === null ? editDelta(input) : lineDelta(head, content);
 }
 
+// A Write of a file that still differs from HEAD repeats the same allowed line on every call; log it once.
+function markAllowLogged(dir, sessionId, key) {
+  const id = sessionId ?? 'unknown';
+  const session = readSession(dir, id);
+  const logged = session.allow_logged ?? [];
+  if (logged.includes(key)) return false;
+  writeSession(dir, id, { ...session, allow_logged: [...logged, key] });
+  return true;
+}
+
 function main(input) {
   const cwd = input.cwd ?? process.cwd();
   const loaded = loadProfile(cwd);
@@ -40,7 +49,7 @@ function main(input) {
   const root = repoRoot(cwd);
   const filePath = editedFilePath(input);
   if (!filePath) allow();
-  const file = relative(root, filePath);
+  const file = repoRelative(root, filePath);
   if (file.startsWith('..') || file.startsWith('.git/') || matchesAny(file, profile.docs_only ?? ['**/*.md', '**/*.mdx', 'docs/**'])) allow();
 
   const suppressions = compilePatterns(profile.suppressions, 'suppression', '');
@@ -52,6 +61,7 @@ function main(input) {
     for (const line of added.split('\n')) {
       if (!regex.test(line)) continue;
       if (ALLOW_MARKER.test(line)) {
+        if (!markAllowLogged(dir, input.session_id, `${file}::${line.trim()}`)) continue;
         appendDecision(dir, {
           worktree: root,
           playbook: readPlaybookState(dir, root)?.playbook ?? '',

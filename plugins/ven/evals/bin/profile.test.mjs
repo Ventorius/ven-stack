@@ -4,6 +4,7 @@ import { utimesSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { PLUGIN_ROOT, BASE_PROFILE, makeRepo, runBin, stateDir, writeFile, writeState } from '../support/fixture.mjs';
+import { workingTreeHash } from '../../scripts/lib/repo.mjs';
 import { passedVerifyFor, verifyEntries } from '../../scripts/lib/state.mjs';
 
 const json = (result) => JSON.parse(result.stdout);
@@ -71,7 +72,7 @@ test('prove --strict exits 1 when any command fails, plain prove still exits 0',
   assert.equal(profile(clean, 'prove', '--strict').code, 0);
 });
 
-const WRITES_FILE = { run: `node -e "require('fs').writeFileSync('generated.txt','same')"`, status: 'verified' };
+const WRITES_FILE = { run: `node -e "require('fs').writeFileSync('src/app.js','same')"`, status: 'verified' };
 
 test('verify refuses to log a pass when the tree changed while the command ran', () => {
   const root = makeRepo({ profile: { ...BASE_PROFILE, commands: { gen: WRITES_FILE }, verify: { logic: 'commands.gen' } } });
@@ -93,6 +94,25 @@ test('verify logs a pass once the command no longer changes the tree', () => {
   assert.equal(entries.length, 2);
   assert.equal(entries[1].tree_changed, undefined);
   assert.equal(passedVerifyFor(stateDir(root), entries[1].tree).key, 'gen');
+});
+
+test('verify logs a pass against the post-run tree when the command only adds an untracked file', () => {
+  const writesOut = { run: `node -e "require('fs').writeFileSync('out.txt','x')"`, status: 'verified' };
+  const root = makeRepo({ profile: { ...BASE_PROFILE, commands: { gen: writesOut }, verify: { logic: 'commands.gen' } } });
+  const result = profile(root, 'verify', 'gen');
+  assert.equal(result.code, 0, result.stdout + result.stderr);
+  const [entry] = verifyEntries(stateDir(root));
+  assert.equal(entry.tree_changed, undefined);
+  assert.equal(passedVerifyFor(stateDir(root), workingTreeHash(root)).key, 'gen');
+});
+
+test('verify still refuses when the command edits a file that existed before, untracked or tracked', () => {
+  const editsTracked = { run: `node -e "require('fs').appendFileSync('src/app.js','// x')"`, status: 'verified' };
+  const editsUntracked = { run: `node -e "require('fs').appendFileSync('scratch.txt','x')"`, status: 'verified' };
+  const root = makeRepo({ profile: { ...BASE_PROFILE, commands: { tracked: editsTracked, untracked: editsUntracked }, verify: {} } });
+  writeFile(root, 'scratch.txt', 'before');
+  assert.equal(profile(root, 'verify', 'tracked').code, 1);
+  assert.equal(profile(root, 'verify', 'untracked').code, 1);
 });
 
 test('verify keeps the command exit code when the command fails', () => {
@@ -184,4 +204,10 @@ test('ven-profile exit codes: usage 2, unknown flags 2, valueless flags 2, runti
   assert.equal(profile(root, 'prove', '--strict=yes').code, 2);
   assert.equal(profile(root, 'get', 'nope').code, 1);
   assert.equal(profile(root, '--help').code, 0);
+});
+
+test('--timeout must be an integer of at least 1', () => {
+  const root = makeRepo();
+  for (const bad of ['0', 'abc', '-3', '1.5']) assert.equal(profile(root, 'run', 'test.all', '--timeout', bad).code, 2, bad);
+  assert.equal(profile(root, 'run', 'test.all', '--timeout', '30').code, 0);
 });

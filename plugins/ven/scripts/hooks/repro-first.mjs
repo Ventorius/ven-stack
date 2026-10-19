@@ -1,12 +1,11 @@
 #!/usr/bin/env node
-import { relative } from 'node:path';
 import { allow, block, editedFilePath, runHook } from '../lib/hookio.mjs';
 import { matchesAny } from '../lib/globs.mjs';
 import { loadProfile } from '../lib/profile.mjs';
-import { repoRoot } from '../lib/repo.mjs';
+import { repoRelative, repoRoot } from '../lib/repo.mjs';
 import { readPlaybookState } from '../lib/state.mjs';
 
-await runHook('repro-first', main, { onError: 'block' });
+await runHook('repro-first', main, { onError: 'block-once' });
 
 function main(input) {
   const cwd = input.cwd ?? process.cwd();
@@ -15,17 +14,18 @@ function main(input) {
 
   const { dir, profile } = loaded;
   const root = repoRoot(cwd);
-  const state = readPlaybookState(dir, root);
-  if (state?.playbook !== 'bug-fix' || state.reproduced) allow();
-
   const filePath = editedFilePath(input);
   if (!filePath) allow();
-  const file = relative(root, filePath);
+  const file = repoRelative(root, filePath);
   if (file.startsWith('..') || file.startsWith('.git/')) allow();
 
   const testGlobs = profile.tests?.patterns ?? [];
   const docsGlobs = profile.docs_only ?? ['**/*.md', '**/*.mdx', 'docs/**'];
   if (matchesAny(file, testGlobs) || matchesAny(file, docsGlobs)) allow();
+
+  // Read last: corrupt playbook state must never block edits that are allowed anyway.
+  const state = readPlaybookState(dir, root);
+  if (state?.playbook !== 'bug-fix' || state.reproduced) allow();
 
   block(`ven repro-first: the bug-fix playbook is active in this worktree and no reproduction is recorded, so source edits are blocked.
 Reproduce first: write a failing test (test files match ${testGlobs.join(', ') || 'the profile test patterns'}) or a repro script, run it, and confirm it fails for the reported reason.
