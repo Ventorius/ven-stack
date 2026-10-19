@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { fail, parseArgs } from '../scripts/lib/args.mjs';
+import { dispatch, fail, parseStrict } from '../scripts/lib/args.mjs';
 import { repoRoot, venDir } from '../scripts/lib/repo.mjs';
 import { appendDecision, readDecisions, readPlaybookState, writePlaybookState } from '../scripts/lib/state.mjs';
 
@@ -8,58 +8,89 @@ const USAGE = `ven-decisions: the decision log and active playbook for this work
   ven-decisions start <playbook>                     mark a playbook active in this worktree
   ven-decisions add --step S --decision D [--evidence E] [--playbook P]
   ven-decisions skip --step S --reason R             record a skipped playbook step
-  ven-decisions end [--outcome O]                    close the active playbook
+  ven-decisions end [--outcome O]                    close the active playbook (needs a learning-check row)
   ven-decisions active                               print the active playbook state
-  ven-decisions list [--playbook P] [--limit N]      print decision rows (TSV)`;
+  ven-decisions list [--playbook P] [--step S] [--limit N] [--json]   print decision rows (TSV or JSON)
+
+  exit codes: 0 ok, 1 failure, 2 usage error`;
+
+const VALUE_FLAGS = ['step', 'decision', 'evidence', 'playbook', 'reason', 'outcome', 'limit'];
+const LEARNING_EXEMPT = ['pause', 'explain'];
 
 const [command, ...rest] = process.argv.slice(2);
-const { flags, positionals } = parseArgs(rest);
-const cwd = process.cwd();
-const dir = venDir(cwd);
-const root = repoRoot(cwd);
-if (!dir || !root) fail('ven-decisions: not inside a git repository');
+const { flags, positionals } = parseStrict(rest, { values: VALUE_FLAGS, booleans: ['json'] });
 
-const state = readPlaybookState(dir, root);
+function context() {
+  const dir = venDir(process.cwd());
+  const root = repoRoot(process.cwd());
+  if (!dir || !root) throw new Error('not inside a git repository');
+  return { dir, root };
+}
 
 function record(step, decision, evidence = '') {
-  const playbook = flags.playbook ?? state?.playbook ?? '';
+  const { dir, root } = context();
+  const playbook = flags.playbook ?? readPlaybookState(dir, root)?.playbook ?? '';
   appendDecision(dir, { worktree: root, playbook, step, decision, evidence });
+  // Read the state only now, right before writing it back, so a step recorded meanwhile is not lost.
+  const state = readPlaybookState(dir, root);
   if (!state?.playbook) return;
   const steps = [...(state.steps ?? []), { step, decision, at: new Date().toISOString() }];
   const reproduced = state.reproduced || (step === 'reproduce' && decision === 'reproduced');
   writePlaybookState(dir, root, { ...state, steps, reproduced });
 }
 
+// state.steps restarts with every `start`, so a row here is a row since started_at.
+function missingLearningCheck(state) {
+  if (LEARNING_EXEMPT.includes(state.playbook)) return false;
+  return !(state.steps ?? []).some((entry) => entry.step === 'learning-check');
+}
+
 const commands = {
   start() {
     const playbook = positionals[0];
-    if (!playbook) fail('usage: ven-decisions start <playbook>');
+    if (!playbook) fail('usage: ven-decisions start <playbook>', 2);
+    const { dir, root } = context();
     writePlaybookState(dir, root, { playbook, started_at: new Date().toISOString(), steps: [], reproduced: false });
     appendDecision(dir, { worktree: root, playbook, step: 'start', decision: 'started', evidence: '' });
     console.log(`active playbook: ${playbook}`);
   },
   add() {
-    if (!flags.step || !flags.decision) fail('usage: ven-decisions add --step S --decision D [--evidence E]');
+    if (!flags.step || !flags.decision) fail('usage: ven-decisions add --step S --decision D [--evidence E]', 2);
     record(flags.step, flags.decision, flags.evidence);
   },
   skip() {
-    if (!flags.step || !flags.reason) fail('usage: ven-decisions skip --step S --reason R');
+    if (!flags.step || !flags.reason) fail('usage: ven-decisions skip --step S --reason R', 2);
     record(flags.step, `skip: ${flags.reason}`);
   },
   end() {
+    const { dir, root } = context();
+    const state = readPlaybookState(dir, root);
     if (!state?.playbook) fail('ven-decisions: no active playbook in this worktree');
+    if (missingLearningCheck(state)) {
+      fail(
+        `ven-decisions: ${state.playbook} cannot end without a learning-check row. Run the learning-check skill, then record it:\n` +
+          '  ven-decisions add --step learning-check --decision <learning, or none> --evidence <entry, or why none>\n' +
+          'or, when there is nothing to review:\n' +
+          '  ven-decisions skip --step learning-check --reason R',
+      );
+    }
     appendDecision(dir, { worktree: root, playbook: state.playbook, step: 'end', decision: flags.outcome ?? 'done', evidence: '' });
     writePlaybookState(dir, root, { playbook: null, ended: state.playbook, ended_at: new Date().toISOString() });
   },
   active() {
-    console.log(JSON.stringify(state ?? { playbook: null }, null, 2));
+    const { dir, root } = context();
+    console.log(JSON.stringify(readPlaybookState(dir, root) ?? { playbook: null }, null, 2));
   },
   list() {
     const limit = Number(flags.limit ?? 50);
-    const rows = readDecisions(dir).filter((row) => !flags.playbook || row.playbook === flags.playbook);
-    for (const row of rows.slice(-limit)) console.log(Object.values(row).join('\t'));
+    if (!Number.isInteger(limit) || limit < 1) fail('--limit must be a positive integer', 2);
+    const rows = readDecisions(context().dir)
+      .filter((row) => !flags.playbook || row.playbook === flags.playbook)
+      .filter((row) => !flags.step || row.step === flags.step)
+      .slice(-limit);
+    if (flags.json) return console.log(JSON.stringify(rows, null, 2));
+    for (const row of rows) console.log(Object.values(row).join('\t'));
   },
 };
 
-if (!commands[command]) fail(USAGE, command ? 1 : 0);
-commands[command]();
+dispatch('ven-decisions', USAGE, commands, command);

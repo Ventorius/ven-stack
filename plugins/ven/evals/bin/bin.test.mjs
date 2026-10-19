@@ -85,8 +85,8 @@ test('ven-profile packs-for filters packs by applies_when paths', () => {
     profile: {
       ...BASE_PROFILE,
       packs: [
-        { name: 'orm', plugin: 'repo-orm@local', applies_when: { paths: ['src/db/**'] }, skills: ['query-rules'] },
-        { name: 'domain', plugin: 'repo-domain@local', applies_when: { paths: ['src/accounts/**'] }, skills: [] },
+        { name: 'orm', kind: 'tech', plugin: 'repo-orm@local', applies_when: { paths: ['src/db/**'] }, skills: ['query-rules'] },
+        { name: 'domain', kind: 'domain', plugin: 'repo-domain@local', applies_when: { paths: ['src/accounts/**'] }, skills: [] },
       ],
     },
   });
@@ -128,10 +128,11 @@ test('ven-decisions tracks the active playbook, steps and skips', () => {
   const active = json(runBin('ven-decisions', ['active'], { cwd: root }));
   assert.equal(active.playbook, 'feature');
   assert.deepEqual(active.steps.map((step) => step.decision), ['scope settled', 'skip: docs only']);
+  runBin('ven-decisions', ['skip', '--step', 'learning-check', '--reason', 'nothing durable'], { cwd: root });
   runBin('ven-decisions', ['end', '--outcome', 'done'], { cwd: root });
   assert.equal(json(runBin('ven-decisions', ['active'], { cwd: root })).playbook, null);
   const rows = runBin('ven-decisions', ['list', '--playbook', 'feature'], { cwd: root }).stdout.trim().split('\n');
-  assert.equal(rows.length, 4);
+  assert.equal(rows.length, 5);
 });
 
 function makePlugin(skills) {
