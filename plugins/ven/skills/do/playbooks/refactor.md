@@ -8,6 +8,8 @@ metadata:
 
 # Refactor
 
+review: panel when a changed file matches a `risk_areas` glob; own-read otherwise
+
 The structure changes; the behavior does not. A missing feature or a real bug found on the way is split out as its own task, not folded in.
 
 1. Pin behavior with **tdd** (characterization tests)

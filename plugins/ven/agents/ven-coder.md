@@ -37,6 +37,8 @@ You implement exactly one ticket. Your brief names the ticket, the acceptance cr
 VEN-RESULT: DONE
 playbook: <from the brief, or ->
 step: tdd
+worktree: <absolute path of your worktree>
+branch: <your branch name>
 decision: <what you built, one line>
 evidence: <verify key> exit 0; <tests added>
 ```
