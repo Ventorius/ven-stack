@@ -120,7 +120,7 @@ Provenance is pinned. Write `metadata.source` as `<owner/repo>@main:<path>`, the
 
 ## Catalog (names are final)
 
-- **L5:** `do`, `help`, `onboard`
+- **L5:** `do`, `help`, `onboard`, `yeet`
 - **L4 playbooks** (`skills/do/playbooks/`): `investigation`, `feature`, `bug-fix`, `refactor`, `perf`, `migration`, `explain`, `autonomous-run`, `pickup`, `pause`, `ship`
 - **L3 align:** `grilling`, `to-spec`, `to-tickets`, `glossary`
 - **L3 build:** `tdd`, `sweep`, `prototype`, `improve-architecture`

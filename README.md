@@ -72,7 +72,7 @@ Set these in the plugin's `userConfig`:
 
 | Layer | Contents | Invocation |
 |---|---|---|
-| L5 | `do` (router), `help`, `onboard` | User-invoked only |
+| L5 | `do` (router), `help`, `onboard`, `yeet` | User-invoked only |
 | L4 | Playbooks in `skills/do/playbooks/` | Read by the router; not skills |
 | L3 | Workflows: align, build, prove, review, understand, write, visual, conventions, learning, forge | Model-invoked |
 | L2 | Principles, one idea each | Model-invoked |

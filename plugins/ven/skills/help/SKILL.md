@@ -17,7 +17,7 @@ Answer "which skill fits" with a command the user can type. Never run the skill,
 
 `/ven:do <task>` for any real work. It picks the playbook, runs its steps, proves the result and closes with a learning check. A good task states the goal and how to tell it's done. Don't list skills for it: a hand-written sequence drops steps the playbook keeps. The router's table is the map of what runs when; don't restate it.
 
-Suggest a single skill only when the user wants one part of the flow. Read `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md` before you say what it does, or route by its frontmatter description. Setup is `/ven:onboard` (`--refresh` after the stack changed).
+Suggest a single skill only when the user wants one part of the flow. Read `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md` before you say what it does, or route by its frontmatter description. Setup is `/ven:onboard` (`--refresh` after the stack changed). Committing and pushing finished work without a review panel or briefing body is `/ven:yeet` (`--pr` also opens the PR); the ship playbook is the reviewed path.
 
 ## Playbooks
 
