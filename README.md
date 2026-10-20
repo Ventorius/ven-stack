@@ -97,6 +97,7 @@ References only point down a layer, or sideways within L3. Core skills never nam
 | `migration` | One mechanical change across many call sites: codemod first, then a swarm |
 | `explain` | Explain a PR, or teach a subsystem diagram by diagram |
 | `autonomous-run` | Run existing tickets to done, with an iteration cap and the Stop-hook gate |
+| `epic` | Plan an effort that spans several sessions: one decision ticket per session, no edits in the repo |
 | `pickup` / `pause` | Resume from a handoff note, or park work safely |
 | `ship` | Verify → review → PR with the decision log in the body |
 

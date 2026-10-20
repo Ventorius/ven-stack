@@ -1,8 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, realpathSync, rmSync, statSync, utimesSync } from 'node:fs';
+import { copyFileSync, existsSync, lstatSync, readlinkSync, realpathSync, rmSync, statSync, utimesSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
-import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 export function git(args, cwd, options = {}) {
   return execFileSync('git', args, {
@@ -65,21 +65,46 @@ export function untrackedFiles(cwd) {
   return out ? out.split('\0').filter(Boolean) : [];
 }
 
+const MAX_SYMLINK_HOPS = 32;
+
 // Path of a file relative to the repo root, resolving symlinks. repoRoot is a realpath, so a file_path
 // that arrives through a symlink (/tmp vs /private/tmp) would otherwise look like it is outside the repo.
-// A file that does not exist yet resolves through its nearest existing parent.
+// A file that does not exist yet resolves through its nearest existing parent. A dangling symlink is
+// followed to its target, because a write through it creates the target.
 export function repoRelative(root, filePath) {
+  const unresolved = relative(root, resolve(filePath));
   const rest = [];
   let current = resolve(filePath);
+  let hops = 0;
   for (;;) {
     try {
       return relative(root, join(realpathSync(current), ...rest.reverse()));
     } catch {
+      const target = danglingTarget(current);
+      if (target) {
+        if (++hops > MAX_SYMLINK_HOPS) return unresolved;
+        current = target;
+        continue;
+      }
       const parent = dirname(current);
-      if (parent === current) return relative(root, resolve(filePath));
+      if (parent === current) return unresolved;
       rest.push(basename(current));
       current = parent;
     }
+  }
+}
+
+// relative() returns an absolute path when the target is on another drive.
+export function isOutsideRepo(file) {
+  return file === '..' || file.startsWith(`..${sep}`) || isAbsolute(file);
+}
+
+function danglingTarget(path) {
+  try {
+    if (!lstatSync(path).isSymbolicLink()) return null;
+    return resolve(dirname(path), readlinkSync(path));
+  } catch {
+    return null;
   }
 }
 

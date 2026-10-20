@@ -47,6 +47,7 @@ When two fit, take the one that asks more of the evidence. Close calls:
 - "Can we do X?", "try it and tell me", a throwaway experiment → **spike**.
 - Bump a dependency, runtime or toolchain version → **dependency-upgrade**. Swap one API or pattern across call sites → **migration**.
 - Only documentation files change → **docs-only**. Docs plus behavior → **feature**.
+- Spans several sessions with an unclear route → **epic**, even when no code changes yet: a chain of decisions to settle before building is epic, one question answered now is **investigation**. Decisions already settled → **feature**.
 - "Run until done" over existing tickets → **autonomous-run**. No spec or tickets yet → **feature**.
 - "Continue", "pick up" → **pickup**. "Stop here", "pause" → **pause**. "Open a PR", "ship it" → **ship**.
 

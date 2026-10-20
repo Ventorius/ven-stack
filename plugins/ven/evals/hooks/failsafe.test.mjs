@@ -53,10 +53,12 @@ test('verify-gate blocks Stop on corrupt session state but allows SessionStart',
   assert.match(stop.stderr, /corrupt JSON/);
 });
 
-test('malformed stdin blocks repro-first and is tolerated by other hooks', () => {
-  const blocked = runHookRaw('repro-first', '{broken');
-  assert.equal(blocked.code, 2);
-  assert.match(blocked.stderr, /internal error/);
+test('malformed stdin blocks repro-first and plan-only once and is tolerated by other hooks', () => {
+  for (const name of ['repro-first', 'plan-only']) {
+    const blocked = runHookRaw(name, '{broken');
+    assert.equal(blocked.code, 2, name);
+    assert.match(blocked.stderr, /internal error/);
+  }
   for (const name of ['verify-gate', 'no-workaround', 'format', 'context-inject', 'decisions-log', 'capture-corrections', 'solutions-on-edit']) {
     const result = runHookRaw(name, '{broken');
     assert.equal(result.code, 0, name);
@@ -76,7 +78,7 @@ test('hooks.json marks only the gate entries onFailure block', () => {
   const flagged = Object.entries(config.hooks).flatMap(([event, groups]) =>
     groups.flatMap((group) => group.hooks.filter((hook) => hook.onFailure === 'block').map((hook) => `${event}:${hook.args[0].split('/').pop()}`)),
   );
-  assert.deepEqual(flagged.sort(), ['PreToolUse:repro-first.mjs', 'Stop:verify-gate.mjs', 'SubagentStop:verify-gate.mjs']);
+  assert.deepEqual(flagged.sort(), ['PreToolUse:plan-only.mjs', 'PreToolUse:repro-first.mjs', 'Stop:verify-gate.mjs', 'SubagentStop:verify-gate.mjs']);
 });
 
 test('baseline survives a new session in the same dirty worktree', () => {

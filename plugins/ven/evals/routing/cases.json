@@ -56,5 +56,9 @@
   { "name": "near-refactor-vs-migration", "playbook": "refactor", "task": "Rename the internal helper formatAmount to formatMoney and tidy its module. It has three callers." },
   { "name": "near-docs-vs-feature", "playbook": "feature", "task": "Add a docs page for the new export option and also add the export option itself." },
   { "name": "near-flaky-vs-bugfix", "playbook": "bug-fix", "task": "The date formatting test fails every time since the locale change. Make it pass again." },
-  { "name": "near-migration-vs-depupgrade", "playbook": "migration", "task": "Replace every use of the callback-style file API with the promise-style one across all modules, then delete the old calls." }
+  { "name": "near-migration-vs-depupgrade", "playbook": "migration", "task": "Replace every use of the callback-style file API with the promise-style one across all modules, then delete the old calls." },
+  { "name": "epic-auth-replacement", "playbook": "epic", "task": "We are moving off our homegrown login to some hosted identity provider, and nobody has picked one. We don't know whether sessions, API keys and the admin console can all move, or in what order. Nothing should be built until those answers exist." },
+  { "name": "epic-data-layer-rewrite", "playbook": "epic", "task": "The data layer has three different ORMs and no owner. Whether to consolidate on one, which one, and how to migrate live tables without downtime are all undecided, and each answer depends on the one before it. Settling them will take us several sessions over the coming weeks; work out those answers first, no code yet." },
+  { "name": "near-epic-vs-feature", "playbook": "feature", "task": "Over the next two sprints, add CSV import across the upload form, the parser and the audit log. The design is decided: reuse the existing batch pipeline and the same validation rules." },
+  { "name": "near-epic-vs-autonomous-run", "playbook": "autonomous-run", "task": "The tickets for the billing overhaul are already written and approved. Run them across sessions, one after another, until the whole set is done." }
 ]

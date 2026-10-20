@@ -29,6 +29,7 @@ Playbooks are step lists that `/ven:do` runs, not commands. Describing the task 
 - hotfix: a production fire that needs the smallest safe patch now
 - flaky-test: a test that passes and fails without a code change
 - spike: a time-boxed experiment that answers one question
+- epic: plan a multi-session effort with an unclear route, one decision per session, no repo edits
 - refactor: restructure without changing behavior
 - perf: make something measurably faster
 - migration: replace an old API or dependency everywhere
