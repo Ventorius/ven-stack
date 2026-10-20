@@ -13,7 +13,7 @@ review: panel
 You own the design. Align before you build; coders build, you integrate and judge. A change that fits one ticket marks steps 2 and 3 `skip: single ticket` and writes that ticket's brief directly.
 
 1. **grilling**
-   A cleared roadmap marks this step `skip: roadmap cleared <slug>`; **to-spec** reads it.
+   A cleared roadmap for this effort marks this step `skip: roadmap cleared <slug>`; **to-spec** reads it.
    Done: no open decision left in the design tree, facts were looked up rather than asked, and new terms are in the glossary. Draw **diagram-data** or **diagram-state** when the design touches the data model or a lifecycle.
 2. **to-spec**
    Done: a spec the user accepted.

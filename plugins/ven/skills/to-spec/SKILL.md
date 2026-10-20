@@ -13,7 +13,7 @@ Synthesize what has already been decided into a spec. Don't interview the user. 
 
 ## Process
 
-1. **Read the area.** The conversation, the code the change touches, `$(ven-profile path)/GLOSSARY.md` and the ADRs in `$(ven-profile path)/adr/`. When `$(ven-profile path)/roadmaps/<slug>/` exists, read its roadmap and closed decision tickets; their decisions count as settled. Use glossary terms throughout; respect the ADRs.
+1. **Read the area.** The conversation, the code the change touches, `$(ven-profile path)/GLOSSARY.md` and the ADRs in `$(ven-profile path)/adr/`. When `$(ven-profile path)/roadmaps/` holds a roadmap for this effort (list it and match the destination, or use the one the user names), read the roadmap and its closed decision tickets; their decisions count as settled. In tracker mode, follow the pointer file. Use glossary terms throughout; respect the ADRs.
 2. **Sketch the test seams.** Prefer seams that already exist, as high as possible, and as few as possible; one is ideal. Name the public interface each seam sits on (apply **deep-modules** for the vocabulary). Confirm the seams with the user before writing.
 3. **Map proof.** Name the change types the feature touches and the key that proves each: `ven-profile get verify`. A change type with no key goes under Further notes as an open proof gap.
 4. **Write the spec** with the template below. Pick a short kebab-case `<slug>` from the title; tickets reuse it.

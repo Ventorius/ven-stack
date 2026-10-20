@@ -9,4 +9,4 @@ allowed_tools: [Read, Glob, Grep, Skill]
 env: { EVAL_VEN_STATE_DIR: ".ven-state" }
 append_system_prompt: "Routing evaluation. After you write the line that names the playbook, stop: do not create tasks, run steps, spawn agents or edit files."
 ---
-/ven:do We want to replace the auth system over the next several weeks. Requirements are unclear and we don't know the route yet. Help me map it out before anyone builds anything.
+/ven:do We are moving off our homegrown login to some hosted identity provider, and nobody has picked one. We don't know whether sessions, API keys and the admin console can all move, or in what order. Nothing should be built until those answers exist.

@@ -9,4 +9,4 @@ allowed_tools: [Read, Glob, Grep, Skill]
 env: { EVAL_VEN_STATE_DIR: ".ven-state" }
 append_system_prompt: "Routing evaluation. After you write the line that names the playbook, stop: do not create tasks, run steps, spawn agents or edit files."
 ---
-/ven:do Add CSV import across the upload form, the parser and the audit log. The design is already decided: reuse the existing batch pipeline and the same validation rules.
+/ven:do Over the next two sprints, add CSV import across the upload form, the parser and the audit log. The design is decided: reuse the existing batch pipeline and the same validation rules.

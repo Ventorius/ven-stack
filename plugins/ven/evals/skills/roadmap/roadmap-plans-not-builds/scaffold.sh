@@ -48,11 +48,10 @@ cat > .ven-state/roadmaps/payments/01-grilling-choose-provider.md <<'MD'
 **Blocked by:** None
 **Claimed by:** none
 **Status:** open
+**Superseded by:** none
 
 ## Question
 Which payment provider do we move to, and what must it support?
 
 ## Resolution
-
-## Superseded by
 MD
