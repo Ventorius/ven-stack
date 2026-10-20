@@ -56,5 +56,8 @@
   { "name": "near-refactor-vs-migration", "playbook": "refactor", "task": "Rename the internal helper formatAmount to formatMoney and tidy its module. It has three callers." },
   { "name": "near-docs-vs-feature", "playbook": "feature", "task": "Add a docs page for the new export option and also add the export option itself." },
   { "name": "near-flaky-vs-bugfix", "playbook": "bug-fix", "task": "The date formatting test fails every time since the locale change. Make it pass again." },
-  { "name": "near-migration-vs-depupgrade", "playbook": "migration", "task": "Replace every use of the callback-style file API with the promise-style one across all modules, then delete the old calls." }
+  { "name": "near-migration-vs-depupgrade", "playbook": "migration", "task": "Replace every use of the callback-style file API with the promise-style one across all modules, then delete the old calls." },
+  { "name": "epic-auth-replacement", "playbook": "epic", "task": "We want to replace the auth system over the next several weeks. Requirements are unclear and we don't know the route yet. Help me map it out before anyone builds anything." },
+  { "name": "epic-data-layer-rewrite", "playbook": "epic", "task": "Plan a multi-month rewrite of the data layer. We haven't scoped it, and I expect it to take many sessions to settle the open questions." },
+  { "name": "near-epic-vs-feature", "playbook": "feature", "task": "Add CSV import across the upload form, the parser and the audit log. The design is already decided: reuse the existing batch pipeline and the same validation rules." }
 ]
