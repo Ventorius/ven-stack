@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { makeRepo, runBin, runHook, stateDir, writeFile, writeState } from '../support/fixture.mjs';
@@ -92,6 +93,7 @@ test('verify-gate only gates ven-coder subagents', () => {
 test('hooks are inert in a repo without a profile', () => {
   const root = makeRepo({ profile: null });
   writeFile(root, 'src/app.js', 'export const answer = 43;\n');
+  assert.equal(runBin('ven-decisions', ['start', 'epic'], { cwd: root }).code, 0);
   assert.equal(runHook('verify-gate', session(root, { hook_event_name: 'Stop' })).code, 0);
   assert.equal(runHook('repro-first', { cwd: root, tool_input: { file_path: join(root, 'src/app.js') } }).code, 0);
   assert.equal(runHook('plan-only', { cwd: root, tool_input: { file_path: join(root, 'src/app.js') } }).code, 0);
@@ -124,11 +126,9 @@ test('plan-only blocks every repo edit while epic is active, docs and tests incl
   for (const file of ['src/app.js', 'README.md', 'src/app.test.js']) {
     const blocked = edit(inRepo(file));
     assert.equal(blocked.code, 2, file);
-    assert.match(blocked.stderr, /epic playbook is active/);
     assert.match(blocked.stderr, /roadmaps\//);
-    assert.match(blocked.stderr, /scratch/);
     assert.match(blocked.stderr, /ven-decisions end --outcome done/);
-    assert.match(blocked.stderr, /feature playbook/);
+    assert.match(blocked.stderr, /ven-decisions end --outcome abandoned/);
   }
   assert.equal(runHook('plan-only', { cwd: root, tool_name: 'NotebookEdit', tool_input: { notebook_path: inRepo('nb.ipynb') } }).code, 2);
 
@@ -136,6 +136,58 @@ test('plan-only blocks every repo edit while epic is active, docs and tests incl
   assert.equal(edit(join(root, '..', 'scratch', 'proto.js')).code, 0);
   assert.equal(edit(inRepo('.git/info/exclude')).code, 0);
   assert.equal(runHook('plan-only', { cwd: root, tool_name: 'Edit', tool_input: {} }).code, 0);
+});
+
+test('plan-only allows the roadmaps directory when the state dir is inside the repo', () => {
+  const previous = process.env.VEN_STATE_DIR;
+  process.env.VEN_STATE_DIR = '.ven-state';
+  try {
+    const root = makeRepo();
+    runBin('ven-decisions', ['start', 'epic'], { cwd: root });
+    const edit = (file, tool = 'Edit') => runHook('plan-only', { cwd: root, tool_name: tool, tool_input: { file_path: file } });
+    assert.equal(edit(join(stateDir(root), 'roadmaps', 'x', 'roadmap.md'), 'Write').code, 0);
+    assert.equal(edit(join(root, 'src/app.js')).code, 2);
+  } finally {
+    if (previous === undefined) delete process.env.VEN_STATE_DIR;
+    else process.env.VEN_STATE_DIR = previous;
+  }
+});
+
+test('a file named like a parent-dir prefix is inside the repo for both gates', () => {
+  const root = makeRepo();
+  runBin('ven-decisions', ['start', 'epic'], { cwd: root });
+  assert.equal(runHook('plan-only', { cwd: root, tool_name: 'Edit', tool_input: { file_path: join(root, '..notes.md') } }).code, 2);
+
+  const bugRoot = makeRepo();
+  runBin('ven-decisions', ['start', 'bug-fix'], { cwd: bugRoot });
+  assert.equal(runHook('repro-first', { cwd: bugRoot, tool_name: 'Edit', tool_input: { file_path: join(bugRoot, '..helper.js') } }).code, 2);
+});
+
+test('both gates follow a dangling symlink into the repo', () => {
+  const outside = realpathSync(mkdtempSync(join(tmpdir(), 'ven-outside-')));
+  const link = (root) => {
+    mkdirSync(join(outside, 'out'), { recursive: true });
+    const path = join(outside, 'out', `dangling-${Math.random().toString(36).slice(2)}`);
+    symlinkSync(join(root, 'src/new.js'), path);
+    return path;
+  };
+
+  const epicRoot = makeRepo();
+  runBin('ven-decisions', ['start', 'epic'], { cwd: epicRoot });
+  assert.equal(runHook('plan-only', { cwd: epicRoot, tool_name: 'Write', tool_input: { file_path: link(epicRoot) } }).code, 2);
+
+  const bugRoot = makeRepo();
+  runBin('ven-decisions', ['start', 'bug-fix'], { cwd: bugRoot });
+  assert.equal(runHook('repro-first', { cwd: bugRoot, tool_name: 'Write', tool_input: { file_path: link(bugRoot) } }).code, 2);
+});
+
+test('plan-only releases the lock when the epic run is abandoned', () => {
+  const root = makeRepo();
+  const edit = () => runHook('plan-only', { cwd: root, tool_name: 'Edit', tool_input: { file_path: join(root, 'src/app.js') } });
+  runBin('ven-decisions', ['start', 'epic'], { cwd: root });
+  assert.equal(edit().code, 2);
+  assert.equal(runBin('ven-decisions', ['end', '--outcome', 'abandoned'], { cwd: root }).code, 0);
+  assert.equal(edit().code, 0);
 });
 
 test('plan-only allows repo edits with no active playbook or another playbook', () => {

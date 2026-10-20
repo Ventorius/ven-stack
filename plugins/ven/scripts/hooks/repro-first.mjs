@@ -2,7 +2,7 @@
 import { allow, block, editedFilePath, runHook } from '../lib/hookio.mjs';
 import { matchesAny } from '../lib/globs.mjs';
 import { loadProfile } from '../lib/profile.mjs';
-import { repoRelative, repoRoot } from '../lib/repo.mjs';
+import { isOutsideRepo, repoRelative, repoRoot } from '../lib/repo.mjs';
 import { readPlaybookState } from '../lib/state.mjs';
 
 await runHook('repro-first', main, { onError: 'block-once' });
@@ -17,7 +17,7 @@ function main(input) {
   const filePath = editedFilePath(input);
   if (!filePath) allow();
   const file = repoRelative(root, filePath);
-  if (file.startsWith('..') || file.startsWith('.git/')) allow();
+  if (isOutsideRepo(file) || file.startsWith('.git/')) allow();
 
   const testGlobs = profile.tests?.patterns ?? [];
   const docsGlobs = profile.docs_only ?? ['**/*.md', '**/*.mdx', 'docs/**'];
