@@ -117,6 +117,7 @@ Copyright (c) 2026 Matt Pocock. Licensed under the MIT License (below).
 - plugins/ven/skills/prototype/ adapted from skills/engineering/prototype/SKILL.md, LOGIC.md (as references/logic.md), UI.md (as references/visual.md)
 - plugins/ven/skills/quiz/ adapted from skills/productivity/teach/SKILL.md (quiz rules)
 - plugins/ven/skills/reproduce/ adapted from skills/engineering/diagnosing-bugs/SKILL.md (phases 1–2)
+- plugins/ven/skills/roadmap/ adapted from the wayfinder skill design described at aihero.dev/skills-wayfinder
 - plugins/ven/skills/tdd/ adapted from skills/engineering/tdd/SKILL.md, mocking.md
 - plugins/ven/skills/test-behavior/ adapted from skills/engineering/tdd/tests.md
 - plugins/ven/skills/to-spec/ adapted from skills/engineering/to-spec/SKILL.md

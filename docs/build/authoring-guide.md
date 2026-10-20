@@ -122,7 +122,7 @@ Provenance is pinned. Write `metadata.source` as `<owner/repo>@main:<path>`, the
 
 - **L5:** `do`, `help`, `onboard`, `yeet`
 - **L4 playbooks** (`skills/do/playbooks/`): `investigation`, `feature`, `bug-fix`, `refactor`, `perf`, `migration`, `explain`, `autonomous-run`, `pickup`, `pause`, `ship`
-- **L3 align:** `grilling`, `to-spec`, `to-tickets`, `glossary`
+- **L3 align:** `grilling`, `to-spec`, `to-tickets`, `glossary`, `roadmap`
 - **L3 build:** `tdd`, `sweep`, `prototype`, `improve-architecture`
 - **L3 prove:** `reproduce`, `verify`, `citation-check`
 - **L3 review:** `review`, `blast-radius`, `quality-review`

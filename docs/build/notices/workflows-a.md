@@ -1,6 +1,7 @@
 - mattpocock/skills — plugins/ven/skills/grilling/ adapted from skills/productivity/grilling/SKILL.md
 - mattpocock/skills — plugins/ven/skills/to-spec/ adapted from skills/engineering/to-spec/SKILL.md
 - mattpocock/skills — plugins/ven/skills/to-tickets/ adapted from skills/engineering/to-tickets/SKILL.md
+- mattpocock/skills (design only, no text copied) — plugins/ven/skills/roadmap/ adapted from the wayfinder skill design described at aihero.dev/skills-wayfinder
 - mattpocock/skills — plugins/ven/skills/glossary/ adapted from skills/engineering/domain-modeling/SKILL.md, GLOSSARY-FORMAT.md, ADR-FORMAT.md
 - mattpocock/skills — plugins/ven/skills/tdd/ adapted from skills/engineering/tdd/SKILL.md, mocking.md
 - obra/superpowers — plugins/ven/skills/tdd/ adapted from skills/test-driven-development/SKILL.md
