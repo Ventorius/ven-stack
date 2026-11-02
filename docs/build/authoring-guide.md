@@ -1,6 +1,6 @@
 # Authoring guide for ven skills
 
-Read this whole file, `ven-stack design v2.md` (the spec), `docs/build/profile-schema.md` and `docs/build/vendoring-map.md` before writing anything. When this guide and the spec disagree, this guide wins: it records decisions made after v2.
+Read this whole file, `ven-stack design v2.md` (the spec), `docs/build/profile-schema.md` and `docs/build/vendoring-map.md` before writing anything. When this guide and the spec disagree, this guide wins: it records decisions made after v2. The largest: since 2026-11-02 ven is skill-only and runs in any agent that loads `SKILL.md` folders and runs shell commands. There is no onboarding, no hooks, no agent definitions and no plugin settings; the spec's parts about them are history.
 
 ## Where things go
 
@@ -9,28 +9,26 @@ plugins/ven/
 ├── skills/<name>/SKILL.md          # one skill; references/ one hop deep
 ├── skills/<name>/references/*.md   # loaded on demand by that skill only; never link reference → reference
 ├── skills/do/playbooks/<name>.md   # core playbooks (L4), read by the router
-├── agents/<name>.md                # ven-lead, ven-coder, ven-worker, ven-reviewer, ven-verifier
-├── templates/{skill,pack,playbook,adapter}/   # used by the forge
-└── bin/                            # ven-profile, ven-decisions, ven-lint-skills, ven-transcripts, ven-doctor (on PATH)
+├── skills/delegate/references/     # role brief templates: coder, worker, reviewer, verifier
+├── skills/setup/scripts/           # ven-profile, ven-decisions, ven-lint-skills, ven-transcripts, ven-doctor, lib/, install.mjs, lint.json
+└── skills/setup/assets/templates/  # skill, pack, playbook and adapter templates used by the forge
 ```
 
-The plugin is named `ven`, so skills are invoked as `/ven:<name>` and agents are `ven:ven-coder` etc.
+Skills are invoked by name. Claude Code namespaces them under the plugin (`/ven:<name>`); other agents don't. Write neither form in skill text: name the skill (`**do**`), or put it in quotes when a reference would break the layer rule (the "do" skill).
 
 ## Layers
 
 | Layer | What | Invocation |
 |---|---|---|
-| L5 | `do` (router), `help`, `onboard` | user-invoked: `disable-model-invocation: true` |
+| L5 | `do` (router), `help`, `yeet` | model-invoked; their descriptions say when, `yeet` only on an explicit ask |
 | L4 | playbooks in `skills/do/playbooks/*.md` | read by the router; not skills |
 | L3 | workflows (grilling, tdd, verify, review, diagram-*, ratchet, compound, forge-*, …) | model-invoked |
 | L2 | principles (one idea each) | model-invoked |
-| L1 | agents, hooks, bin tools | — |
+| L1 | `delegate` (roles), `setup` (tools and settings) | model-invoked |
 
-References only point **down** a layer, or sideways **within L3**. L2 never references L3 or another L2. A user-invoked skill never references another user-invoked skill (it may only suggest typing it). `ven-lint-skills` enforces this.
+References only point **down** a layer, or sideways **within L3**. L2 never references L3 or another L2. `ven-lint-skills` enforces this.
 
 ## Frontmatter
-
-Model-invoked skill:
 
 ```yaml
 ---
@@ -43,40 +41,22 @@ metadata:
 ---
 ```
 
-User-invoked entry:
-
-```yaml
----
-name: do
-description: Route a task to a playbook and run it step by step.
-argument-hint: <task>
-disable-model-invocation: true
-metadata:
-  layer: L5
----
-```
-
 Rules:
-- `description`: the key use case first, "<what it does>. Use when <situations>." Aim for under 300 characters; the lint fails above 350 because the listing budget is shared with every other installed skill. The lint also requires a sentence starting "Use <when/for/before…>" or "Apply <when/to…>" (user-invoked skills are exempt), a `name` equal to the directory name, no near-duplicate descriptions, and no `ven:<name>` that resolves to nothing.
+- `description`: the key use case first, "<what it does>. Use when <situations>." Aim for under 300 characters; the lint fails above 350 because the listing budget is shared with every other installed skill. The lint also requires a sentence starting "Use <when/for/before…>" or "Apply <when/to…>", a `name` equal to the directory name, no near-duplicate descriptions, and no `ven:<name>` that resolves to nothing.
 - `metadata.source` names the upstream repo, ref and path for vendored content (omit for fresh skills). `metadata.license` is the upstream license. Never copy text from Apache or unlicensed sources (anthropics skill-creator, poteto/verification-skill-example); learn from them only.
-- Pack skills may add `paths:` (globs) so they activate only on matching files.
+- Frontmatter holds only `name`, `description` and `metadata`. Fields one agent understands and others don't (`argument-hint`, `disable-model-invocation`, `paths:`) fail the portability lint. A pack skill loads when a task touches its pack's `applies_when.paths`.
 
 ## Body rules
 
 1. **One idea per skill.** SKILL.md under 150 lines; aim for 30–100. Push detail into `references/` (one hop).
 2. **Name, don't restate.** Cite other skills as bold names: "apply **prove-it-works**", "run **verify**". The lint recognizes `**name**`, `` `name` `` and `ven:name` as references. Never paste another skill's text; 3+ repeated lines across files fail the lint.
-3. **Core never names tech, vendors or domains.** No framework, library, language, test runner, code host, tracker, cloud or business-domain words (the full denylist is `plugins/ven/lint.json`). Write "the repo's test runner", "the code host", "the tracker", "a typed language", "a money amount". Specifics come from the profile and packs.
-4. **Commands come from the profile, never from memory.** Write "run `ven-profile run commands.test.single --file <path>`", "prove it with `ven-profile verify <key from verify.<type>>`". Read keys with `ven-profile get <key>`. If a key is missing or `unverified`, say so and stop relying on it; never guess a command.
+3. **Core never names tech, vendors or domains.** No framework, library, language, test runner, code host, tracker, cloud or business-domain words (the full denylist is `plugins/ven/skills/setup/scripts/lint.json`). Write "the repo's test runner", "the code host", "the tracker", "a typed language", "a money amount". Specifics come from the profile and packs.
+4. **Commands come from the profile, never from memory.** Write "run `ven-profile run commands.test.single --file <path>`", "prove it with `ven-profile verify <key from verify.<type>>`". Read keys with `ven-profile get <key>`. A missing command is found in the repo and recorded with `ven-profile learn <key> --run <command> --evidence <file:line>`, which runs it once. An `unverified` key: say so and stop relying on it; never guess a command.
 5. **State lives in the state directory**, printed by `ven-profile path` (`~/.ven/repos/<repo>-<hash>/`, outside the repo). Glossary: `GLOSSARY.md`; solutions: `solutions/<area>/<slug>.md`; ADRs: `adr/`; diagrams: `diagrams/`; handoffs: `handoffs/`; verify recipes: `verify.md`. Never write ven files into the working tree.
-6. **Decisions and steps** are recorded with `ven-decisions`: `start <playbook>`, `add --step S --decision D --evidence E`, `skip --step S --reason R`, `end`. The bug-fix reproduce gate opens with `ven-decisions add --step reproduce --decision reproduced --evidence "..."`.
-7. **Delegation.** Spawn agents with the Agent tool:
-   - `ven:ven-coder` (one ticket end to end, worktree, background): `model: ${user_config.coder_model}`.
-   - `ven:ven-worker` (fully specified edit or one fan-out slice): `model: ${user_config.swarm_model}`.
-   - `ven:ven-reviewer` (one lens, read-only): `model: ${user_config.orchestrator_model}` for the high-risk lens, `${user_config.coder_model}` otherwise.
-   - `ven:ven-verifier` (citation and proof checks): `model: ${user_config.swarm_model}`.
-   - Budget tier is `${user_config.budget_tier}`: on `lean` pass `effort: low` and skip optional panels; on `max` pass `effort: high`; `standard` uses the agent's default.
+6. **Decisions and steps** are recorded with `ven-decisions`: `start <playbook>`, `add --step S --decision D --evidence E`, `skip --step S --reason R`, `end`. The bug-fix reproduce step is recorded with `ven-decisions add --step reproduce --decision reproduced --evidence "..."`. `end` refuses `done` while code changed without a passing verify on the current tree.
+7. **Delegation.** Hand work to a role through **delegate**: coder (one ticket end to end, own worktree), worker (fully specified edit or one fan-out slice), reviewer (one lens, read-only), verifier (citation and proof checks). **delegate** spawns a subagent when the agent can and runs a separate pass when it can't, and reads models and the budget tier from `ven-profile config`. Never name an agent's subagent tool, model or parameters in skill text.
    - A brief that drops a tier is complete: inputs, exact files, expected output shape, and a check command. Anything containing "decide" or "figure out" stays with the parent.
-8. **Agent result trailer.** Every ven agent ends its final message with this block (the SubagentStop hook logs it):
+8. **Role result trailer.** Every role ends its final message with this block; the caller logs it with `ven-decisions add`:
 
    ```text
    VEN-RESULT: DONE            (or: VEN-RESULT: BLOCKED: <one question>)
@@ -86,12 +66,12 @@ Rules:
    evidence: <command + exit code, or file:line>
    ```
 9. **Diagrams** carry a badge in their caption: `GENERATED <command> @ <sha>`, `HYBRID (n/n edges cited)` or `HYPOTHESIS`. Mermaid is the shared format; self-contained HTML is for things you read rather than commit, and diagrams render to a local HTML page per the badge protocol.
-10. **Ask the user** with AskUserQuestion when a decision is theirs; find facts yourself (or with ven-worker). Subagents cannot ask the user: they return BLOCKED.
+10. **Ask the user** when a decision is theirs, as a multiple-choice question when the agent has one; find facts yourself (or with a worker). Roles cannot ask the user: they return BLOCKED.
 11. **Style.** English. Imperative, short sentences. No filler, no hype, no "it's important to". Headings and lists over walls of text. Examples use neutral nouns (widget, order of operations, account, report), never the denylist.
 
 ## Evals
 
-Evals run with `claude plugin eval` (built into Claude Code). A case is a directory with `prompt.md` (the user prompt) and `graders/*.md` (frontmatter `type: tool_used | tool_order | regex | file_exists | llm`, body = pattern or rubric), optionally `case.yaml` with `context.scaffold_script` to build a fixture repo (needs `--scaffold`). Runs are isolated: empty working directory, no user settings, no other plugins. A case that needs a ven profile scaffolds a git repo, writes `.ven-state/profile.json`, excludes `.ven-state/` via `.git/info/exclude`, and sets `env: { EVAL_VEN_STATE_DIR: ".ven-state" }` in prompt.md (see `plugins/ven/evals/routing/`).
+Evals run with `claude plugin eval` from the `claude` CLI; they are the one Claude-only part of ven, and skills say so where they need them. A case is a directory with `prompt.md` (the user prompt) and `graders/*.md` (frontmatter `type: tool_used | tool_order | regex | file_exists | llm`, body = pattern or rubric), optionally `case.yaml` with `context.scaffold_script` to build a fixture repo (needs `--scaffold`). Runs are isolated: empty working directory, no user settings, no other plugins. A case that needs a ven profile scaffolds a git repo, writes `.ven-state/profile.json`, excludes `.ven-state/` via `.git/info/exclude`, and sets `env: { EVAL_VEN_STATE_DIR: ".ven-state" }` in prompt.md (see `plugins/ven/evals/routing/`).
 
 - Core: `plugins/ven/evals/routing/<case>/` (router picks), `plugins/ven/evals/skills/<skill>/<case>/` (skill behavior and trigger).
 - Packs: `<pack>/evals/<case>/`.
@@ -104,13 +84,13 @@ Opening PRs, posting comments, pushing branches, creating tracker tickets and in
 
 ## Adapting upstream skills
 
-Start from the base named in `vendoring-map.md`. Keep what makes it work (the gates, the stop conditions, the output shapes). Then apply X1–X5 from the map: Cursor → Claude Code, model-invocable, cite by name, commands from the profile, no tech/domain nouns. Remove references to tools ven doesn't have. Keep it shorter than the original whenever possible. Record provenance in `metadata.source` and list each adapted file in `docs/build/notices/<your group>.md` as `- <upstream repo> — plugins/ven/skills/<name>/ adapted from <upstream path>`. `THIRD_PARTY_NOTICES.md` is generated from those files: run `bun run notices` and commit the result (never edit it by hand; a test fails when it drifts). A new upstream needs an entry with its commit SHA and copyright line in `docs/build/notices/_upstreams.json`.
+Start from the base named in `vendoring-map.md`. Keep what makes it work (the gates, the stop conditions, the output shapes). Then apply X1–X5 from the map: harness-neutral wording, model-invocable, cite by name, commands from the profile, no tech/domain nouns. Remove references to tools ven doesn't have. Keep it shorter than the original whenever possible. Record provenance in `metadata.source` and list each adapted file in `docs/build/notices/<your group>.md` as `- <upstream repo> — plugins/ven/skills/<name>/ adapted from <upstream path>`. `THIRD_PARTY_NOTICES.md` is generated from those files: run `bun run notices` and commit the result (never edit it by hand; a test fails when it drifts). A new upstream needs an entry with its commit SHA and copyright line in `docs/build/notices/_upstreams.json`.
 
 Provenance is pinned. Write `metadata.source` as `<owner/repo>@main:<path>`, then run `bun run pin:sources`, which replaces `@main` with the SHA recorded for that upstream in `_upstreams.json`. It is idempotent and touches only the `source:` frontmatter line.
 
 ## Starting a new skill
 
-`ven-new-skill <name> --layer L1..L5 [--notice-group <group> --source <owner/repo@ref:path>]` copies `plugins/ven/templates/skill/core/SKILL.md` into `plugins/ven/skills/<name>/`, fills in `name`, `layer` and `source`, adds the name to the catalog below on a `<layer> new` line, records the upstream in `docs/build/notices/<group>.md`, and runs `ven-lint-skills`. It refuses to overwrite an existing skill. Then write the body, add evals under `plugins/ven/evals/skills/<name>/`, run the trigger eval and move the catalog entry into its group. The template at `templates/skill/SKILL.md` is for pack skills only (it uses `paths:`, `metadata.pack` and pack references).
+`ven-new-skill <name> --layer L1..L5 [--notice-group <group> --source <owner/repo@ref:path>]` copies `plugins/ven/skills/setup/assets/templates/skill/core/SKILL.md` into `plugins/ven/skills/<name>/`, fills in `name`, `layer` and `source`, adds the name to the catalog below on a `<layer> new` line, records the upstream in `docs/build/notices/<group>.md`, and runs `ven-lint-skills`. It refuses to overwrite an existing skill. Then write the body, add evals under `plugins/ven/evals/skills/<name>/`, run the trigger eval and move the catalog entry into its group. The template at `setup/assets/templates/skill/SKILL.md` is for pack skills only (it uses `metadata.pack` and pack references).
 
 ## Done means
 
@@ -120,7 +100,7 @@ Provenance is pinned. Write `metadata.source` as `<owner/repo>@main:<path>`, the
 
 ## Catalog (names are final)
 
-- **L5:** `do`, `help`, `onboard`, `yeet`
+- **L5:** `do`, `help`, `yeet`
 - **L4 playbooks** (`skills/do/playbooks/`): `investigation`, `feature`, `bug-fix`, `refactor`, `perf`, `migration`, `explain`, `autonomous-run`, `epic`, `pickup`, `pause`, `ship`
 - **L3 align:** `grilling`, `to-spec`, `to-tickets`, `glossary`, `roadmap`
 - **L3 build:** `tdd`, `sweep`, `prototype`, `improve-architecture`
@@ -133,4 +113,4 @@ Provenance is pinned. Write `metadata.source` as `<owner/repo>@main:<path>`, the
 - **L3 learning:** `learning-check`, `correct`, `compound`, `compound-refresh`, `reflect`, `skill-tdd`, `automate-me`, `quiz`
 - **L3 forge:** `forge-pack`, `forge-skill`, `forge-playbook`, `forge-adapter`, `forge-reference`, `pack-audit`
 - **L2 principles:** `laziness`, `model-the-domain`, `type-discipline`, `boundary-discipline`, `idempotent-operations`, `deep-modules`, `fix-root-causes`, `prove-it-works`, `sequence-verifiable-units`, `test-behavior`, `explain-the-number`, `encode-lessons-in-structure`, `never-block-on-reversible`, `guard-the-context`, `build-the-lever`
-- **L1 agents:** `ven-lead`, `ven-coder`, `ven-worker`, `ven-reviewer`, `ven-verifier`
+- **L1:** `delegate` (roles: coder, worker, reviewer, verifier), `setup`

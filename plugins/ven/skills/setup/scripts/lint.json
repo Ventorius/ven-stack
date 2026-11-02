@@ -159,7 +159,8 @@
       "slash-namespace": "/ven:[a-z]",
       "hook-name": "\\b(verify-gate|repro-first|plan-only|no-workaround|solutions-on-edit|capture-corrections|context-inject|decisions-log)\\b",
       "arguments-var": "\\$ARGUMENTS\\b",
-      "argument-hint": "^argument-hint:"
+      "argument-hint": "^argument-hint:",
+      "paths-frontmatter": "^paths:"
     },
     "baseline": {
       "ask-tool": 0,
@@ -173,7 +174,8 @@
       "slash-namespace": 0,
       "hook-name": 0,
       "arguments-var": 0,
-      "argument-hint": 0
+      "argument-hint": 0,
+      "paths-frontmatter": 0
     }
   }
 }

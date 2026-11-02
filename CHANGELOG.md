@@ -5,7 +5,34 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- ven is skill-only and runs in any agent that loads `SKILL.md` folders and runs
+  shell commands. Claude Code stays an install route through the marketplace.
+- The profile fills in as work needs it: `ven-profile learn` finds a command's
+  proof on first use; facts only a person knows are asked when first needed
+- Model and budget settings move to `~/.ven/config.json` (`ven-profile config`)
+- Packs are plain directories the router reads (`packs-for` returns skill files);
+  pack hooks become diff checks that `ven-profile verify` runs
+- The tools moved into the `setup` skill; `install.mjs` links them into `~/.ven/bin`
+- `ven-doctor` checks node, git, the tools on `PATH`, settings and legacy state
+
+### Removed
+
+- The `onboard` skill, `map.md` and session-start context injection
+- All hooks. Their gates moved: `ven-decisions end` refuses `done` without a
+  passing verify on the current tree, `ven-profile verify` refuses diffs that
+  hide checks, and `ven-profile context` / `solutions-for` surface past solutions
+- Agent definitions; the `delegate` skill holds the coder, worker, reviewer
+  and verifier brief templates and works with or without subagents
+- Plugin `userConfig` and `plugins/ven/.claude-plugin/plugin.json`
+
 ### Added
+
+- `setup` and `delegate` skills; `ven-profile learn`, `context`, `solutions-for`,
+  `config`, `root` and `migrate` (upgrades onboarded repos)
+- A portability ratchet in `ven-lint-skills` that bans one agent's tool names,
+  variables and frontmatter in core skills
 
 - Playbooks: hotfix, flaky-test, spike, dependency-upgrade, docs-only
 - Small-task fast path in the router; review ownership declared per playbook
