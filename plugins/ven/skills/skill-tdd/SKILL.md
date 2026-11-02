@@ -46,7 +46,7 @@ Make a copy of the plugin as it was before the change:
 - Plugin in git: `git worktree add <tmp> HEAD`, then copy the skill's eval directory (`evals/skills/<skill>/`, with the new case) to the same path under `<tmp>`, so both copies run the same cases.
 - Plugin outside git (a pack in the state directory, a personal overlay): copy the plugin directory to `<tmp>` before editing anything.
 
-Eval runs execute the plugin and its scaffold scripts as the user. Ask once before the first run; on yes, pass `--trust-plugin`. Run the baseline (all commands in this skill also take `--no-publish`, keeping reports local):
+Evals run on the `claude` CLI. Without it, say the change is unproven and stop; never land it on a reading alone. Eval runs execute the plugin and its scaffold scripts as the user. Ask once before the first run; on yes, pass `--trust-plugin`. Run the baseline (all commands in this skill also take `--no-publish`, keeping reports local):
 
 ```bash
 claude plugin eval <tmp>/<plugin> --eval-dir evals/skills/<skill> --case <case> --runs 3 --ablation none --scaffold --max-cost-usd 15 --no-publish --output-dir <results>/baseline

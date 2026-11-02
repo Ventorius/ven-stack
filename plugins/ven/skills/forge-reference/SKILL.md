@@ -21,8 +21,8 @@ Read the resolved version from the lockfiles the profile lists (`ven-profile get
 
 **delegate** two read-only worker briefs. They gather; you synthesize.
 
-- **Docs:** fetch the official documentation for the locked version with WebFetch: the docs pages for the APIs the repo calls, the changelog or release notes, and the migration guide from the version most examples assume. Check deprecations first. Primary sources only: the library's own docs, repository and changelog. Return claims, each with its URL.
-- **Usages:** Grep the repo for the library's imports and calls. Return each distinct usage pattern with a count and up to three `file:line` examples, and every usage that contradicts the docs.
+- **Docs:** fetch the official documentation for the locked version with your agent's web fetch tool: the docs pages for the APIs the repo calls, the changelog or release notes, and the migration guide from the version most examples assume. Check deprecations first. Primary sources only: the library's own docs, repository and changelog. Return claims, each with its URL.
+- **Usages:** search the repo for the library's imports and calls. Return each distinct usage pattern with a count and up to three `file:line` examples, and every usage that contradicts the docs.
 
 ## 3. Distill
 

@@ -15,7 +15,7 @@ Nothing is applied to a skill in this session. Skill edits become proposals that
 
 ## 1. Find the transcript
 
-The transcript is the newest `*.jsonl` in `<config dir>/projects/<repo path with every non-alphanumeric character replaced by ->/`, where `<config dir>` is `$CLAUDE_CONFIG_DIR` or `~/.claude`. Confirm it by matching its first user message to this session's opening request. Stay in this repo's project directory; never read other projects' transcripts.
+The transcript is your agent's log of this session, when it keeps one on disk (Claude Code: the newest `*.jsonl` in `<config dir>/projects/<repo path with every non-alphanumeric character replaced by ->/`, where `<config dir>` is `$CLAUDE_CONFIG_DIR` or `~/.claude`). Confirm it by matching its first user message to this session's opening request. Stay in this repo's project directory; never read other projects' transcripts.
 
 No match: write a digest instead (the requests, corrections, skills used, check refusals, outcomes).
 

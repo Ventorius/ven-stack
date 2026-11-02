@@ -23,7 +23,7 @@ One problem per entry. Several problems mean several entries, written one at a t
 2. **Ground every claim.** Before stating how code behaves, read the defining line in the current tree and cite it as `path:line`. Mark what you could not check as unverified.
 3. **Pick the area.** List `solutions/` and reuse the area directory that covers this part of the code. Create one only when none fits, named after the module or workspace (`ven-profile get workspaces`), in kebab-case.
 4. **Fill the template** below. The slug is the title in kebab-case.
-5. **Anchor `files:`.** Repo-relative paths or globs for where the problem showed and where the fix landed. Each must match something in the current tree (check with Glob). Prefer narrow anchors: a glob over half the repo surfaces the entry on every branch.
+5. **Anchor `files:`.** Repo-relative paths or globs for where the problem showed and where the fix landed. Each must match something in the current tree (check with a file search). Prefer narrow anchors: a glob over half the repo surfaces the entry on every branch.
 6. **Capture terms.** A domain term the session defined or sharpened goes to `GLOSSARY.md` through **glossary**, not into the entry.
 7. **Check the frontmatter.** `ven-profile` reads a YAML subset: one `key: value` per line, lists as `- item` lines (inline `[a, b]` only for tags), no nested maps. Quote a list item that starts with a backtick, `[`, `*`, `&`, `!`, `|`, `>`, `%`, `@` or `?`, or that contains `": "`.
 

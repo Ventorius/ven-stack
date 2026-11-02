@@ -15,7 +15,7 @@ Not for one task-specific workflow or a team convention: that is a pack skill, m
 
 ## 0. New or update?
 
-Look for `<handle>-mode/SKILL.md` in the personal skills directory (`$CLAUDE_CONFIG_DIR/skills/`, else `~/.claude/skills/`). The handle is the name the user goes by; ask if unsure.
+Look for `<handle>-mode/SKILL.md` in your agent's personal skills directory (for example `~/.claude/skills/` or `~/.codex/skills/`; ask the user when unsure). The handle is the name the user goes by; ask if unsure.
 
 - **Exists:** update it (the default). Mine only sessions since its last change, ask what changed or is missing, edit in place, and keep every section the user hasn't contradicted.
 - **Start fresh:** only when the user asks for it and says why.
