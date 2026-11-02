@@ -4,9 +4,9 @@ import { linkSync, mkdtempSync, readFileSync, readdirSync, statSync, writeFileSy
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { loadProfile, saveProfile, staleSources, validateProfile } from '../../scripts/lib/profile.mjs';
-import { CORRECTION, HOOK_BLOCK } from '../../scripts/lib/signals.mjs';
-import { appendVerify, passedVerifyFor, readPlaybookState, verifyEntries, writePlaybookState } from '../../scripts/lib/state.mjs';
+import { loadProfile, saveProfile, staleSources, validateProfile } from '../../skills/setup/scripts/lib/profile.mjs';
+import { CORRECTION, HOOK_BLOCK } from '../../skills/setup/scripts/lib/signals.mjs';
+import { appendVerify, passedVerifyFor, readPlaybookState, verifyEntries, writePlaybookState } from '../../skills/setup/scripts/lib/state.mjs';
 import { BASE_PROFILE, makeRepo, writeState } from '../support/fixture.mjs';
 
 const tempDir = () => mkdtempSync(join(tmpdir(), 'ven-lib-'));

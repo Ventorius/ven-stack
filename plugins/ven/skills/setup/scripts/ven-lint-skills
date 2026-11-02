@@ -2,8 +2,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fail, list, parseArgs } from '../scripts/lib/args.mjs';
-import { splitFrontmatter } from '../scripts/lib/frontmatter.mjs';
+import { fail, list, parseArgs } from './lib/args.mjs';
+import { splitFrontmatter } from './lib/frontmatter.mjs';
 
 const USAGE = `ven-lint-skills: check skill composition rules
 
@@ -13,7 +13,9 @@ const USAGE = `ven-lint-skills: check skill composition rules
   --pack   a pack plugin directory; its skills may cite core, core may never cite it
   --graph  print the skill-reference graph as Mermaid instead of linting`;
 
-const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const SCRIPTS_DIR = dirname(fileURLToPath(import.meta.url));
+// The core plugin root holds skills/; this file sits in skills/setup/scripts/.
+const DEFAULT_ROOT = resolve(SCRIPTS_DIR, '..', '..', '..');
 const LAYER_ORDER = { L1: 1, L2: 2, L3: 3, L4: 4, L5: 5 };
 // A sentence that opens "Use <word>" or "Apply <word>" tells the router when the skill fires.
 const TRIGGER = /(^|[.!?]\s+)(Use|Apply) [a-z]+/;
@@ -21,11 +23,11 @@ const STOPWORDS = new Set('a an the of to and or for in on at is are be it its t
 
 const { flags } = parseArgs(process.argv.slice(2));
 if (flags.help) fail(USAGE, 0);
-const coreRoot = resolve(flags.root ?? PLUGIN_ROOT);
-const ownsConfig = existsSync(join(coreRoot, 'lint.json'));
-const config = JSON.parse(readFileSync(join(ownsConfig ? coreRoot : PLUGIN_ROOT, 'lint.json'), 'utf8'));
-// The portability baseline counts one specific tree, so a root that borrows the config skips the ratchet.
-if (!ownsConfig) delete config.portability;
+const coreRoot = resolve(flags.root ?? DEFAULT_ROOT);
+const ownConfig = join(coreRoot, 'lint.json');
+const config = JSON.parse(readFileSync(existsSync(ownConfig) ? ownConfig : join(SCRIPTS_DIR, 'lint.json'), 'utf8'));
+// The portability baseline counts ven's own core, so another root without its own lint.json skips it.
+if (coreRoot !== DEFAULT_ROOT && !existsSync(ownConfig)) delete config.portability;
 
 function walk(dir) {
   if (!existsSync(dir)) return [];
@@ -39,7 +41,8 @@ function walk(dir) {
 function loadUnits(root, origin) {
   const skillsDir = join(root, 'skills');
   const units = [];
-  for (const file of walk(skillsDir).filter((path) => path.endsWith('.md'))) {
+  // assets/ holds files a skill copies or fills in (templates), not text an agent reads as the skill.
+  for (const file of walk(skillsDir).filter((path) => path.endsWith('.md') && !/\/assets\//.test(path))) {
     const text = readFileSync(file, 'utf8');
     const { data, body } = splitFrontmatter(text);
     const isSkill = basename(file) === 'SKILL.md';
@@ -130,7 +133,7 @@ for (const unit of all.filter((candidate) => candidate.kind === 'skill')) {
 // A bare "ven:name" is the one reference form with no false positives; `name` and **name** also match ordinary words.
 const resolvable = new Set([
   ...named.keys(),
-  ...(existsSync(join(coreRoot, 'bin')) ? readdirSync(join(coreRoot, 'bin')) : []),
+  ...readdirSync(SCRIPTS_DIR).filter((name) => name.startsWith('ven-')),
 ]);
 for (const unit of all) {
   for (const [, name] of unit.body.matchAll(/\bven:([a-z0-9][a-z0-9-]*)/g)) {

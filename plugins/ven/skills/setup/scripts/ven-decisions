@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import { dispatch, fail, intFlag, parseStrict } from '../scripts/lib/args.mjs';
-import { matchesAny } from '../scripts/lib/globs.mjs';
-import { loadProfile } from '../scripts/lib/profile.mjs';
-import { TreeHashError, branchStartTree, changedFilesBetween, repoRoot, venDir, workingTreeHash } from '../scripts/lib/repo.mjs';
-import { appendDecision, passedVerifyFor, readDecisions, readPlaybookState, writePlaybookState } from '../scripts/lib/state.mjs';
-import { docsOnlyGlobs } from '../scripts/lib/workarounds.mjs';
+import { dispatch, fail, intFlag, parseStrict } from './lib/args.mjs';
+import { matchesAny } from './lib/globs.mjs';
+import { loadProfile } from './lib/profile.mjs';
+import { TreeHashError, branchStartTree, changedFilesBetween, repoRoot, venDir, workingTreeHash } from './lib/repo.mjs';
+import { appendDecision, passedVerifyFor, readDecisions, readPlaybookState, writePlaybookState } from './lib/state.mjs';
+import { docsOnlyGlobs } from './lib/workarounds.mjs';
 
 const USAGE = `ven-decisions: the decision log and active playbook for this worktree
 

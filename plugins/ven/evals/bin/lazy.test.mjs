@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { makeRepo, runBin, stateDir, writeState } from '../support/fixture.mjs';
+import { SCRIPTS_DIR, makeRepo, runBin, stateDir, writeState } from '../support/fixture.mjs';
 
 const profileOf = (root) => JSON.parse(readFileSync(join(stateDir(root), 'profile.json'), 'utf8'));
 
@@ -107,4 +107,10 @@ test('context names leftover onboarding state and points at migrate', () => {
   const root = makeRepo();
   writeState(root, 'map.md', '# Map\n');
   assert.match(runBin('ven-profile', ['context'], { cwd: root }).stdout, /ven-profile migrate/);
+});
+
+test('root prints the setup skill directory, which holds the templates', () => {
+  const result = runBin('ven-profile', ['root'], { cwd: makeRepo({ profile: null }) });
+  assert.equal(result.stdout.trim(), join(SCRIPTS_DIR, '..'));
+  assert.ok(existsSync(join(result.stdout.trim(), 'assets', 'templates', 'skill', 'SKILL.md')));
 });

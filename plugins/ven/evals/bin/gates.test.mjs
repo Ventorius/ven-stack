@@ -4,7 +4,7 @@ import { appendFileSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { BASE_PROFILE, PLUGIN_ROOT, makeRepo, runBin, stateDir, writeFile, writeState } from '../support/fixture.mjs';
+import { BASE_PROFILE, SCRIPTS_DIR, makeRepo, runBin, stateDir, writeFile, writeState } from '../support/fixture.mjs';
 
 const decisions = (root) => readFileSync(join(stateDir(root), 'decisions.tsv'), 'utf8');
 
@@ -172,7 +172,7 @@ test('end survives a torn line in verify.jsonl', () => {
 
 test('appendDecision concurrent first writes leave exactly one header and every row', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'ven-dec-'));
-  const script = `import { appendDecision } from ${JSON.stringify(join(PLUGIN_ROOT, 'scripts/lib/state.mjs'))}; appendDecision(${JSON.stringify(dir)}, { step: process.argv[1] });`;
+  const script = `import { appendDecision } from ${JSON.stringify(join(SCRIPTS_DIR, 'lib/state.mjs'))}; appendDecision(${JSON.stringify(dir)}, { step: process.argv[1] });`;
   await Promise.all(
     Array.from({ length: 8 }, (_, index) => new Promise((resolve) => spawn('node', ['--input-type=module', '-e', script, String(index)]).on('close', resolve))),
   );

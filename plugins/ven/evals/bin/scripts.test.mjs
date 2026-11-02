@@ -131,11 +131,11 @@ test('the vendoring map lists the same SHAs as _upstreams.json', () => {
 
 // --- ven-new-skill ---
 
-const NEW_SKILL = join(PLUGIN_ROOT, 'bin', 'ven-new-skill');
+const NEW_SKILL = join(REPO, 'scripts', 'ven-new-skill.mjs');
 
 function scaffoldTree() {
   const root = mkdtempSync(join(tmpdir(), 'ven-scaffold-'));
-  cpSync(join(PLUGIN_ROOT, 'templates', 'skill'), join(root, 'plugins/ven/templates/skill'), { recursive: true });
+  cpSync(join(PLUGIN_ROOT, 'skills/setup/assets/templates/skill'), join(root, 'plugins/ven/skills/setup/assets/templates/skill'), { recursive: true });
   write(root, 'plugins/ven/skills/existing/SKILL.md', '---\nname: existing\ndescription: Keeps an old thing tidy. Use when tidying old things.\nmetadata:\n  layer: L2\n---\nBody.\n');
   write(root, 'docs/build/authoring-guide.md', '# Guide\n\n## Catalog\n\n- **L2 principles:** `laziness`\n');
   write(root, 'docs/build/notices/principles.md', '# Principles\n\n- cursor/plugins — plugins/ven/skills/laziness/ adapted from a.md\n');
@@ -226,6 +226,6 @@ test('ven-new-skill rejects an unknown notice group before writing anything', ()
 });
 
 test('the core skill template is valid core frontmatter', () => {
-  const template = readFileSync(join(PLUGIN_ROOT, 'templates/skill/core/SKILL.md'), 'utf8');
+  const template = readFileSync(join(PLUGIN_ROOT, 'skills/setup/assets/templates/skill/core/SKILL.md'), 'utf8');
   assert.doesNotMatch(template, /paths:|pack:|CLAUDE_PLUGIN_ROOT\}\/references/);
 });

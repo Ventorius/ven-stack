@@ -3,9 +3,9 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { PLUGIN_ROOT, runBin } from '../support/fixture.mjs';
+import { SCRIPTS_DIR, runBin } from '../support/fixture.mjs';
 
-const config = JSON.parse(readFileSync(join(PLUGIN_ROOT, 'lint.json'), 'utf8'));
+const config = JSON.parse(readFileSync(join(SCRIPTS_DIR, 'lint.json'), 'utf8'));
 
 // Without lintConfig the fixture borrows the plugin's lint.json, the way any foreign root does.
 function makePlugin(files, lintConfig) {
@@ -84,8 +84,7 @@ test('frontmatter name must match the directory name', () => {
 
 test('ven: references must resolve to a skill, playbook or bin tool', () => {
   const files = {
-    'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing. Use when testing.', body: 'Run ven:ven-tool, see ven:ghost.' }),
-    'bin/ven-tool': '#!/usr/bin/env node\n',
+    'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing. Use when testing.', body: 'Run ven:ven-profile, see ven:ghost.' }),
   };
   const result = lint(files);
   assert.equal(result.code, 1);

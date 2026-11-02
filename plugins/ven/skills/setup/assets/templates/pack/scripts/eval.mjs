@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Runs this pack's eval suite with the ven core plugin loaded beside it.
 // A case may only load plugins inside the directory under test, so ven is copied to .ven/ for the run and removed after.
-// Eval runs don't put a plugin's bin/ on the PATH, but they inherit PATH from this process, so the copy's bin/ goes first.
+// Eval runs inherit PATH from this process, so the copy's ven tools (in its setup skill) go first.
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, rmSync } from 'node:fs';
 import { delimiter, dirname, join, relative, resolve, sep } from 'node:path';
@@ -32,7 +32,7 @@ cpSync(resolve(venRoot), venCopy, { recursive: true, filter: outsideVenEvals });
 try {
   // The forge authored these cases and fixtures, and a Bash-tool run has no terminal to answer the trust prompt.
   const fixed = ['--ablation', 'none', '--scaffold', '--trust-plugin', '--no-publish'];
-  const env = { ...process.env, PATH: `${join(venCopy, 'bin')}${delimiter}${process.env.PATH}` };
+  const env = { ...process.env, PATH: `${join(venCopy, 'skills', 'setup', 'scripts')}${delimiter}${process.env.PATH}` };
   const result = spawnSync('claude', ['plugin', 'eval', packDir, ...fixed, ...passThrough], { stdio: 'inherit', env });
   process.exitCode = result.status ?? 1;
 } finally {

@@ -12,7 +12,8 @@ const USAGE = `ven-new-skill: scaffold a core skill
   --source        upstream the skill is adapted from; omit for a fresh skill
   --repo          repository root to scaffold into (default: this checkout)`;
 
-const BIN_DIR = dirname(fileURLToPath(import.meta.url));
+const SCRIPTS_DIR = dirname(fileURLToPath(import.meta.url));
+const LINTER = join(SCRIPTS_DIR, '..', 'plugins', 'ven', 'skills', 'setup', 'scripts', 'ven-lint-skills');
 const LAYERS = ['L1', 'L2', 'L3', 'L4', 'L5'];
 const SOURCE_PATTERN = /^([\w.-]+\/[\w.-]+)@([\w./-]+):(.+)$/;
 
@@ -74,7 +75,7 @@ function scaffold(args, repo) {
 
   if (existsSync(skillDir)) throw new Error(`${args.name} already exists at ${skillDir}`);
   if (noticePath && !existsSync(noticePath)) throw new Error(`no notice group file ${noticePath}`);
-  const templatePath = join(pluginRoot, 'templates', 'skill', 'core', 'SKILL.md');
+  const templatePath = join(pluginRoot, 'skills', 'setup', 'assets', 'templates', 'skill', 'core', 'SKILL.md');
   if (!existsSync(templatePath)) throw new Error(`missing template ${templatePath}`);
 
   mkdirSync(skillDir, { recursive: true });
@@ -91,7 +92,7 @@ function scaffold(args, repo) {
 }
 
 function lint(pluginRoot) {
-  const result = spawnSync(process.execPath, [join(BIN_DIR, 'ven-lint-skills'), '--root', pluginRoot], { encoding: 'utf8' });
+  const result = spawnSync(process.execPath, [LINTER, '--root', pluginRoot], { encoding: 'utf8' });
   return { ok: result.status === 0, output: `${result.stdout}${result.stderr}`.trim() };
 }
 
@@ -114,7 +115,7 @@ function main() {
   let args;
   try {
     const parsed = parseArgs(process.argv.slice(2));
-    args = { ...validate(parsed), repo: resolve(parsed.flags.repo ?? join(BIN_DIR, '..', '..', '..')) };
+    args = { ...validate(parsed), repo: resolve(parsed.flags.repo ?? join(SCRIPTS_DIR, '..')) };
   } catch (error) {
     if (!(error instanceof UsageError)) throw error;
     process.stderr.write(`${error.message}\n\n${USAGE}\n`);

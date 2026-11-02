@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dispatch, fail, intFlag, list, parseStrict, writeAll } from '../scripts/lib/args.mjs';
-import { isConfigKey, resolveConfig, setConfig } from '../scripts/lib/config.mjs';
-import { splitFrontmatter } from '../scripts/lib/frontmatter.mjs';
-import { matchesAny } from '../scripts/lib/globs.mjs';
+import { dispatch, fail, intFlag, list, parseStrict, writeAll } from './lib/args.mjs';
+import { isConfigKey, resolveConfig, setConfig } from './lib/config.mjs';
+import { splitFrontmatter } from './lib/frontmatter.mjs';
+import { matchesAny } from './lib/globs.mjs';
 import {
   PROFILE_SCHEMA_VERSION,
   allCommands,
@@ -20,15 +20,17 @@ import {
   shellQuote,
   staleSources,
   validateProfile,
-} from '../scripts/lib/profile.mjs';
-import { branchStartTree, branchTouchedFiles, repoRoot, untrackedFiles, venDir, workingTreeHash } from '../scripts/lib/repo.mjs';
-import { describeSolution, relevantSolutions } from '../scripts/lib/solutions.mjs';
-import { appendDecision, appendVerify, readDecisions, readJson, readPlaybookState, writeJson } from '../scripts/lib/state.mjs';
-import { diffLines, findWorkarounds } from '../scripts/lib/workarounds.mjs';
+} from './lib/profile.mjs';
+import { branchStartTree, branchTouchedFiles, repoRoot, untrackedFiles, venDir, workingTreeHash } from './lib/repo.mjs';
+import { describeSolution, relevantSolutions } from './lib/solutions.mjs';
+import { legacyItems } from './lib/migrate.mjs';
+import { appendDecision, appendVerify, readDecisions, readJson, readPlaybookState, writeJson } from './lib/state.mjs';
+import { diffLines, findWorkarounds } from './lib/workarounds.mjs';
 
 const USAGE = `ven-profile: the repo profile (stack facts + verified commands), filled in as work needs it
 
   ven-profile path                         print the state directory
+  ven-profile root                         print ven's setup skill directory (assets/templates/ and scripts/ live there)
   ven-profile init                         create the state directory skeleton
   ven-profile detect                       list signal files per source (manifests, CI, scripts, tests, ...)
   ven-profile show | get <key>             print the profile or one key (e.g. commands.test.single)
@@ -61,7 +63,8 @@ const USAGE = `ven-profile: the repo profile (stack facts + verified commands), 
 
   exit codes: 0 ok, 1 failure, 2 usage error, 3 adapter missing or unproven`;
 
-const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+// This file sits in skills/setup/scripts/, so the skills directory is two levels up.
+const SKILLS_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const [command, ...rest] = process.argv.slice(2);
 const { flags, positionals } = parseStrict(rest, { values: ['file', 'var', 'timeout', 'run', 'evidence', 'manual'], booleans: ['strict'] });
 const timeout = intFlag(flags, 'timeout', undefined);
@@ -133,6 +136,9 @@ const SIGNALS = {
 };
 
 const commands = {
+  root() {
+    print(resolve(SKILLS_DIR, 'setup'));
+  },
   path() {
     print(venDir(cwd) ?? fail('ven-profile: not inside a git repository'));
   },
@@ -334,9 +340,9 @@ const commands = {
   },
   playbooks() {
     const loaded = loadProfile(cwd);
-    const corePaths = readdirSync(join(PLUGIN_ROOT, 'skills', 'do', 'playbooks'))
+    const corePaths = readdirSync(join(SKILLS_DIR, 'do', 'playbooks'))
       .filter((file) => file.endsWith('.md'))
-      .map((file) => ({ source: 'core', path: join(PLUGIN_ROOT, 'skills', 'do', 'playbooks', file) }));
+      .map((file) => ({ source: 'core', path: join(SKILLS_DIR, 'do', 'playbooks', file) }));
     const packPaths = (loaded?.profile.packs ?? []).flatMap((pack) =>
       (pack.playbooks ?? []).map((path) => ({ source: `pack ${pack.name}`, path, applies_when: pack.applies_when })),
     );
@@ -377,26 +383,6 @@ const commands = {
 
 const MAX_CONTEXT_SOLUTIONS = 3;
 
-// Each item is state an older, onboarding-and-hooks ven left behind. Applying one makes it disappear
-// from this list, so migrate converges however often it runs.
-function legacyItems(dir) {
-  const items = [];
-  const map = join(dir, 'map.md');
-  if (existsSync(map)) {
-    items.push({
-      describe: 'map.md -> legacy/map.md (no longer injected at session start)',
-      apply: () => {
-        mkdirSync(join(dir, 'legacy'), { recursive: true });
-        renameSync(map, join(dir, 'legacy', 'map.md'));
-      },
-    });
-  }
-  for (const sub of ['sessions', 'baselines']) {
-    const path = join(dir, 'state', sub);
-    if (existsSync(path)) items.push({ describe: `removed state/${sub}/ (hook state)`, apply: () => rmSync(path, { recursive: true, force: true }) });
-  }
-  return items;
-}
 
 // The run's diff starts where the active playbook started, else where the branch left the default branch.
 function refuseWorkarounds(dir, root, profile, currentTree) {

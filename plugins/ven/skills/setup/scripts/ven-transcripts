@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { fail, intFlag, list, parseStrict } from '../scripts/lib/args.mjs';
-import { allConfigDirs } from '../scripts/lib/claude.mjs';
-import { git, repoRoot } from '../scripts/lib/repo.mjs';
-import { CORRECTION, HOOK_BLOCK } from '../scripts/lib/signals.mjs';
+import { fail, intFlag, list, parseStrict } from './lib/args.mjs';
+import { allConfigDirs } from './lib/claude.mjs';
+import { git, repoRoot } from './lib/repo.mjs';
+import { CORRECTION, HOOK_BLOCK } from './lib/signals.mjs';
 
 const USAGE = `ven-transcripts: extract correction, hook-block and routing evidence from Claude Code transcripts (read-only)
 

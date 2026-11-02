@@ -17,6 +17,7 @@ You own the run. Pick one playbook, show the pick, copy its steps, run them in o
 
 ## 1. Read the repo state
 
+- A `ven-*` command is not found, or `ven-doctor` reports an ERROR: run **setup** first.
 - `ven-profile context`: the state directory, a stale profile, the active playbook and past solutions for the files this branch touches. Before editing a file, `ven-profile solutions-for <files>` lists the entries that cover it.
 - `ven-profile fresh` exits 1: name the manifests that changed and re-prove the commands they define (`ven-profile prove <key>`) before relying on them, then `ven-profile stamp`.
 - `ven-decisions active` shows a playbook in this worktree: a task that continues it routes to **pickup**, a pause routes to **pause**. A new task while a playbook is active (running or paused) is not silent: ask the user (AskUserQuestion) whether to finish, abandon or keep the old one paused, and record the answer. Close it with `ven-decisions end --outcome <done|abandoned|blocked>` only on finish or abandon. A paused playbook keeps its state; run the new task in a separate worktree or branch, or after the pickup.

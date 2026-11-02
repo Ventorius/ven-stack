@@ -48,7 +48,7 @@ Run these and mention a result only when it changes the answer:
 
 - `ven-profile context`: the active playbook, a stale profile, or state from an older ven version (`ven-profile migrate`). A repo with no profile needs nothing first: commands are learned as work needs them.
 - `ven-decisions active` shows a playbook: work is in flight. `/ven:do continue` resumes it; `/ven:do pause` parks it.
-- `ven-doctor`: skill name collisions, unverified commands, the worktree base, missing permission rules. Run it whenever something behaved unexpectedly.
+- `ven-doctor`: the tools on PATH, node and git, the per-user settings, unverified commands and state an older ven left. Run it whenever something behaved unexpectedly; for its fixes, suggest **setup**.
 
 ## Reply
 

@@ -1,0 +1,129 @@
+#!/usr/bin/env node
+import { accessSync, constants, existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
+import { delimiter, dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { fail, parseStrict } from './lib/args.mjs';
+import { resolveConfig } from './lib/config.mjs';
+import { legacyItems } from './lib/migrate.mjs';
+import { allCommands, loadProfile, staleSources } from './lib/profile.mjs';
+import { repoRoot, tryGit, venDir } from './lib/repo.mjs';
+
+const USAGE = `ven-doctor: check the ven install, the per-user config and this repo's ven state
+
+  ven-doctor [--strict] [--json]
+
+  --strict  exit 1 when any WARN is reported
+  --json    print {"findings":[{"level","message"}]} instead of text
+
+  exit codes: 0 ok, 1 an ERROR (or a WARN under --strict), 2 usage error`;
+
+const MIN_NODE_MAJOR = 22;
+const SCRIPTS_DIR = dirname(realpathSync(fileURLToPath(import.meta.url)));
+if (process.argv.slice(2).some((arg) => arg === '--help' || arg === '-h')) {
+  console.log(USAGE);
+  process.exit(0);
+}
+const { flags, positionals } = parseStrict(process.argv.slice(2), { booleans: ['strict', 'json'] });
+if (positionals.length > 0) fail(USAGE, 2);
+
+const cwd = process.cwd();
+const findings = [];
+const note = (level, message) => findings.push({ level, message });
+
+function onPath(name) {
+  for (const dir of (process.env.PATH ?? '').split(delimiter).filter(Boolean)) {
+    const candidate = join(dir, name);
+    try {
+      accessSync(candidate, constants.X_OK);
+      return candidate;
+    } catch {
+      // not in this PATH entry
+    }
+  }
+  return null;
+}
+
+function checkInstall() {
+  const major = Number(process.versions.node.split('.')[0]);
+  note(major >= MIN_NODE_MAJOR ? 'INFO' : 'ERROR', `node v${process.versions.node}${major >= MIN_NODE_MAJOR ? '' : `; ven needs node ${MIN_NODE_MAJOR} or newer`}`);
+  if (tryGit(['--version'], cwd) === null) note('ERROR', 'git is not available; ven needs it for repo state and verify');
+
+  const tools = readdirSync(SCRIPTS_DIR).filter((name) => name.startsWith('ven-'));
+  const missing = tools.filter((name) => !onPath(name));
+  const install = join(SCRIPTS_DIR, 'install.mjs');
+  if (missing.length > 0) note('WARN', `${missing.join(', ')} not on PATH; run node ${install}`);
+  const foreign = tools.filter((name) => onPath(name) && realpathSync(onPath(name)) !== join(SCRIPTS_DIR, name));
+  if (foreign.length > 0) note('WARN', `${foreign.join(', ')} on PATH come from another ven install; run node ${install} to repoint them`);
+}
+
+function checkConfig(profile) {
+  try {
+    const config = resolveConfig(profile);
+    if (!['lean', 'standard', 'max'].includes(config.budget_tier)) note('ERROR', `budget_tier must be one of lean, standard, max (is ${config.budget_tier}); fix it with ven-profile config budget_tier <tier>`);
+  } catch (error) {
+    note('ERROR', error.message);
+  }
+}
+
+// null: unreadable (already reported as an ERROR); undefined: no profile yet.
+function readProfile() {
+  try {
+    return loadProfile(cwd) ?? undefined;
+  } catch (error) {
+    note('ERROR', error.message);
+    return null;
+  }
+}
+
+function checkProfile(root, loaded) {
+  if (loaded === undefined) return note('INFO', 'no ven profile for this repo yet; commands are learned on first use (ven-profile learn)');
+  if (!loaded) return;
+  const stale = staleSources(loaded.profile, root);
+  if (stale.length > 0) note('WARN', `profile stale: ${stale.join(', ')} changed; re-prove the commands they define, then ven-profile stamp`);
+  const unverified = Object.entries(allCommands(loaded.profile))
+    .filter(([, command]) => command.status !== 'verified')
+    .map(([path, command]) => `${path} (${command.status})`);
+  if (unverified.length > 0) note('INFO', `commands not verified: ${unverified.join(', ')}`);
+}
+
+// Mirrors DECISION_COLUMNS in lib/state.mjs, which does not export it.
+const DECISION_HEADER = 'ts\tworktree\tplaybook\tstep\tdecision\tevidence';
+
+function checkState(stateDir) {
+  const worktrees = join(stateDir, 'state', 'worktrees');
+  for (const name of existsSync(worktrees) ? readdirSync(worktrees).filter((file) => file.endsWith('.json')) : []) {
+    const path = join(worktrees, name);
+    try {
+      JSON.parse(readFileSync(path, 'utf8'));
+    } catch {
+      note('ERROR', `corrupt JSON in ${path}; delete the file (ven-decisions start recreates it)`);
+    }
+  }
+  const legacy = legacyItems(stateDir);
+  if (legacy.length > 0) note('WARN', `state from an older ven version: ${legacy.map((item) => item.describe).join('; ')}; run ven-profile migrate`);
+
+  const decisions = join(stateDir, 'decisions.tsv');
+  if (!existsSync(decisions)) return;
+  const [header, ...rows] = readFileSync(decisions, 'utf8').split('\n').filter(Boolean);
+  const columns = DECISION_HEADER.split('\t').length;
+  if (header !== DECISION_HEADER || rows.some((row) => row.split('\t').length !== columns)) {
+    note('ERROR', `malformed decisions.tsv at ${decisions}; move it aside (the next ven-decisions add starts a fresh log)`);
+  }
+}
+
+checkInstall();
+const root = repoRoot(cwd);
+const loaded = root ? readProfile() : undefined;
+checkConfig(loaded?.profile);
+if (!root) {
+  note('INFO', 'not inside a git repository; repo checks skipped');
+} else {
+  checkProfile(root, loaded);
+  checkState(venDir(cwd));
+}
+
+if (flags.json) console.log(JSON.stringify({ findings }, null, 2));
+else console.log(findings.map(({ level, message }) => `${level.padEnd(5)} ${message}`).join('\n'));
+
+const failing = findings.some(({ level }) => level === 'ERROR' || (flags.strict && level === 'WARN'));
+process.exit(failing ? 1 : 0);
