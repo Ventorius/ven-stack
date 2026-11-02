@@ -23,13 +23,13 @@ Count corrections from the decisions log first: `ven-decisions list --step corre
 
 ## 2. Run three blind lenses
 
-Spawn three `ven:ven-reviewer` agents in one message, each with the brief in `references/lenses.md` (shared part plus its lens) and the transcript path or digest:
+**delegate** to three reviewers at once, each with the brief in `references/lenses.md` (shared part plus its lens) and the transcript path or digest:
 
 | Lens | Looks for | `model` |
 |---|---|---|
-| judgment | The durable principle behind an incident | `${user_config.orchestrator_model}` |
-| tooling | Commands, paths and context the agent rediscovered or the user had to hand over | `${user_config.coder_model}` |
-| divergent | What the other two miss: second-order effects, skipped proof, skills that never fired | `${user_config.orchestrator_model}` |
+| judgment | The durable principle behind an incident | `orchestrator_model` |
+| tooling | Commands, paths and context the agent rediscovered or the user had to hand over | `coder_model` |
+| divergent | What the other two miss: second-order effects, skipped proof, skills that never fired | `orchestrator_model` |
 
 Reviewers never see each other's output. On the `lean` budget tier, run the judgment lens only.
 

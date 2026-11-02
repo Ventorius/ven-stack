@@ -162,9 +162,9 @@
     "baseline": {
       "ask-tool": 20,
       "task-tool": 1,
-      "subagent-type": 5,
-      "agent-name": 38,
-      "user-config": 35,
+      "subagent-type": 0,
+      "agent-name": 0,
+      "user-config": 0,
       "plugin-root": 9,
       "model-invocation": 4,
       "harness-settings": 4,

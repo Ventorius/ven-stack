@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, w
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dispatch, fail, intFlag, list, parseStrict, writeAll } from '../scripts/lib/args.mjs';
+import { isConfigKey, resolveConfig, setConfig } from '../scripts/lib/config.mjs';
 import { splitFrontmatter } from '../scripts/lib/frontmatter.mjs';
 import { matchesAny } from '../scripts/lib/globs.mjs';
 import {
@@ -54,6 +55,9 @@ const USAGE = `ven-profile: the repo profile (stack facts + verified commands), 
   ven-profile playbooks                    list core and pack playbooks with their descriptions
   ven-profile packs-for <file>...          list enabled packs whose applies_when matches the files
   ven-profile migrate                      move state left by older ven versions aside (idempotent)
+  ven-profile config [<key> [<value>]]     print or set per-user settings in ~/.ven/config.json:
+                                           orchestrator_model, coder_model, swarm_model (any model name, or inherit),
+                                           budget_tier (lean|standard|max; a repo profile budget_tier wins)
 
   exit codes: 0 ok, 1 failure, 2 usage error, 3 adapter missing or unproven`;
 
@@ -341,6 +345,16 @@ const commands = {
       return { name: data?.name ?? basename(entry.path, '.md'), ...entry, description: data?.description ?? '(missing file)' };
     });
     print(playbooks);
+  },
+  config() {
+    const [key, value] = positionals;
+    if (key !== undefined && !isConfigKey(key)) fail(`ven-profile config: unknown key ${key}`, 2);
+    if (value !== undefined) {
+      setConfig(key, value);
+      return print(`set ${key}`);
+    }
+    const resolved = resolveConfig(venDir(cwd) ? loadProfile(cwd)?.profile : null);
+    print(key ? resolved[key] : resolved);
   },
   migrate() {
     const dir = venDir(cwd) ?? fail('ven-profile: not inside a git repository');

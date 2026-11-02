@@ -30,7 +30,7 @@ Facts first, so findings rest on numbers, not impressions:
 - **Reach:** run `ven-profile adapter graph.imports` (or `graph.boundaries`) and note new edges across modules. No adapter: say so and read imports directly.
 - **Duplicates:** for each new helper, search for an existing one that does the same job (`ven-profile adapter code.search --var pattern=<name or shape>`, or a plain search).
 
-On a wide diff, fan these out: one `ven:ven-worker` per measurement (`model: ${user_config.swarm_model}`), each with a read-only brief that returns facts with `file:line`.
+On a wide diff, fan these out: one worker per measurement (**delegate**), each with a read-only brief that returns facts with `file:line`.
 
 ## 3. Review
 

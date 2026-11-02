@@ -25,7 +25,7 @@ Each panel carries its own badge per the badge protocol in **diagram-deps**. A p
 |---|---|---|
 | Change map | **diagram-change** | always |
 | Data diff | **diagram-data**, two-ref diff | the diff touches the data model |
-| New flows | **diagram-flow**, one per new entry point, two at most | new routes, handlers, jobs or commands; skipped when `${user_config.budget_tier}` is `lean` |
+| New flows | **diagram-flow**, one per new entry point, two at most | new routes, handlers, jobs or commands; skipped when `ven-profile config budget_tier` is `lean` |
 | Risks | **blast-radius** | always |
 | Walkthrough | you, from the diff | always |
 

@@ -18,7 +18,7 @@ Write down the conventions the team follows in practice, not the ones a style gu
 
 ## 2. One worker per area
 
-Spawn every area in one message: `subagent_type: ven:ven-worker`, `model: ${user_config.swarm_model}`, read-only.
+**delegate** every area at once to read-only workers.
 
 | Area | Look at |
 |---|---|

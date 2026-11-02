@@ -58,19 +58,14 @@ function loadUnits(root, origin) {
       lines: text.split('\n').length,
     });
   }
-  for (const file of walk(join(root, 'agents')).filter((path) => path.endsWith('.md'))) {
-    const text = readFileSync(file, 'utf8');
-    const { data, body } = splitFrontmatter(text);
-    units.push({ file, origin, name: data?.name, kind: 'agent', layer: 'L1', data, body, lines: text.split('\n').length });
-  }
   return units;
 }
 
 const core = loadUnits(coreRoot, 'core');
 const packs = list(flags.pack).flatMap((dir) => loadUnits(resolve(dir), basename(resolve(dir))));
 const all = [...core, ...packs];
-const named = new Map(all.filter((unit) => unit.name && unit.kind !== 'agent').map((unit) => [unit.name, unit]));
-const coreNames = new Set(core.filter((unit) => unit.name && unit.kind !== 'agent').map((unit) => unit.name));
+const named = new Map(all.filter((unit) => unit.name).map((unit) => [unit.name, unit]));
+const coreNames = new Set(core.filter((unit) => unit.name).map((unit) => unit.name));
 const errors = [];
 const where = (unit) => relative(process.cwd(), unit.file);
 
@@ -135,12 +130,11 @@ for (const unit of all.filter((candidate) => candidate.kind === 'skill')) {
 // A bare "ven:name" is the one reference form with no false positives; `name` and **name** also match ordinary words.
 const resolvable = new Set([
   ...named.keys(),
-  ...all.filter((unit) => unit.kind === 'agent' && unit.name).map((unit) => unit.name),
   ...(existsSync(join(coreRoot, 'bin')) ? readdirSync(join(coreRoot, 'bin')) : []),
 ]);
 for (const unit of all) {
   for (const [, name] of unit.body.matchAll(/\bven:([a-z0-9][a-z0-9-]*)/g)) {
-    if (!resolvable.has(name)) errors.push(`${where(unit)}: dead reference ven:${name}; no skill, playbook, agent or bin tool has that name`);
+    if (!resolvable.has(name)) errors.push(`${where(unit)}: dead reference ven:${name}; no skill, playbook or bin tool has that name`);
   }
 }
 
@@ -170,8 +164,7 @@ for (const { from, to, via } of edges) {
   const a = LAYER_ORDER[from.layer];
   const b = LAYER_ORDER[to.layer];
   const sideways = from.layer === 'L3' && to.layer === 'L3';
-  // Agents consume skills through preload, so they sit outside the layer direction rule.
-  if (from.kind !== 'agent' && a && b && !(b < a || sideways)) {
+  if (a && b && !(b < a || sideways)) {
     errors.push(`${where(via)}: ${from.name} (${from.layer}) references ${to.name} (${to.layer}); references must point down a layer or sideways within L3`);
   }
   if (from.userInvoked && to.userInvoked) {
@@ -247,9 +240,7 @@ for (const unit of core) {
 // a token with no baseline entry is banned outright.
 function findUses(pattern) {
   const regex = new RegExp(pattern, 'g');
-  return core
-    .filter((unit) => unit.kind !== 'agent')
-    .flatMap((unit) => unit.text.split('\n').flatMap((line, index) => [...line.matchAll(regex)].map(() => `${where(unit)}:${index + 1}`)));
+  return core.flatMap((unit) => unit.text.split('\n').flatMap((line, index) => [...line.matchAll(regex)].map(() => `${where(unit)}:${index + 1}`)));
 }
 
 for (const [key, pattern] of Object.entries(config.portability?.patterns ?? {})) {

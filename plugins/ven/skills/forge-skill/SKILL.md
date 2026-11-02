@@ -39,7 +39,7 @@ Settle the layer too (L2 for a principle, L3 for a workflow) and a kebab-case na
 
 ## 3. Write the failing scenario
 
-Brief `ven:ven-coder` (`model: ${user_config.coder_model}`):
+Brief a coder (**delegate**):
 
 - **Inputs:** the instances and the four answers.
 - **Files:** `<pack dir>/evals/<skill>-scenario/`, `<skill>-fires/` and `<skill>-quiet/`, copied from `<ven root>/templates/skill/cases/` (`scenario/`, `fires/`, `quiet/`, and `fixture.sh` into each), every `{{` placeholder filled. Nothing else changes: no repo files, so no commit and no verify step.

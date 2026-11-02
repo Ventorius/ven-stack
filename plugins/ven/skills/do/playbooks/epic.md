@@ -16,7 +16,7 @@ Rule on pause: a pause ends an epic run, and this overrides the pause playbook. 
 2. Claim one frontier ticket
    Done: its claim is held as **roadmap** says (Working a session), recorded with `ven-decisions add --step claim --decision "<NN>" --evidence "<ticket path>"`.
 3. Resolve it by type, with the skill the roadmap names
-   Done: the question has an answer with its reasoning. Ready research tickets may run in parallel on `ven:ven-worker`.
+   Done: the question has an answer with its reasoning. Ready research tickets may run in parallel as worker briefs (**delegate**).
 4. Close the ticket
    Done: the ticket is closed as **roadmap** says (Closing a ticket), or on a pause see the rule at the top.
 5. Cleared check

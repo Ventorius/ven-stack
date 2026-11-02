@@ -82,10 +82,9 @@ test('frontmatter name must match the directory name', () => {
   assert.match(result.stderr, /skills\/a\/SKILL\.md: name "b" must equal directory name "a"/);
 });
 
-test('ven: references must resolve to a skill, playbook, agent or bin tool', () => {
+test('ven: references must resolve to a skill, playbook or bin tool', () => {
   const files = {
-    'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing. Use when testing.', body: 'Ask ven:ven-helper, run ven:ven-tool, see ven:ghost.' }),
-    'agents/ven-helper.md': '---\nname: ven-helper\ndescription: helps\n---\nHelp.\n',
+    'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing. Use when testing.', body: 'Run ven:ven-tool, see ven:ghost.' }),
     'bin/ven-tool': '#!/usr/bin/env node\n',
   };
   const result = lint(files);

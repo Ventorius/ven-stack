@@ -43,7 +43,7 @@ A tool that fits two categories goes under its primary evidence; note the call. 
 
 ## 4. Investigate in parallel
 
-Spawn one investigator per available category in one message: `subagent_type: ven:ven-worker`, `model: ${user_config.swarm_model}`, each owning exactly one source. The brief is `references/investigator.md` filled in, plus the anchor and the question. The history investigator also gets `references/code-archaeology.md`. If the target looks defensive (guards, retries, timeouts, limits, flags), every investigator also searches for incidents near the date the code appeared.
+**delegate** one investigator per available category to a worker, all at once, each owning exactly one source. The brief is `references/investigator.md` filled in, plus the anchor and the question. The history investigator also gets `references/code-archaeology.md`. If the target looks defensive (guards, retries, timeouts, limits, flags), every investigator also searches for incidents near the date the code appeared.
 
 On `lean` budget, run history alone first and spawn the rest only if history gives no direct answer; list the unsearched categories with "budget" as the reason.
 

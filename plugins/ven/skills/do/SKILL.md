@@ -69,20 +69,19 @@ Keep that shape: `ven-transcripts` parses it to measure misroutes. Then:
 
 In order. A step's `Done:` line is its gate: the next step starts only when it holds, or after you record why it can't.
 
-Delegate by the ambiguity left, not by size:
+Delegate by the ambiguity left, not by size, through **delegate**:
 
-| Work | Agent | Agent tool parameters |
-|---|---|---|
-| One ticket end to end, test-first | `ven:ven-coder` | `model: ${user_config.coder_model}`; own worktree, background |
-| A fully specified edit, or one slice of a fan-out | `ven:ven-worker` | `model: ${user_config.swarm_model}` |
-| One review lens, blind to the others | `ven:ven-reviewer` | `model: ${user_config.orchestrator_model}` for the high-risk lens, else `${user_config.coder_model}` |
-| Citation and proof checks | `ven:ven-verifier` | `model: ${user_config.swarm_model}` |
+| Work | Role |
+|---|---|
+| One ticket end to end, test-first | coder, in its own worktree, in the background |
+| A fully specified edit, or one slice of a fan-out | worker |
+| One review lens, blind to the others | reviewer |
+| Citation and proof checks | verifier |
 
-- Budget tier: `${user_config.budget_tier}`, unless `ven-profile get budget_tier` sets one for this repo. `lean`: pass `effort: low` and skip optional panels. `max`: pass `effort: high`. `standard`: the agent's default.
-- A brief drops a tier only when complete: inputs, exact files, expected output shape, a check command from the profile, and the `playbook` and `step` for its result trailer. A brief that says "decide" or "figure out" stays with you.
-- Pack skills: agent preloads are static. For each pack that `ven-profile packs-for <brief files>` returns, add "load skill `<plugin name>:<skill>` before you start" to the brief for each of its `skills`. Load them yourself when you work on those files.
+- Budget tier (`ven-profile config budget_tier`): `lean` lowers effort and skips optional panels; `max` raises effort.
+- A brief drops a tier only when complete, as **delegate** defines it. A brief that says "decide" or "figure out" stays with you. When you work on files a pack applies to, load that pack's skills yourself.
 - Parallelize independent work. Tickets follow the blocker graph (feature playbook); direct writes to the same files run in order.
-- Read every `VEN-RESULT` trailer. On `BLOCKED: <question>`, answer from the spec or the code, or ask the user if the call is theirs, then continue the same agent with SendMessage (it keeps its worktree and context); never spawn a new one for the answer. Never let an agent guess. A coder's trailer carries `worktree:` and `branch:`; use them to merge.
+- Read every `VEN-RESULT` trailer. On `BLOCKED: <question>`, answer from the spec or the code, or ask the user if the call is theirs, then continue the same role (it keeps its worktree and context); never start a new one for the answer. Never let an agent guess. A coder's trailer carries `worktree:` and `branch:`; use them to merge.
 - You own what agents return. Read the diff and check the logged verify pass (`ven-decisions list`) before you merge a worktree; a trailer is a claim, not proof.
 - Ask the user (AskUserQuestion) only for calls that are theirs: product decisions, and irreversible or outward-facing actions (PRs, pushes, comments, tracker tickets, installs). Find facts yourself. Apply **never-block-on-reversible** to the rest.
 - Apply the principles in [references/principles.md](references/principles.md) when their trigger fits. Name each one that changed a decision in your reply, and the choice it changed.

@@ -33,7 +33,7 @@ Recommended: <your answer>
 ## Facts are yours, decisions are theirs
 
 - Never ask the user for a fact you can look up: what the code does, which command exists, who calls a module, what a test covers. Find it yourself.
-- For a lookup that spans many files, send `ven:ven-worker` (`model: ${user_config.swarm_model}`) a read-only brief: the question, where to look, and "return facts, each with file:line".
+- For a lookup that spans many files, **delegate** a read-only worker brief: the question, where to look, and "return facts, each with file:line".
 - Don't block on a running lookup. It is an unsettled prerequisite: only the questions downstream of it wait. Ask the rest of the frontier now.
 - Every decision goes to the user, with your recommendation. Never settle one silently, and never present a guess as a fact.
 

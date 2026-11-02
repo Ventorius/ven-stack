@@ -17,7 +17,7 @@ Packs rot: code moves, libraries upgrade, skills stop firing, and each loaded sk
 - **changed:** the user approved changes, and they are applied and proven.
 - **blocked:** a check could not run; say which one and why.
 
-**Input:** every pack in `ven-profile get packs`, or the one named. Per pack, `<pack dir>` is `$(ven-profile path)/packs/<pack>/`, read with its `pack.json` and `.claude-plugin/plugin.json`; `<ven root>` is `${CLAUDE_PLUGIN_ROOT}`. With several packs, fan out one read-only `ven:ven-worker` brief per pack (`model: ${user_config.swarm_model}`) for checks 1, 2, 4 and 5.
+**Input:** every pack in `ven-profile get packs`, or the one named. Per pack, `<pack dir>` is `$(ven-profile path)/packs/<pack>/`, read with its `pack.json` and `.claude-plugin/plugin.json`; `<ven root>` is `${CLAUDE_PLUGIN_ROOT}`. With several packs, **delegate** one read-only worker brief per pack for checks 1, 2, 4 and 5.
 
 ## Checks
 
@@ -26,7 +26,7 @@ Packs rot: code moves, libraries upgrade, skills stop firing, and each loaded sk
    - Skills: count Skill tool calls naming `<plugin>:<skill>` in the transcripts `ven-transcripts` reads (Grep `"skill":"<plugin>:<skill>"` across `~/.claude*/projects/*<repo>*/*.jsonl`).
    - Playbooks: count the picks in `ven-transcripts --kind routes --since 90`.
    - Zero uses makes an item a candidate; read its `evidence` in `pack.json` before proposing anything.
-3. **Evals.** Read the newest `<pack dir>/evals/results/*/aggregate-result.json`. Any case under 1.00, missing results, or results older than the newest pack file outside `evals/results/`: rerun with `node <pack dir>/scripts/eval.mjs --ven <ven root> --runs 3 --max-cost-usd 15`, granting `--allow-tools` for what the cases list. When the budget tier is `lean` (`ven-profile get budget_tier`, else `${user_config.budget_tier}`), report "not rerun" instead of spending.
+3. **Evals.** Read the newest `<pack dir>/evals/results/*/aggregate-result.json`. Any case under 1.00, missing results, or results older than the newest pack file outside `evals/results/`: rerun with `node <pack dir>/scripts/eval.mjs --ven <ven root> --runs 3 --max-cost-usd 15`, granting `--allow-tools` for what the cases list. When `ven-profile config budget_tier` is `lean`, report "not rerun" instead of spending.
 4. **References.** Compare each `references[]` entry's `version` with the version its `lockfile` locks now; a difference is stale. Check the `file:line` rows in the reference with **citation-check**.
 5. **applies_when.** Glob each `applies_when.paths` pattern from the repo root: no match is dead. Each `applies_when.deps` name must still appear in a manifest from `ven-profile get stack.sources`. A skill whose `paths:` match nothing never activates.
 6. **Weight.** `claude plugin details <plugin>@<marketplace>` gives the pack's projected context cost. A costly pack with little use is a candidate even when each item is used now and then.

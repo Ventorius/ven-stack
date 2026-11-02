@@ -19,7 +19,7 @@ Read the resolved version from the lockfiles the profile lists (`ven-profile get
 
 ## 2. Gather, in parallel
 
-Send two read-only briefs to `ven:ven-worker` (`model: ${user_config.swarm_model}`). They gather; you synthesize.
+**delegate** two read-only worker briefs. They gather; you synthesize.
 
 - **Docs:** fetch the official documentation for the locked version with WebFetch: the docs pages for the APIs the repo calls, the changelog or release notes, and the migration guide from the version most examples assume. Check deprecations first. Primary sources only: the library's own docs, repository and changelog. Return claims, each with its URL.
 - **Usages:** Grep the repo for the library's imports and calls. Return each distinct usage pattern with a count and up to three `file:line` examples, and every usage that contradicts the docs.
@@ -53,7 +53,7 @@ Locked in <lockfile>. Docs fetched <date>.
 
 ## 4. Check the citations
 
-Apply **citation-check** through `ven:ven-verifier` (`model: ${user_config.swarm_model}`): each `file:line` says what its row claims, and each URL contains its claim. Fix or cut every row that fails.
+Apply **citation-check**: each `file:line` says what its row claims, and each URL contains its claim. Fix or cut every row that fails.
 
 ## 5. Register
 

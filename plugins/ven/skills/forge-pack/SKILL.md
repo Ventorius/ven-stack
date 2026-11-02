@@ -24,7 +24,7 @@ A pack makes ven specific to one technology or one domain of this repo while cor
 
 ## 2. Mine the evidence
 
-Fan out read-only `ven:ven-worker` briefs (`model: ${user_config.swarm_model}`), one per source. Each returns instances: source, date, `file:line` or link, what went wrong or was needed, and what fixed it.
+**delegate** read-only worker briefs, one per source. Each returns instances: source, date, `file:line` or link, what went wrong or was needed, and what fixed it.
 
 - **Corrections:** `ven-decisions list --step correction` first, kept to the pack's terms; then `ven-transcripts --kind corrections --since 90` and `--kind routes` as the fallback.
 - **Solutions:** entries in `$(ven-profile path)/solutions/` whose symptoms or `files:` touch the area.

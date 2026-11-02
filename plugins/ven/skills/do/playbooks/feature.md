@@ -19,8 +19,8 @@ You own the design. Align before you build; coders build, you integrate and judg
    Done: a spec the user accepted.
 3. **to-tickets**
    Done: vertical slices, each with acceptance criteria, files in scope, blocking edges and a check command.
-4. Per ticket, **tdd** in `ven:ven-coder` (background worktree)
-   Done: every ticket's coder returned DONE with a logged verify pass; each BLOCKED was answered and its ticket finished. Use the blocker graph from step 3: tickets with no blocking edge between them run in parallel, and the rest run in blocker order. File overlap between parallel tickets is resolved at step 5 by ordered merges, not by serializing the work. Answer a BLOCKED by continuing the same coder with SendMessage; a fresh coder only when that agent is gone. Before the first spawn, `ven-doctor` must not warn about `worktree.baseRef`, or coders start from the default branch instead of this one.
+4. Per ticket, **tdd** in a coder (**delegate**), in its own worktree
+   Done: every ticket's coder returned DONE with a logged verify pass; each BLOCKED was answered and its ticket finished. Use the blocker graph from step 3: tickets with no blocking edge between them run in parallel, and the rest run in blocker order. File overlap between parallel tickets is resolved at step 5 by ordered merges, not by serializing the work. Answer a BLOCKED by continuing the same coder; a fresh coder only when that one is gone. Coder worktrees branch from this branch, never from the default branch.
 5. Integrate the worktrees
    Done: each DONE worktree branch is merged into the working branch in ticket order, with conflicts resolved by you.
 6. **verify** on the combined tree

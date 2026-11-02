@@ -14,7 +14,7 @@ Build the tool that makes the change; don't hand-edit call sites. Old and new pa
 
 1. Lever first (apply **build-the-lever**)
    Done: the first unit is migrated by hand, a codemod or script reproduces that edit with an empty diff, and the script is safe to rerun.
-2. **sweep** with `ven:ven-worker` per slice
+2. **sweep** with one worker per slice
    Done: the remaining call sites are split into slices with disjoint files; each worker ran the lever on its slice, fixed only what its brief allows, and returned PASS or a BLOCKED you resolved.
 3. **verify** per slice
    Done: each slice's check passes before it merges, and the combined tree passes the verify key for each touched change type.
