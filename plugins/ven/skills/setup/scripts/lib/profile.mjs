@@ -89,9 +89,12 @@ function verifyErrors(profile) {
 }
 
 function packErrors(profile) {
-  return (profile.packs ?? []).flatMap((pack, index) =>
-    ['name', 'kind'].filter((field) => !pack?.[field]).map((field) => `packs[${index}].${field} is required`),
-  );
+  return (profile.packs ?? []).flatMap((pack, index) => [
+    ...['name', 'kind'].filter((field) => !pack?.[field]).map((field) => `packs[${index}].${field} is required`),
+    ...(pack?.checks ?? [])
+      .map((check, checkIndex) => (typeof check?.id === 'string' && typeof check?.run === 'string' ? null : `packs[${index}].checks[${checkIndex}] needs id and run`))
+      .filter(Boolean),
+  ]);
 }
 
 export function validateProfile(profile) {

@@ -109,8 +109,8 @@ test('context names leftover onboarding state and points at migrate', () => {
   assert.match(runBin('ven-profile', ['context'], { cwd: root }).stdout, /ven-profile migrate/);
 });
 
-test('root prints the setup skill directory, which holds the templates', () => {
+test('root prints the directory holding ven\'s skills, templates included', () => {
   const result = runBin('ven-profile', ['root'], { cwd: makeRepo({ profile: null }) });
-  assert.equal(result.stdout.trim(), join(SCRIPTS_DIR, '..'));
-  assert.ok(existsSync(join(result.stdout.trim(), 'assets', 'templates', 'skill', 'SKILL.md')));
+  assert.equal(result.stdout.trim(), join(SCRIPTS_DIR, '..', '..'));
+  assert.ok(existsSync(join(result.stdout.trim(), 'setup', 'assets', 'templates', 'skill', 'SKILL.md')));
 });

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fixture repo for one skill's cases: the smallest copy of the situation the evidence shows, onboarded with a ven profile.
+# Fixture repo for one skill's cases: the smallest copy of the situation the evidence shows, with a ven profile.
 # Copy this file into each case directory; case.yaml names it as the scaffold_script.
 set -euo pipefail
 git init -q -b main
@@ -23,6 +23,6 @@ cat > .ven-state/profile.json <<'JSON'
   "verify": {},
   "tests": { "patterns": [] },
   "docs_only": ["**/*.md"],
-  "packs": [{ "name": "{{pack}}", "kind": "{{kind}}", "plugin": "{{repo}}-{{pack}}@{{marketplace}}", "applies_when": {{applies_when from pack.json}}, "skills": ["{{skill}}"], "playbooks": [] }]
+  "packs": [{ "name": "{{pack}}", "kind": "{{kind}}", "applies_when": {{applies_when from pack.json}}, "skills": ["{{skill}}"], "playbooks": [] }]
 }
 JSON

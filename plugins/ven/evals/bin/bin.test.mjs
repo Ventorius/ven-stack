@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
@@ -112,8 +112,7 @@ test('ven-profile init and detect describe the repo without a profile', () => {
   writeFile(root, '.github/workflows/ci.yml', 'on: push\n');
   writeFile(root, 'vitest.config.ts', 'export default {}\n');
   const dir = runBin('ven-profile', ['init'], { cwd: root }).stdout.trim();
-  const marketplace = JSON.parse(readFileSync(join(dir, 'packs', '.claude-plugin', 'marketplace.json'), 'utf8'));
-  assert.match(marketplace.name, /^ven-local-ven-fixture-/);
+  assert.ok(existsSync(join(dir, 'solutions')));
   const detected = json(runBin('ven-profile', ['detect'], { cwd: root }));
   assert.deepEqual(detected.signals.manifests, ['package.json']);
   assert.deepEqual(detected.signals.ci, ['.github/workflows/ci.yml']);

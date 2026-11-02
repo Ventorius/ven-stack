@@ -27,7 +27,7 @@ You own the run. Pick one playbook, show the pick, copy its steps, run them in o
 ## 2. Build the playbook list
 
 - `ven-profile playbooks` lists every core and pack playbook with its source, path and one-line description. Pick from that list; read a playbook file only once you've picked it.
-- Name the files the task touches (from the task, or a quick search) and run `ven-profile packs-for <files>`. Only those packs apply to this task.
+- Name the files the task touches (from the task, or a quick search) and run `ven-profile packs-for <files>`. Only those packs apply to this task. Read each returned pack skill file before working on those files, and log it once per task: `ven-decisions add --step pack-skill --decision <pack>:<skill>`.
 
 ## 3. Pick
 

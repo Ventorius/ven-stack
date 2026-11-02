@@ -165,10 +165,10 @@
       "subagent-type": 0,
       "agent-name": 0,
       "user-config": 0,
-      "plugin-root": 9,
+      "plugin-root": 0,
       "model-invocation": 4,
-      "harness-settings": 4,
-      "slash-namespace": 13,
+      "harness-settings": 0,
+      "slash-namespace": 11,
       "hook-name": 0
     }
   }

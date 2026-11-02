@@ -58,5 +58,5 @@ Apply **citation-check**: each `file:line` says what its row claims, and each UR
 ## 5. Register
 
 1. Add `{ "file": "references/<library>.md", "library", "version", "lockfile" }` to `references` in `<pack dir>/pack.json`. Pack audits compare that version with the lockfile to find stale references.
-2. In each pack skill that needs the facts, fill the "Library facts" line that ven's skill template (`${CLAUDE_PLUGIN_ROOT}/templates/skill/SKILL.md`) provides: when to read the reference, in one line.
-3. Bump the patch `version` in `<pack dir>/.claude-plugin/plugin.json`.
+2. In each pack skill that needs the facts, fill the "Library facts" line that ven's skill template (`$(ven-profile root)/setup/assets/templates/skill/SKILL.md`) provides: when to read the reference, in one line.
+3. Bump the patch `version` in `<pack dir>/pack.json`.

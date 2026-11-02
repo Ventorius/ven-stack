@@ -153,3 +153,19 @@ test('a root that borrows the plugin lint.json skips the portability ratchet', (
   const result = lint({ 'skills/a/SKILL.md': askingSkill(1) });
   assert.equal(result.code, 0, result.stderr);
 });
+
+test('--pack reports only the pack findings, not problems in skills beside the core', () => {
+  const root = makePlugin({
+    'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing. Use when testing.' }),
+    'skills/foreign/SKILL.md': '---\nname: other-name\n---\nNo description.\n',
+  });
+  const pack = makePlugin({ 'skills/p/SKILL.md': skillFile({ name: 'p', description: 'Packs a widget rule. Use when editing widgets.', body: 'Then apply **a**.' }) });
+  const clean = runBin('ven-lint-skills', ['--root', root, '--pack', pack]);
+  assert.equal(clean.code, 0, clean.stderr);
+
+  const broken = makePlugin({ 'skills/p/SKILL.md': skillFile({ name: 'q', description: 'Packs a widget rule. Use when editing widgets.' }) });
+  const result = runBin('ven-lint-skills', ['--root', root, '--pack', broken]);
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /name "q" must equal directory name "p"/);
+  assert.doesNotMatch(result.stderr, /foreign/);
+});

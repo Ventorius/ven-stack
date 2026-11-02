@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dispatch, fail, intFlag, list, parseStrict, writeAll } from './lib/args.mjs';
@@ -21,7 +21,7 @@ import {
   staleSources,
   validateProfile,
 } from './lib/profile.mjs';
-import { branchStartTree, branchTouchedFiles, repoRoot, untrackedFiles, venDir, workingTreeHash } from './lib/repo.mjs';
+import { branchStartTree, branchTouchedFiles, changedFilesBetween, repoRoot, untrackedFiles, venDir, workingTreeHash } from './lib/repo.mjs';
 import { describeSolution, relevantSolutions } from './lib/solutions.mjs';
 import { legacyItems } from './lib/migrate.mjs';
 import { appendDecision, appendVerify, readDecisions, readJson, readPlaybookState, writeJson } from './lib/state.mjs';
@@ -30,7 +30,7 @@ import { diffLines, findWorkarounds } from './lib/workarounds.mjs';
 const USAGE = `ven-profile: the repo profile (stack facts + verified commands), filled in as work needs it
 
   ven-profile path                         print the state directory
-  ven-profile root                         print ven's setup skill directory (assets/templates/ and scripts/ live there)
+  ven-profile root                         print the directory holding ven's skills (templates: setup/assets/templates/)
   ven-profile init                         create the state directory skeleton
   ven-profile detect                       list signal files per source (manifests, CI, scripts, tests, ...)
   ven-profile show | get <key>             print the profile or one key (e.g. commands.test.single)
@@ -100,15 +100,15 @@ function parseValue(raw) {
 }
 
 // `--var name=value` fills {name}; {file}/{files} come from --file.
-function templateVars() {
+function templateVars(files = list(flags.file)) {
   const vars = Object.fromEntries(list(flags.var).map((pair) => pair.split(/=(.*)/s).slice(0, 2)).map(([name, value]) => [name, shellQuote(value ?? '')]));
-  const quoted = list(flags.file).map(shellQuote);
+  const quoted = files.map(shellQuote);
   return { ...vars, file: quoted[0] ?? '', files: quoted.join(' ') };
 }
 
-function execute(spec, timeoutSeconds) {
+function execute(spec, timeoutSeconds, { files } = {}) {
   const { root } = requireProfile();
-  const commandLine = renderCommand(spec.run, templateVars());
+  const commandLine = renderCommand(spec.run, templateVars(files));
   const started = Date.now();
   const result = spawnSync(commandLine, {
     cwd: join(root, spec.cwd ?? '.'),
@@ -137,19 +137,14 @@ const SIGNALS = {
 
 const commands = {
   root() {
-    print(resolve(SKILLS_DIR, 'setup'));
+    print(SKILLS_DIR);
   },
   path() {
     print(venDir(cwd) ?? fail('ven-profile: not inside a git repository'));
   },
   init() {
     const dir = venDir(cwd) ?? fail('ven-profile: not inside a git repository');
-    for (const sub of ['solutions', 'baseline', 'packs/.claude-plugin', 'state']) mkdirSync(join(dir, sub), { recursive: true });
-    const marketplace = join(dir, 'packs', '.claude-plugin', 'marketplace.json');
-    if (!existsSync(marketplace)) {
-      const name = `ven-local-${basename(repoRoot(cwd)).replace(/[^a-zA-Z0-9.-]/g, '-')}`;
-      writeFileSync(marketplace, `${JSON.stringify({ name, owner: { name: 'ven' }, description: 'Packs forged for this repo', plugins: [] }, null, 2)}\n`);
-    }
+    for (const sub of ['solutions', 'baseline', 'packs', 'state']) mkdirSync(join(dir, sub), { recursive: true });
     print(dir);
   },
   detect() {
@@ -262,6 +257,7 @@ const commands = {
     const spec = commandSpec(profile, key) ?? fail(missingCommand(qualify(key)));
     const before = workingTreeHash(root);
     refuseWorkarounds(dir, root, profile, before);
+    refuseFailingPackChecks(dir, root, profile, readPlaybookState(dir, root)?.start_tree ?? branchStartTree(root), before);
     const untrackedBefore = new Set(untrackedFiles(root));
     const result = execute(spec, timeout);
     const tree = workingTreeHash(root);
@@ -371,13 +367,12 @@ const commands = {
     print(done.length > 0 ? done.join('\n') : 'nothing to migrate');
   },
   'packs-for'() {
-    const { profile } = requireProfile();
-    const files = positionals;
-    const matching = (profile.packs ?? []).filter((pack) => {
-      const paths = pack.applies_when?.paths ?? [];
-      return paths.length === 0 || files.some((file) => matchesAny(file, paths));
-    });
-    print(matching.map(({ name, plugin, skills, playbooks }) => ({ name, plugin, skills, playbooks })));
+    const { dir, profile } = requireProfile();
+    print(packsFor(profile, positionals).map((pack) => {
+      const packDir = packDirOf(dir, pack);
+      const skills = (pack.skills ?? []).map((name) => ({ name, file: join(packDir, 'skills', name, 'SKILL.md') }));
+      return { name: pack.name, dir: packDir, skills, playbooks: pack.playbooks ?? [] };
+    }));
   },
 };
 
@@ -394,9 +389,42 @@ function refuseWorkarounds(dir, root, profile, currentTree) {
     appendDecision(dir, { worktree: root, playbook: readPlaybookState(dir, root)?.playbook ?? '', step: 'no-workaround', decision: 'allowed', evidence: line });
   }
   if (findings.length === 0) return;
+  logRefusal(dir, root, findings[0]);
   fail(`ven-profile verify: this diff hides a check instead of fixing the cause, so nothing ran and no pass is logged.
 ${findings.join('\n')}
 Fix the underlying problem and remove the suppression. If it is genuinely deliberate, put \`ven-allow: <ticket or reason>\` on the same line; every allowance is logged and shows up in review.`);
+}
+
+// Refusals are logged so an audit can tell a check that teaches from one that keeps firing.
+function logRefusal(dir, root, reason) {
+  appendDecision(dir, { worktree: root, playbook: readPlaybookState(dir, root)?.playbook ?? '', step: 'verify', decision: 'REFUSED', evidence: reason.replace(/^- /, '') });
+}
+
+function packsFor(profile, files) {
+  return (profile.packs ?? []).filter((pack) => {
+    const paths = pack.applies_when?.paths ?? [];
+    return paths.length === 0 || files.some((file) => matchesAny(file, paths));
+  });
+}
+
+function packDirOf(stateDir, pack) {
+  return pack.dir ?? join(stateDir, 'packs', pack.name);
+}
+
+// Pack checks are the portable form of an edit-time rule: each runs on the changed files its pack covers.
+function refuseFailingPackChecks(dir, root, profile, startTree, currentTree) {
+  const changed = changedFilesBetween(root, startTree, currentTree).filter((file) => existsSync(join(root, file)));
+  const failures = packsFor(profile, changed).flatMap((pack) => {
+    const paths = pack.applies_when?.paths ?? [];
+    const files = paths.length === 0 ? changed : changed.filter((file) => matchesAny(file, paths));
+    return (pack.checks ?? []).flatMap(({ id, run }) => {
+      const result = execute({ run }, timeout, { files });
+      return result.exit === 0 ? [] : [`pack ${pack.name} check ${id} failed (exit ${result.exit}):\n${result.output.trim().split('\n').slice(-15).join('\n')}`];
+    });
+  });
+  if (failures.length === 0) return;
+  logRefusal(dir, root, failures[0].split('\n')[0]);
+  fail(`ven-profile verify: nothing ran and no pass is logged.\n${failures.join('\n')}`);
 }
 
 function adaptersPath() {

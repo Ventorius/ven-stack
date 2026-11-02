@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Routing fixture: an onboarded repo whose profile lists every playbook of this pack, so the router weighs them against core.
+# Routing fixture: a repo whose profile lists every playbook of this pack, so the router weighs them against core.
 set -euo pipefail
 pack_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 git init -q -b main
@@ -27,6 +27,6 @@ cat > .ven-state/profile.json <<JSON
   "verify": { "logic": "commands.test.all" },
   "tests": { "patterns": [] },
   "docs_only": ["**/*.md"],
-  "packs": [{ "name": "{{pack}}", "kind": "{{kind}}", "plugin": "{{repo}}-{{pack}}@{{marketplace}}", "applies_when": {{applies_when from pack.json}}, "skills": {{skills from pack.json, as a list of names}}, "playbooks": [${listed%,}] }]
+  "packs": [{ "name": "{{pack}}", "kind": "{{kind}}", "applies_when": {{applies_when from pack.json}}, "skills": {{skills from pack.json, as a list of names}}, "playbooks": [${listed%,}] }]
 }
 JSON

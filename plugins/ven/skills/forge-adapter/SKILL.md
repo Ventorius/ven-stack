@@ -11,7 +11,7 @@ metadata:
 
 Visual and conventions skills ask for a capability with `ven-profile adapter <capability>`; the adapter is the repo-specific command behind it. An adapter that was never executed is a draft: it counts only once its fixture test and `ven-profile prove-adapters` both pass.
 
-**Input:** a capability and the pack that will hold the script. The usual trigger is `ven-profile adapter <capability>` exiting 3 with "no adapter" or "prove it first". Here `<pack dir>` is `$(ven-profile path)/packs/<pack>/`, `<ven root>` is `${CLAUDE_PLUGIN_ROOT}`, and `<slug>` is the capability with `.` replaced by `-`.
+**Input:** a capability and the pack that will hold the script. The usual trigger is `ven-profile adapter <capability>` exiting 3 with "no adapter" or "prove it first". Here `<pack dir>` is `$(ven-profile path)/packs/<pack>/`, `<ven root>` is `$(ven-profile root)`, and `<slug>` is the capability with `.` replaced by `-`.
 
 ## Capabilities
 
@@ -39,12 +39,12 @@ Look before writing: `ven-profile adapters` (an unproven entry may only need a f
 
 1. Build `<pack dir>/adapters/fixtures/<slug>/repo/`: the smallest copy of real repo files that exercises the capability, including one awkward case the repo really has.
 2. Write `<pack dir>/adapters/fixtures/<slug>/expected.txt` by hand, from reading those files: the exact output, ending in a newline.
-3. Copy `<ven root>/templates/adapter/adapter.test.mjs` to `<pack dir>/adapters/<slug>.test.mjs` and fill its placeholders.
+3. Copy `<ven root>/setup/assets/templates/adapter/adapter.test.mjs` to `<pack dir>/adapters/<slug>.test.mjs` and fill its placeholders.
 4. `node --test <pack dir>/adapters/<slug>.test.mjs` fails: there is no script yet. That is the red run.
 
 ## 3. Write the script
 
-Copy `<ven root>/templates/adapter/adapter.mjs` to `<pack dir>/adapters/<slug>.mjs` and write `collect()`:
+Copy `<ven root>/setup/assets/templates/adapter/adapter.mjs` to `<pack dir>/adapters/<slug>.mjs` and write `collect()`:
 
 - **Read-only:** it never writes to the repo and never calls the network.
 - **Deterministic:** sorted output and repo-relative paths, so two runs diff clean.
@@ -68,6 +68,6 @@ Run `node <pack dir>/adapters/<slug>.mjs --root=<repo root>` with the arguments 
    Replacing an entry whose status is `verified` needs the user's yes.
 2. Prove it with the arguments a skill would pass: `ven-profile prove-adapters <capability> --file <path>` (or `--var pattern=<a word that exists>`) prints `ok` and records the result under `proof`. A bare `ven-profile prove-adapters` must pass too; the template treats an unfilled `{file}` or `{pattern}` as absent.
 3. `ven-profile adapter <capability>` with the same arguments prints what step 4 printed.
-4. Add `{ "capability", "script": "adapters/<slug>.mjs", "test": "adapters/<slug>.test.mjs" }` to `adapters` in `<pack dir>/pack.json`, and bump the patch `version` in its `.claude-plugin/plugin.json`.
+4. Add `{ "capability", "script": "adapters/<slug>.mjs", "test": "adapters/<slug>.test.mjs" }` to `adapters` in `<pack dir>/pack.json`, and bump its patch `version`.
 
 Then rerun the skill that asked for the capability.

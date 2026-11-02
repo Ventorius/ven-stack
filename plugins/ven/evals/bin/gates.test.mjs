@@ -16,6 +16,7 @@ test('verify refuses a diff that adds a suppression and logs no pass', () => {
   assert.match(result.stderr, /src\/app\.js adds `\/\/ @ts-ignore`: hides a type error/);
   assert.match(result.stderr, /ven-allow:/);
   assert.doesNotMatch(result.stdout, /logged against tree/);
+  assert.match(decisions(root), /verify\tREFUSED\t.*src\/app\.js adds/);
 });
 
 test('verify accepts a ven-allow suppression and logs the allowance once', () => {

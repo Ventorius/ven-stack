@@ -1,4 +1,8 @@
 {
+  "name": "{{pack}}",
+  "version": "0.1.0",
+  "description": "{{kind}} pack for {{pack}} in {{repo}}: {{one line on what the pack makes the agent get right}}. Requires ven.",
+  "owner": "{{owner}}",
   "kind": "{{kind}}",
   "applies_when": {
     "paths": ["{{glob where the pack's work happens}}"],

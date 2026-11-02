@@ -260,9 +260,17 @@ for (const [key, pattern] of Object.entries(config.portability?.patterns ?? {}))
 const coreLines = core.reduce((sum, unit) => sum + unit.lines, 0);
 if (coreLines > config.core_line_budget) errors.push(`core skill text is ${coreLines} lines, budget ${config.core_line_budget}; remove lines to add lines`);
 
-if (errors.length > 0) {
-  console.error([...new Set(errors)].join('\n'));
-  console.error(`\n${new Set(errors).size} problem(s) in ${all.length} files`);
+// With --pack, ven's skills may sit in an agent's shared skills folder beside unrelated ones, so only
+// findings about the pack itself count.
+const packFiles = packs.map((unit) => where(unit));
+const packNames = packs.map((unit) => unit.name).filter(Boolean);
+const aboutPack = (error) =>
+  packFiles.some((file) => error.startsWith(file)) || (/^(descriptions of|cycle:)/.test(error) && packNames.some((name) => new RegExp(`\\b${name}\\b`).test(error)));
+const reported = [...new Set(packs.length > 0 ? errors.filter(aboutPack) : errors)];
+
+if (reported.length > 0) {
+  console.error(reported.join('\n'));
+  console.error(`\n${reported.length} problem(s) in ${all.length} files`);
   process.exit(1);
 }
 console.log(`ok: ${named.size} skills/playbooks, ${edges.length} references, ${coreLines}/${config.core_line_budget} core lines`);
