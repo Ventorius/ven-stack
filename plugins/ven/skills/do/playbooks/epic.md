@@ -7,7 +7,7 @@ description: "Plan an effort that spans several sessions and whose route is uncl
 
 review: own-read
 
-Rule for the whole run: no edits inside the repo; the plan-only hook blocks them. Roadmap files, glossary entries and scratch prototypes go outside it. One run is one session; the next session starts a fresh run.
+Rule for the whole run: no edits inside the repo, docs and tests included. Roadmap files, glossary entries and scratch prototypes go outside it. One run is one session; the next session starts a fresh run.
 
 Rule on pause: a pause ends an epic run, and this overrides the pause playbook. Keeping a playbook active would leave the worktree edit-locked. Release the claim, write a **handoff** if it helps, then `ven-decisions end --outcome blocked`. No learning-check row is needed. The next session starts a fresh epic run.
 

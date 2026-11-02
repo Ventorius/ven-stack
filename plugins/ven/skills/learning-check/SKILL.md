@@ -15,11 +15,11 @@ Every playbook ends here. The review runs every time, not only when something fe
 
 Scan the whole session, subagent results included, for:
 
-- **Corrections.** The user said you were wrong, repeated an instruction, or undid your work. A hook blocked you and the block was right.
+- **Corrections.** The user said you were wrong, repeated an instruction, or undid your work. A ven check (`ven-profile verify`, `ven-decisions end`) refused and was right.
 - **Solved problems.** A fix or decision whose reasoning the final code, tests and docs don't show.
 - **Misfires.** A skill or playbook gave wrong guidance, fired when it shouldn't have, or stayed quiet when it should have fired.
 
-Check what is already recorded: `ven-decisions list --limit 20`. Corrections this session are rows with `step=correction` (`ven-decisions list --step correction`); read them before scanning the transcript, and fall back to the transcript only when there are none. A correction already routed earlier in the session is cited, not routed twice.
+Check what is already recorded: `ven-decisions list --limit 20`. Record each correction you find, quoted, so later counts see it: `ven-decisions add --step correction --decision "<the user's words>"`. Rows with `step=correction` already logged this run (`ven-decisions list --step correction`) are cited, not recorded or routed twice.
 
 ## 2. Apply the bar
 

@@ -66,7 +66,7 @@ Omit a command key the repo doesn't have. Leave out `schema_version` and `genera
 
 ## Suppressions and assertions
 
-The no-workaround hook flags added lines that match `suppressions`, and test-file edits that lower the count of `assertions` matches. Write regexes (matched per line, JS syntax) for the tools this repo uses:
+`ven-profile verify` refuses diffs with added lines that match `suppressions`, and test-file edits that lower the count of `assertions` matches. Write regexes (matched per line, JS syntax) for the tools this repo uses:
 
 - `suppressions`: each linter's inline disable directive, each type checker's ignore or expect-error directive, coverage-exclusion pragmas, the test runner's skip, focus/only and todo markers. `suppressions[].why` says what the suppression hides.
 - `assertions`: the assertion call forms the sampled tests use.

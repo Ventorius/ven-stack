@@ -9,7 +9,7 @@ metadata:
 
 # Compound
 
-Write one solved problem to `$(ven-profile path)/solutions/<area>/<slug>.md`. At session start, the context hook surfaces entries whose `files:` overlap the branch's changed files, and a refresh later prunes entries whose files are gone. Both depend on `files:`, so it is required.
+Write one solved problem to `$(ven-profile path)/solutions/<area>/<slug>.md`. `ven-profile context` (run at the start of every routed task) surfaces entries whose `files:` overlap the branch's changed files, `ven-profile solutions-for <files>` surfaces them before an edit, and a refresh later prunes entries whose files are gone. Both depend on `files:`, so it is required.
 
 ## The bar
 
@@ -25,7 +25,7 @@ One problem per entry. Several problems mean several entries, written one at a t
 4. **Fill the template** below. The slug is the title in kebab-case.
 5. **Anchor `files:`.** Repo-relative paths or globs for where the problem showed and where the fix landed. Each must match something in the current tree (check with Glob). Prefer narrow anchors: a glob over half the repo surfaces the entry on every branch.
 6. **Capture terms.** A domain term the session defined or sharpened goes to `GLOSSARY.md` through **glossary**, not into the entry.
-7. **Check the frontmatter.** The hook reads a YAML subset: one `key: value` per line, lists as `- item` lines (inline `[a, b]` only for tags), no nested maps. Quote a list item that starts with a backtick, `[`, `*`, `&`, `!`, `|`, `>`, `%`, `@` or `?`, or that contains `": "`.
+7. **Check the frontmatter.** `ven-profile` reads a YAML subset: one `key: value` per line, lists as `- item` lines (inline `[a, b]` only for tags), no nested maps. Quote a list item that starts with a backtick, `[`, `*`, `&`, `!`, `|`, `>`, `%`, `@` or `?`, or that contains `": "`.
 
 ## Vocabulary
 

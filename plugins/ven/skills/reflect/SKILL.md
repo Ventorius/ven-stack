@@ -17,7 +17,7 @@ Nothing is applied to a skill in this session. Skill edits become proposals that
 
 The transcript is the newest `*.jsonl` in `<config dir>/projects/<repo path with every non-alphanumeric character replaced by ->/`, where `<config dir>` is `$CLAUDE_CONFIG_DIR` or `~/.claude`. Confirm it by matching its first user message to this session's opening request. Stay in this repo's project directory; never read other projects' transcripts.
 
-No match: write a digest instead (the requests, corrections, skills used, hook blocks, outcomes).
+No match: write a digest instead (the requests, corrections, skills used, check refusals, outcomes).
 
 Count corrections from the decisions log first: `ven-decisions list --step correction` shows what the user objected to this session and earlier. The transcript is the fallback and the source for everything else.
 

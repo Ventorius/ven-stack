@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dispatch, fail, intFlag, list, parseStrict } from '../scripts/lib/args.mjs';
+import { dispatch, fail, intFlag, list, parseStrict, writeAll } from '../scripts/lib/args.mjs';
 import { splitFrontmatter } from '../scripts/lib/frontmatter.mjs';
 import { matchesAny } from '../scripts/lib/globs.mjs';
 import {
@@ -20,9 +20,10 @@ import {
   staleSources,
   validateProfile,
 } from '../scripts/lib/profile.mjs';
-import { writeAll } from '../scripts/lib/hookio.mjs';
-import { repoRoot, untrackedFiles, venDir, workingTreeHash } from '../scripts/lib/repo.mjs';
-import { appendVerify, readJson, writeJson } from '../scripts/lib/state.mjs';
+import { branchStartTree, branchTouchedFiles, repoRoot, untrackedFiles, venDir, workingTreeHash } from '../scripts/lib/repo.mjs';
+import { describeSolution, relevantSolutions } from '../scripts/lib/solutions.mjs';
+import { appendDecision, appendVerify, readDecisions, readJson, readPlaybookState, writeJson } from '../scripts/lib/state.mjs';
+import { diffLines, findWorkarounds } from '../scripts/lib/workarounds.mjs';
 
 const USAGE = `ven-profile: the repo profile (stack facts + verified commands), stored in <git-common-dir>/ven
 
@@ -39,6 +40,10 @@ const USAGE = `ven-profile: the repo profile (stack facts + verified commands), 
   ven-profile verify <key> [--file F]...   run a verify command and log the result against the current tree
                                            (exit 1 and no pass if existing files changed while it ran;
                                            files the command newly creates are fine)
+                                           refuses first when the run's diff adds a profile suppression or
+                                           removes test assertions, unless the line carries ven-allow: <reason>
+  ven-profile context                      print the state dir, staleness, active playbook and solutions for this branch
+  ven-profile solutions-for <file>...      print the solution entries covering the files
   ven-profile fresh                        exit 1 if manifests or lockfiles changed since the profile was stamped
   ven-profile adapters                     print adapters.json (capability → command)
   ven-profile adapter <capability> [--file F] [--var name=value]   run a verified adapter
@@ -215,6 +220,7 @@ const commands = {
     const { dir, root, profile } = requireProfile();
     const spec = commandSpec(profile, key) ?? fail(`ven-profile: no command at ${key}`);
     const before = workingTreeHash(root);
+    refuseWorkarounds(dir, root, profile, before);
     const untrackedBefore = new Set(untrackedFiles(root));
     const result = execute(spec, timeout);
     const tree = workingTreeHash(root);
@@ -230,6 +236,32 @@ const commands = {
     appendVerify(dir, entry);
     console.log(`\nven-profile verify: ${key} exit ${result.exit}; logged against tree ${tree.slice(0, 12)}`);
     process.exit(result.exit);
+  },
+  context() {
+    const root = repoRoot(cwd) ?? fail('ven-profile: not inside a git repository');
+    const dir = venDir(cwd);
+    const loaded = loadProfile(cwd);
+    const sections = [`ven state directory (never committed): ${dir}`];
+    if (!loaded) sections.push('No profile yet: commands are found and proven on first use.');
+    const stale = loaded ? staleSources(loaded.profile, root) : [];
+    if (stale.length > 0) {
+      sections.push(`Profile may be stale: ${stale.join(', ')} changed after ${loaded.profile.generated_at}. Re-prove the commands you rely on, then run ven-profile stamp.`);
+    }
+    const state = readPlaybookState(dir, root);
+    if (state?.playbook) {
+      const steps = (state.steps ?? []).map((step) => `${step.step}=${step.decision}`).join(', ');
+      sections.push(`Active playbook in this worktree: ${state.playbook} (since ${state.started_at})${steps ? `; recorded: ${steps}` : ''}.`);
+    }
+    const solutions = relevantSolutions(dir, branchTouchedFiles(cwd)).slice(0, MAX_CONTEXT_SOLUTIONS);
+    if (solutions.length > 0) {
+      sections.push(`Past solutions touching files on this branch (read before changing them):\n${solutions.map((solution) => describeSolution(dir, solution)).join('\n')}`);
+    }
+    print(sections.join('\n\n'));
+  },
+  'solutions-for'() {
+    const dir = venDir(cwd) ?? fail('ven-profile: not inside a git repository');
+    const lines = relevantSolutions(dir, positionals).map((solution) => describeSolution(dir, solution));
+    if (lines.length > 0) print(lines.join('\n'));
   },
   fresh() {
     const { root, profile } = requireProfile();
@@ -288,6 +320,23 @@ const commands = {
     print(matching.map(({ name, plugin, skills, playbooks }) => ({ name, plugin, skills, playbooks })));
   },
 };
+
+const MAX_CONTEXT_SOLUTIONS = 3;
+
+// The run's diff starts where the active playbook started, else where the branch left the default branch.
+function refuseWorkarounds(dir, root, profile, currentTree) {
+  const startTree = readPlaybookState(dir, root)?.start_tree ?? branchStartTree(root);
+  const { findings, allowed, warnings } = findWorkarounds(diffLines(root, startTree, currentTree), profile);
+  for (const warning of warnings) process.stderr.write(`ven-profile verify: ${warning}\n`);
+  const logged = new Set(readDecisions(dir).filter((row) => row.step === 'no-workaround').map((row) => row.evidence));
+  for (const line of allowed.filter((entry) => !logged.has(entry))) {
+    appendDecision(dir, { worktree: root, playbook: readPlaybookState(dir, root)?.playbook ?? '', step: 'no-workaround', decision: 'allowed', evidence: line });
+  }
+  if (findings.length === 0) return;
+  fail(`ven-profile verify: this diff hides a check instead of fixing the cause, so nothing ran and no pass is logged.
+${findings.join('\n')}
+Fix the underlying problem and remove the suppression. If it is genuinely deliberate, put \`ven-allow: <ticket or reason>\` on the same line; every allowance is logged and shows up in review.`);
+}
 
 function adaptersPath() {
   return join(requireProfile().dir, 'adapters.json');

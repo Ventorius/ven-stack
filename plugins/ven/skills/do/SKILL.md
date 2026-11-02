@@ -17,6 +17,7 @@ You own the run. Pick one playbook, show the pick, copy its steps, run them in o
 
 ## 1. Read the repo state
 
+- `ven-profile context`: the state directory, a stale profile, the active playbook and past solutions for the files this branch touches. Before editing a file, `ven-profile solutions-for <files>` lists the entries that cover it.
 - `ven-profile show`. If it fails, the repo has no profile. A question you can answer by reading code alone may still run the **investigation** playbook. Anything else: tell the user to run `/ven:onboard` and stop.
 - `ven-profile fresh` exits 1: say the profile is stale, suggest `/ven:onboard --refresh`, and treat commands tied to the changed files as unverified.
 - `ven-decisions active` shows a playbook in this worktree: a task that continues it routes to **pickup**, a pause routes to **pause**. A new task while a playbook is active (running or paused) is not silent: ask the user (AskUserQuestion) whether to finish, abandon or keep the old one paused, and record the answer. Close it with `ven-decisions end --outcome <done|abandoned|blocked>` only on finish or abandon. A paused playbook keeps its state; run the new task in a separate worktree or branch, or after the pickup.

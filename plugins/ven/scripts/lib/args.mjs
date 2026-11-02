@@ -1,3 +1,5 @@
+import { writeSync } from 'node:fs';
+
 // `--name value`, `--name=value` and repeated flags (collected into arrays) plus positionals.
 export function parseArgs(argv) {
   const flags = {};
@@ -75,5 +77,19 @@ export function dispatch(name, usage, commands, command) {
     commands[command]();
   } catch (error) {
     fail(`${name}: ${error.message}`);
+  }
+}
+
+// stdout/stderr writes followed by process.exit truncate at the pipe buffer (64KB) when the reader is
+// slow, so write synchronously and retry while a non-blocking pipe is full.
+export function writeAll(fd, text) {
+  const buffer = Buffer.from(text);
+  let offset = 0;
+  while (offset < buffer.length) {
+    try {
+      offset += writeSync(fd, buffer, offset);
+    } catch (error) {
+      if (error.code !== 'EAGAIN') throw error;
+    }
   }
 }

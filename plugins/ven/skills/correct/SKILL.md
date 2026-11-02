@@ -48,7 +48,7 @@ Write the smallest change that would have prevented the mistake as a proposal fi
 
 ## 4. Count and record
 
-The hook appends each user correction to the decisions log as `step=correction`. Count this class there first: `ven-decisions list --step correction`. Use transcripts (`ven-transcripts --kind corrections`) only when the log has nothing. Two independent instances meet the promotion rule in **encode-lessons-in-structure**; with one, route as above and note it is the first.
+The learning check at the end of every playbook records each user correction in the decisions log as `step=correction`. Count this class there first: `ven-decisions list --step correction`. Use transcripts (`ven-transcripts --kind corrections`) only when the log has nothing. Two independent instances meet the promotion rule in **encode-lessons-in-structure**; with one, route as above and note it is the first.
 
 
 ```bash

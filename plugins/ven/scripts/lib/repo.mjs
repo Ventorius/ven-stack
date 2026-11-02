@@ -164,3 +164,10 @@ export function branchTouchedFiles(cwd) {
   }
   return [...files];
 }
+
+// Where this branch left the default branch; on the default branch itself, HEAD, so history that was
+// already there never counts as this run's change.
+export function branchStartTree(cwd) {
+  const from = mergeBaseWithDefault(cwd) ?? 'HEAD';
+  return tryGit(['rev-parse', `${from}^{tree}`], cwd);
+}

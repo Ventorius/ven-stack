@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 export function readJson(path, fallback, resetHint = 'delete it to reset') {
@@ -36,33 +36,6 @@ export function writePlaybookState(dir, worktreeRoot, state) {
   writeJson(join(dir, 'state', 'worktrees', `${worktreeKey(worktreeRoot)}.json`), { root: worktreeRoot, ...state });
 }
 
-// The verify-gate baseline outlives sessions: /clear starts a new session in the same dirty worktree.
-function baselinePath(dir, worktreeRoot) {
-  return join(dir, 'state', 'baselines', `${worktreeKey(worktreeRoot)}.json`);
-}
-
-export function readBaseline(dir, worktreeRoot) {
-  return readJson(baselinePath(dir, worktreeRoot), null);
-}
-
-// `head` ties the baseline to the commit it was taken at: after a checkout, pull or merge the
-// tree differs for reasons Claude never caused, so a baseline from another HEAD is not inherited.
-export function writeBaseline(dir, worktreeRoot, startTree, head) {
-  writeJson(baselinePath(dir, worktreeRoot), { root: worktreeRoot, start_tree: startTree, head });
-}
-
-export function clearBaseline(dir, worktreeRoot) {
-  rmSync(baselinePath(dir, worktreeRoot), { force: true });
-}
-
-export function readSession(dir, sessionId) {
-  return readJson(join(dir, 'state', 'sessions', `${sessionId}.json`), {});
-}
-
-export function writeSession(dir, sessionId, session) {
-  writeJson(join(dir, 'state', 'sessions', `${sessionId}.json`), session);
-}
-
 const VERIFY_LOG_LIMIT = 500;
 
 function verifyLines(path) {
@@ -78,7 +51,7 @@ export function appendVerify(dir, entry) {
   if (verifyLines(path).length > VERIFY_LOG_LIMIT) renameSync(path, `${path}.1`);
 }
 
-// A torn line from a concurrent append must not take the verify gate down with it.
+// A torn line from a concurrent append must not take the verify check down with it.
 export function verifyEntries(dir) {
   const path = join(dir, 'state', 'verify.jsonl');
   return [...verifyLines(`${path}.1`), ...verifyLines(path)].flatMap((line) => {

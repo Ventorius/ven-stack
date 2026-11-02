@@ -1,20 +1,25 @@
 #!/usr/bin/env node
 import { dispatch, fail, intFlag, parseStrict } from '../scripts/lib/args.mjs';
-import { repoRoot, venDir } from '../scripts/lib/repo.mjs';
-import { appendDecision, readDecisions, readPlaybookState, writePlaybookState } from '../scripts/lib/state.mjs';
+import { matchesAny } from '../scripts/lib/globs.mjs';
+import { loadProfile } from '../scripts/lib/profile.mjs';
+import { TreeHashError, branchStartTree, changedFilesBetween, repoRoot, venDir, workingTreeHash } from '../scripts/lib/repo.mjs';
+import { appendDecision, passedVerifyFor, readDecisions, readPlaybookState, writePlaybookState } from '../scripts/lib/state.mjs';
+import { docsOnlyGlobs } from '../scripts/lib/workarounds.mjs';
 
 const USAGE = `ven-decisions: the decision log and active playbook for this worktree
 
   ven-decisions start <playbook>                     mark a playbook active in this worktree
   ven-decisions add --step S --decision D [--evidence E] [--playbook P]
   ven-decisions skip --step S --reason R             record a skipped playbook step
-  ven-decisions end [--outcome O]                    close the active playbook (needs a learning-check row unless --outcome abandoned|blocked)
+  ven-decisions end [--outcome O] [--unverified R]   close the active playbook (needs a learning-check row unless --outcome abandoned|blocked)
+                                                     a done run that changed code needs a passing ven-profile verify on the current tree,
+                                                     or --unverified with the reason it can't be verified here (logged as UNVERIFIED)
   ven-decisions active                               print the active playbook state
   ven-decisions list [--playbook P] [--step S] [--limit N] [--json]   print decision rows (TSV or JSON)
 
   exit codes: 0 ok, 1 failure, 2 usage error`;
 
-const VALUE_FLAGS = ['step', 'decision', 'evidence', 'playbook', 'reason', 'outcome', 'limit'];
+const VALUE_FLAGS = ['step', 'decision', 'evidence', 'playbook', 'reason', 'outcome', 'limit', 'unverified'];
 const LEARNING_EXEMPT = ['pause', 'explain'];
 const UNFINISHED_OUTCOMES = ['abandoned', 'blocked'];
 
@@ -46,12 +51,35 @@ function missingLearningCheck(state) {
   return !(state.steps ?? []).some((entry) => entry.step === 'learning-check');
 }
 
+function treeOrNull(root) {
+  try {
+    return workingTreeHash(root);
+  } catch (error) {
+    if (error instanceof TreeHashError) return null;
+    throw error;
+  }
+}
+
+// Code files this run changed with no passing verify logged for the tree as it is now.
+function unverifiedChanges(dir, root, state) {
+  if (UNFINISHED_OUTCOMES.includes(flags.outcome)) return [];
+  const current = treeOrNull(root);
+  if (!current || passedVerifyFor(dir, current)) return [];
+  const docs = docsOnlyGlobs(loadProfile(root)?.profile);
+  return changedFilesBetween(root, state.start_tree ?? branchStartTree(root), current).filter((file) => !matchesAny(file, docs));
+}
+
+function verifyHint(root) {
+  const keys = Object.entries(loadProfile(root)?.profile.verify ?? {}).map(([changeType, key]) => `  - ${changeType}: ven-profile verify ${key}`);
+  return keys.length > 0 ? keys.join('\n') : '  - ven-profile verify <command key from the profile>';
+}
+
 const commands = {
   start() {
     const playbook = positionals[0];
     if (!playbook) fail('usage: ven-decisions start <playbook>', 2);
     const { dir, root } = context();
-    writePlaybookState(dir, root, { playbook, started_at: new Date().toISOString(), steps: [], reproduced: false });
+    writePlaybookState(dir, root, { playbook, started_at: new Date().toISOString(), start_tree: treeOrNull(root), steps: [], reproduced: false });
     appendDecision(dir, { worktree: root, playbook, step: 'start', decision: 'started', evidence: '' });
     console.log(`active playbook: ${playbook}`);
   },
@@ -74,6 +102,19 @@ const commands = {
           'or, when there is nothing to review:\n' +
           '  ven-decisions skip --step learning-check --reason R',
       );
+    }
+    const unverified = unverifiedChanges(dir, root, state);
+    if (unverified.length > 0 && !flags.unverified) {
+      const shown = unverified.slice(0, 8).join(', ') + (unverified.length > 8 ? `, +${unverified.length - 8} more` : '');
+      fail(
+        `ven-decisions: ${state.playbook} changed code (${shown}) and no passing verify is logged for the current tree.\n` +
+          `"It compiles" is not proof. Run the check that proves this change type works (see ${dir}/verify.md):\n${verifyHint(root)}\n` +
+          'ven-profile verify logs against this exact tree, so verify after your last edit. If it cannot be verified here, say why:\n' +
+          '  ven-decisions end --unverified "<reason>"',
+      );
+    }
+    if (unverified.length > 0) {
+      appendDecision(dir, { worktree: root, playbook: state.playbook, step: 'verify', decision: 'UNVERIFIED', evidence: flags.unverified });
     }
     appendDecision(dir, { worktree: root, playbook: state.playbook, step: 'end', decision: flags.outcome ?? 'done', evidence: '' });
     writePlaybookState(dir, root, { playbook: null, ended: state.playbook, ended_at: new Date().toISOString() });

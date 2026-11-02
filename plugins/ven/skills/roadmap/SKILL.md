@@ -65,7 +65,7 @@ Read `ven-profile get repo.tracker`.
 | Type | Resolved | By |
 |---|---|---|
 | grilling | with the user | **grilling** |
-| prototype | with the user | **prototype**, built in a scratch directory outside the repo (a temp dir), because the plan-only hook blocks in-repo writes during epic |
+| prototype | with the user | **prototype**, built in a scratch directory outside the repo (a temp dir), because epic makes no writes inside the repo |
 | research | unattended | a read-only `ven:ven-worker` brief that returns cited facts |
 | task | with the user | the user does the manual step; the ticket records the result |
 

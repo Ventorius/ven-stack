@@ -1,6 +1,6 @@
 ---
 name: verify
-description: "Prove a change works with the check that matches its type, do the read-back, and log the pass against the exact tree. Use when a change is ready to call done, before review, commit or stopping, and whenever the verify-gate blocks."
+description: "Prove a change works with the check that matches its type, do the read-back, and log the pass against the exact tree. Use when a change is ready to call done, before review, commit or stopping, and whenever ven-decisions end refuses an unverified tree."
 metadata:
   layer: L3
   source: cursor/plugins@1e5c90a:pstack/skills/create-verification-skill/SKILL.md; obra/superpowers@bb92a77:skills/verification-before-completion/SKILL.md
@@ -26,7 +26,7 @@ For each change type touched:
 2. Run `ven-profile verify <key>`. It runs the command and logs the exit code against the current working tree.
 3. Read the whole output: the exit code, the failure and skip counts. A failure you didn't cause still gets reported, by name.
 
-Any edit after a verify, a formatting fix included, changes the tree: verify again. The verify-gate hook blocks Stop, and SubagentStop for coders, until a pass is logged for the current tree.
+Any edit after a verify, a formatting fix included, changes the tree: verify again. `ven-decisions end` refuses to close a run as done until a pass is logged for the current tree. `ven-profile verify` itself refuses, before running anything, a diff that adds a profile `suppressions` match or drops test `assertions`, unless the line carries `ven-allow: <reason>`. If the profile has a verified `commands.format`, run it on the changed files before you verify.
 
 ## 3. Read back
 

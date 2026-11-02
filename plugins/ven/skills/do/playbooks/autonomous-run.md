@@ -13,7 +13,7 @@ You own the exit condition. Define done as a check, then drive to it without end
 review: panel
 
 Rules for the whole run:
-- The Stop-hook verify-gate is the gate: never end a turn on an unverified tree, and never relax the exit condition to finish.
+- `ven-decisions end` refuses `done` on an unverified tree: never end on one, and never relax the exit condition to finish.
 - No push, PR, comment or tracker update unless the user granted it for this run.
 - A BLOCKED you can answer from the spec, tickets or code is answered by continuing the same coder with SendMessage, once. Any other BLOCKED stops the run.
 

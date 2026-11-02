@@ -1,6 +1,6 @@
 ---
 name: reproduce
-description: "Build a red-capable loop for a reported bug, a test or script that fails for the reported reason, and record it to open the edit gate. Use first in any bug fix, before forming theories from the code or touching source."
+description: "Build a red-capable loop for a reported bug, a test or script that fails for the reported reason, and record it before any source edit. Use first in any bug fix, before forming theories from the code or touching source."
 metadata:
   layer: L3
   source: mattpocock/skills@49dd158:skills/engineering/diagnosing-bugs/SKILL.md (phases 1-2); obra/superpowers@bb92a77:skills/systematic-debugging/SKILL.md (phase 1)
@@ -34,7 +34,7 @@ Take the first of these that reaches the bug:
 9. A **differential loop**: the same input through old and new versions or configs, diffing the outputs.
 10. Last resort, a **human in the loop**: a script that tells the user exactly what to do and captures what they report.
 
-Repro scripts that are not test files go in a temporary directory outside the repo. The repro-first hook blocks other edits in the working tree until step 5.
+Repro scripts that are not test files go in a temporary directory outside the repo. Make no other edit in the working tree until step 5.
 
 **Tighten it.** Faster: narrow the scope, skip unrelated setup. Sharper: assert the exact symptom, not "didn't crash". Deterministic: pin time, seed randomness, isolate files and network. A slow, flaky loop is barely a loop.
 
@@ -61,7 +61,7 @@ Cut inputs, callers, configuration, data and steps one at a time, re-running aft
 ven-decisions add --step reproduce --decision reproduced --evidence "<test or script> fails with <error>"
 ```
 
-This opens the repro-first gate on source edits.
+Source edits start only after this row is recorded.
 
 ## Cannot reproduce
 
