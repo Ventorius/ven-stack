@@ -22,7 +22,10 @@ const STOPWORDS = new Set('a an the of to and or for in on at is are be it its t
 const { flags } = parseArgs(process.argv.slice(2));
 if (flags.help) fail(USAGE, 0);
 const coreRoot = resolve(flags.root ?? PLUGIN_ROOT);
-const config = JSON.parse(readFileSync(join(PLUGIN_ROOT, 'lint.json'), 'utf8'));
+const ownsConfig = existsSync(join(coreRoot, 'lint.json'));
+const config = JSON.parse(readFileSync(join(ownsConfig ? coreRoot : PLUGIN_ROOT, 'lint.json'), 'utf8'));
+// The portability baseline counts one specific tree, so a root that borrows the config skips the ratchet.
+if (!ownsConfig) delete config.portability;
 
 function walk(dir) {
   if (!existsSync(dir)) return [];
@@ -51,6 +54,7 @@ function loadUnits(root, origin) {
       userInvoked: data?.['disable-model-invocation'] === true,
       data,
       body,
+      text,
       lines: text.split('\n').length,
     });
   }
@@ -236,6 +240,26 @@ for (const unit of core) {
       break;
     }
     windows.set(key, unit.file);
+  }
+}
+
+// Core must run under any agent harness. Each harness-specific token may only fall below its baseline;
+// a token with no baseline entry is banned outright.
+function findUses(pattern) {
+  const regex = new RegExp(pattern, 'g');
+  return core
+    .filter((unit) => unit.kind !== 'agent')
+    .flatMap((unit) => unit.text.split('\n').flatMap((line, index) => [...line.matchAll(regex)].map(() => `${where(unit)}:${index + 1}`)));
+}
+
+for (const [key, pattern] of Object.entries(config.portability?.patterns ?? {})) {
+  const uses = findUses(pattern);
+  const baseline = config.portability.baseline?.[key] ?? 0;
+  if (uses.length > baseline) {
+    errors.push(`portability: ${key} has ${uses.length} uses, baseline ${baseline}; use harness-neutral wording (first at ${uses[0]})`);
+  }
+  if (uses.length < baseline) {
+    errors.push(`portability: ${key} dropped to ${uses.length} uses; lower lint.json portability.baseline.${key} from ${baseline} to ${uses.length}`);
   }
 }
 

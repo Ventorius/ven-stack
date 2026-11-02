@@ -5,9 +5,13 @@ import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { PLUGIN_ROOT, runBin } from '../support/fixture.mjs';
 
-function makePlugin(files) {
+const config = JSON.parse(readFileSync(join(PLUGIN_ROOT, 'lint.json'), 'utf8'));
+
+// Without lintConfig the fixture borrows the plugin's lint.json, the way any foreign root does.
+function makePlugin(files, lintConfig) {
   const root = mkdtempSync(join(tmpdir(), 'ven-lint-'));
-  for (const [path, content] of Object.entries(files)) {
+  const configFile = lintConfig ? { 'lint.json': JSON.stringify(lintConfig) } : {};
+  for (const [path, content] of Object.entries({ ...configFile, ...files })) {
     mkdirSync(dirname(join(root, path)), { recursive: true });
     writeFileSync(join(root, path), content);
   }
@@ -17,8 +21,7 @@ function makePlugin(files) {
 const skillFile = ({ name, description, body = 'Do it.', extra = '' }) =>
   `---\nname: ${name}\ndescription: ${description}\n${extra}metadata:\n  layer: L3\n---\n${body}\n`;
 
-const lint = (files) => runBin('ven-lint-skills', ['--root', makePlugin(files)]);
-const config = JSON.parse(readFileSync(join(PLUGIN_ROOT, 'lint.json'), 'utf8'));
+const lint = (files, lintConfig) => runBin('ven-lint-skills', ['--root', makePlugin(files, lintConfig)]);
 
 function bulkSkills(totalLines) {
   const perSkill = config.max_skill_lines - 10;
@@ -112,4 +115,43 @@ test('success prints a single ok line', () => {
   assert.equal(result.code, 0);
   assert.equal(result.stdout.trim().split('\n').length, 1);
   assert.match(result.stdout, /^ok: /);
+});
+
+const withPortability = (baseline) => ({
+  ...config,
+  portability: { patterns: { 'ask-tool': 'AskUserQuestion', 'model-invocation': 'disable-model-invocation' }, baseline },
+});
+const askingSkill = (uses) =>
+  skillFile({ name: 'a', description: 'Does a thing. Use when testing.', body: Array.from({ length: uses }, () => 'Ask with AskUserQuestion.').join('\n') });
+
+test('harness-specific tokens above the portability baseline fail and point at the first use', () => {
+  const result = lint({ 'skills/a/SKILL.md': askingSkill(2) }, withPortability({ 'ask-tool': 1, 'model-invocation': 0 }));
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /portability: ask-tool has 2 uses, baseline 1; .*skills\/a\/SKILL\.md:\d+/);
+});
+
+test('a token with no baseline entry is banned, frontmatter included', () => {
+  const result = lint(
+    { 'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing.', extra: 'disable-model-invocation: true\n' }) },
+    withPortability({}),
+  );
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /portability: model-invocation has 1 uses, baseline 0/);
+});
+
+test('uses below the portability baseline fail until the baseline is lowered', () => {
+  const result = lint({ 'skills/a/SKILL.md': askingSkill(1) }, withPortability({ 'ask-tool': 3, 'model-invocation': 0 }));
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /portability: ask-tool dropped to 1 uses; lower lint\.json portability\.baseline\.ask-tool from 3 to 1/);
+});
+
+test('uses equal to the portability baseline pass', () => {
+  const result = lint({ 'skills/a/SKILL.md': askingSkill(2) }, withPortability({ 'ask-tool': 2, 'model-invocation': 0 }));
+  assert.equal(result.code, 0, result.stderr);
+});
+
+test('a root that borrows the plugin lint.json skips the portability ratchet', () => {
+  assert.ok(config.portability, 'the plugin lint.json should define a portability baseline');
+  const result = lint({ 'skills/a/SKILL.md': askingSkill(1) });
+  assert.equal(result.code, 0, result.stderr);
 });

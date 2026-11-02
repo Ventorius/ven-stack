@@ -145,5 +145,31 @@
       "vat",
       "cart"
     ]
+  },
+  "portability": {
+    "patterns": {
+      "ask-tool": "AskUserQuestion",
+      "task-tool": "\\b(TaskCreate|TaskUpdate|TodoWrite)\\b",
+      "subagent-type": "subagent_type",
+      "agent-name": "\\bven:ven-(worker|coder|reviewer|verifier|lead)\\b",
+      "user-config": "\\$\\{user_config\\.",
+      "plugin-root": "\\$\\{CLAUDE_PLUGIN_ROOT\\}",
+      "model-invocation": "disable-model-invocation",
+      "harness-settings": "\\bsettings(\\.local)?\\.json\\b",
+      "slash-namespace": "/ven:[a-z]",
+      "hook-name": "\\b(verify-gate|repro-first|plan-only|no-workaround|solutions-on-edit|capture-corrections|context-inject|decisions-log)\\b"
+    },
+    "baseline": {
+      "ask-tool": 21,
+      "task-tool": 1,
+      "subagent-type": 5,
+      "agent-name": 40,
+      "user-config": 37,
+      "plugin-root": 9,
+      "model-invocation": 5,
+      "harness-settings": 10,
+      "slash-namespace": 25,
+      "hook-name": 10
+    }
   }
 }
