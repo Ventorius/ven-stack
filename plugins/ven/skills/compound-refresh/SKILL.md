@@ -57,7 +57,7 @@ Put the digest first in the report. Run this skill weekly: schedule it with the 
 
 ## 6. Apply
 
-- **With the user present:** apply Keep, Update and Merge directly. Batch every Delete and Promote into one AskUserQuestion, with the path and one line of evidence each.
+- **With the user present:** apply Keep, Update and Merge directly. Batch every Delete and Promote into one question, with the path and one line of evidence each.
 - **Unattended** (a scheduled run, nobody to ask): apply Update and Merge only; list Delete and Promote under Recommended.
 
 ## Report

@@ -71,4 +71,4 @@ Stop and say so. List what you tried, then record it:
 ven-decisions add --step reproduce --decision cannot-reproduce --evidence "<what was tried>"
 ```
 
-Ask the user (AskUserQuestion) for one of: access to an environment where it happens, a redacted captured artifact (logs, a request capture, a recording with timestamps), or permission to add temporary instrumentation. Do not guess at causes without a loop. A background agent returns `VEN-RESULT: BLOCKED: <the one thing it needs>` instead.
+Ask the user for one of: access to an environment where it happens, a redacted captured artifact (logs, a request capture, a recording with timestamps), or permission to add temporary instrumentation. Do not guess at causes without a loop. A background agent returns `VEN-RESULT: BLOCKED: <the one thing it needs>` instead.

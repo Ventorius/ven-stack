@@ -37,7 +37,7 @@ Apply **sequence-verifiable-units**. Each ticket:
 
 ## 4. Quiz the user
 
-Show a numbered list: title, blocked by, overlaps, what it delivers. Ask (AskUserQuestion when available): is the granularity right, are the blocking edges real, should any ticket merge or split? Iterate until the user approves.
+Show a numbered list: title, blocked by, overlaps, what it delivers. Ask, with a multiple-choice question when your agent has one: is the granularity right, are the blocking edges real, should any ticket merge or split? Iterate until the user approves.
 
 ## 5. Publish
 

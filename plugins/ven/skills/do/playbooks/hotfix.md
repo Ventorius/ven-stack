@@ -18,7 +18,7 @@ Speed matters, but the fix still needs evidence. Make the smallest change that s
 4. Own read of the diff
    Done: you read the whole diff against the evidence and recorded it with `ven-decisions add --step review`.
 5. Ship, with one approval (gate)
-   Done: the user approved once (AskUserQuestion) for the push and PR together, using the ship playbook's prepare and open steps, and the result was read back from the code host; or the user declined and has the commands.
+   Done: the user approved once for the push and PR together, using the ship playbook's prepare and open steps, and the result was read back from the code host; or the user declined and has the commands.
 6. Record the root cause ticket
    Done: a follow-up bug-fix ticket is written to `$(ven-profile path)/tickets/` (or offered for the tracker) with the evidence, what the hotfix left unfixed, and the cleanup it skipped.
 7. **learning-check**

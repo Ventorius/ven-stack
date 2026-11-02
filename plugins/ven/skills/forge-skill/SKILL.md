@@ -11,7 +11,7 @@ metadata:
 
 A pack skill earns its place by stopping a mistake the agent really made, often enough to meet the pack bar, and by proving that it does. Run the six steps in order; each ends on a check.
 
-**Input:** a pack and a recurring task, a cluster of corrections, or the user's request. `<pack dir>` is `$(ven-profile path)/packs/<pack>/` and `<ven root>` is `$(ven-profile root)`, the directory holding ven's skills. No pack yet: stop and suggest `/ven:forge-pack <name>`. A caller that already settled the evidence and the scope (an approved pack plan, a convention draft) starts at step 3. A change to one of ven's own skills goes through **skill-tdd** alone.
+**Input:** a pack and a recurring task, a cluster of corrections, or the user's request. `<pack dir>` is `$(ven-profile path)/packs/<pack>/` and `<ven root>` is `$(ven-profile root)`, the directory holding ven's skills. No pack yet: stop and suggest the "forge-pack" skill with the pack name. A caller that already settled the evidence and the scope (an approved pack plan, a convention draft) starts at step 3. A change to one of ven's own skills goes through **skill-tdd** alone.
 
 ## 1. Evidence first
 

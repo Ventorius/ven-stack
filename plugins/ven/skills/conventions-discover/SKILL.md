@@ -49,7 +49,7 @@ You do this, on the orchestrator tier.
 - Where a written rule and the code disagree, record both.
 - A recurring review request with no code evidence goes under Asked for in review.
 - Check what already enforces each pattern: `ven-profile adapters`, the lint config, the profile's `boundaries`, pack rules and checks.
-- Ask the user about splits and contradictions only, batched in one AskUserQuestion. The answers settle which side is the convention.
+- Ask the user about splits and contradictions only, batched in one question. The answers settle which side is the convention.
 
 ## 4. Write conventions.md
 

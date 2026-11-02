@@ -15,7 +15,7 @@ Collect real instances, enough to meet the pack bar in **encode-lessons-in-struc
 
 ## 2. Scope
 
-Settle these, then confirm the rule text with the user in one AskUserQuestion. The text becomes the team's rule, so it is their call.
+Settle these, then confirm the rule text with the user in one question. The text becomes the team's rule, so it is their call.
 
 - **The rule.** What to do, what not to do, and the one exception if there is one. Short enough to quote whole.
 - **Where.** The files it governs as globs, and the situations in the words a task would use ("adding a widget kind", "changing how reports load").

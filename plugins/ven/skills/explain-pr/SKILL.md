@@ -43,6 +43,6 @@ Fill the template's summary section. Save it as `$(ven-profile path)/explain/<br
 
 ## 5. Posting is outward-facing
 
-Ask before posting anything (AskUserQuestion: replace the PR body, add it as a comment, or don't post). On yes, use the profile's forge cli and read its help for the exact subcommand; never guess flags. Post the Markdown summary only. The HTML page stays local: it can hold local paths and unreleased detail.
+Ask before posting anything, with a multiple-choice question when your agent has one: replace the PR body, add it as a comment, or don't post. On yes, use the profile's forge cli and read its help for the exact subcommand; never guess flags. Post the Markdown summary only. The HTML page stays local: it can hold local paths and unreleased detail.
 
 Write all prose through **unslop**.

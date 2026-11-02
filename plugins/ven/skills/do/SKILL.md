@@ -1,8 +1,6 @@
 ---
 name: do
 description: "Route a task to one playbook (core or from a repo pack), state the pick, copy its steps into the task list and run them with proof and a learning check. Use for any engineering task in a git repository."
-argument-hint: <task>
-disable-model-invocation: true
 metadata:
   layer: L5
   source: cursor/plugins@1e5c90a:pstack/skills/poteto-mode/SKILL.md
@@ -11,7 +9,7 @@ metadata:
 
 # do
 
-The task: $ARGUMENTS
+The task is what the user asked for.
 
 You own the run. Pick one playbook, show the pick, copy its steps, run them in order, prove the result and close with a learning check. You think, decide and delegate; bulk edits go to agents.
 
@@ -20,7 +18,7 @@ You own the run. Pick one playbook, show the pick, copy its steps, run them in o
 - A `ven-*` command is not found, or `ven-doctor` reports an ERROR: run **setup** first.
 - `ven-profile context`: the state directory, a stale profile, the active playbook and past solutions for the files this branch touches. Before editing a file, `ven-profile solutions-for <files>` lists the entries that cover it.
 - `ven-profile fresh` exits 1: name the manifests that changed and re-prove the commands they define (`ven-profile prove <key>`) before relying on them, then `ven-profile stamp`.
-- `ven-decisions active` shows a playbook in this worktree: a task that continues it routes to **pickup**, a pause routes to **pause**. A new task while a playbook is active (running or paused) is not silent: ask the user (AskUserQuestion) whether to finish, abandon or keep the old one paused, and record the answer. Close it with `ven-decisions end --outcome <done|abandoned|blocked>` only on finish or abandon. A paused playbook keeps its state; run the new task in a separate worktree or branch, or after the pickup.
+- `ven-decisions active` shows a playbook in this worktree: a task that continues it routes to **pickup**, a pause routes to **pause**. A new task while a playbook is active (running or paused) is not silent: ask the user, with a multiple-choice question when your agent has one, whether to finish, abandon or keep the old one paused, and record the answer. Close it with `ven-decisions end --outcome <done|abandoned|blocked>` only on finish or abandon. A paused playbook keeps its state; run the new task in a separate worktree or branch, or after the pickup.
 - Commands come only from the profile, which fills in as work needs it. A command the task needs that is missing: find it in the repo (`ven-profile detect` lists manifests, CI and scripts), then `ven-profile learn <key> --run '<command>' --evidence '<file:line>'`, which runs it once and records whether it passed. A command with effects outside the repo, on tracked files, or that costs money: ask the user before it ever runs, and record it with `--manual "<reason>"`. An `unverified` key: say so and don't rely on it.
 - A fact only a person knows (what is risky to touch, what proves a change type, what a domain word means): ask the user once, when a step first needs it, and store the answer (`ven-profile set risk_areas '<list as JSON>'`, `ven-profile set verify.<change type> commands.<key>`, a **glossary** entry). Never ask for these up front.
 
@@ -62,7 +60,7 @@ The first line of your reply, exactly:
 Keep that shape: `ven-transcripts` parses it to measure misroutes. Then:
 
 1. `ven-decisions start <name>`. Skip it for **pickup** and **pause** while a playbook is active: they work inside that playbook, and `start` would reset its recorded steps and the reproduce gate.
-2. Copy the playbook's steps verbatim into the task list (TaskCreate), one task per step: the step line as the subject, its `Done:` line as the description. Task-specific tasks go after them, never instead of them.
+2. Copy the playbook's steps verbatim into your task list (your agent's todo tool, or a checklist you keep in the reply), one task per step: the step line as the subject, its `Done:` line as the description. Task-specific tasks go after them, never instead of them.
 3. A step you won't run stays in the list as `skip: <reason>` and is recorded with `ven-decisions skip --step <step> --reason "<reason>"`.
 4. After each step: `ven-decisions add --step <step> --decision "<one line>" --evidence "<command + exit code, or file:line>"`. `<step>` is the step's skill name, or its label when it names no skill.
 
@@ -84,7 +82,7 @@ Delegate by the ambiguity left, not by size, through **delegate**:
 - Parallelize independent work. Tickets follow the blocker graph (feature playbook); direct writes to the same files run in order.
 - Read every `VEN-RESULT` trailer. On `BLOCKED: <question>`, answer from the spec or the code, or ask the user if the call is theirs, then continue the same role (it keeps its worktree and context); never start a new one for the answer. Never let an agent guess. A coder's trailer carries `worktree:` and `branch:`; use them to merge.
 - You own what agents return. Read the diff and check the logged verify pass (`ven-decisions list`) before you merge a worktree; a trailer is a claim, not proof.
-- Ask the user (AskUserQuestion) only for calls that are theirs: product decisions, and irreversible or outward-facing actions (PRs, pushes, comments, tracker tickets, installs). Find facts yourself. Apply **never-block-on-reversible** to the rest.
+- Ask the user only for calls that are theirs: product decisions, and irreversible or outward-facing actions (PRs, pushes, comments, tracker tickets, installs). Find facts yourself. Apply **never-block-on-reversible** to the rest.
 - Apply the principles in [references/principles.md](references/principles.md) when their trigger fits. Name each one that changed a decision in your reply, and the choice it changed.
 
 ## 6. Review panels
@@ -99,7 +97,7 @@ A task that touches at most two files, has a known check command, and matches no
 
 ## 7. No playbook fits
 
-Compose a one-off sequence from existing skill names only, ending with **learning-check**. State it as `**Playbook: ad-hoc** (composed) — <reason>`, list the sequence on the next line, and run it like a playbook (`ven-decisions start ad-hoc`). If `ven-decisions list --playbook ad-hoc` shows the same shape before, suggest `/ven:forge-playbook` to the user.
+Compose a one-off sequence from existing skill names only, ending with **learning-check**. State it as `**Playbook: ad-hoc** (composed) — <reason>`, list the sequence on the next line, and run it like a playbook (`ven-decisions start ad-hoc`). If `ven-decisions list --playbook ad-hoc` shows the same shape before, suggest the "forge-playbook" skill to the user.
 
 ## 8. Close
 

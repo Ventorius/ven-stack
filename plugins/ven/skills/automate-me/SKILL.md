@@ -41,13 +41,13 @@ A rule needs two or more instances in different sessions. A preference stated on
 
 ## 2. Ask
 
-One AskUserQuestion round: one or two multi-select questions with four options each, first the areas that matter, then specifics within them. Then one free-form question for anything the options missed. No questionnaires.
+One question round, multiple-choice when your agent has it: one or two multi-select questions with four options each, first the areas that matter, then specifics within them. Then one free-form question for anything the options missed. No questionnaires.
 
 ## 3. Draft
 
 Write the draft to `$(ven-profile path)/proposals/<handle>-mode/SKILL.md`; it is not installed yet.
 
-- Frontmatter: `name: <handle>-mode`; a description that triggers on the handle, `/<handle>-mode` and "work in <handle>'s style", never on generic words like "write code"; `disable-model-invocation: true` unless the user wants it on every turn.
+- Frontmatter: `name: <handle>-mode`; a description that triggers only on the handle and "work in <handle>'s style", never on generic words like "write code", unless the user wants it on every turn.
 - One section per area with a rule that differs from the default. Skip empty areas; don't force symmetry.
 - Imperatives about "the user", not the user's name. Operational lines only: "Short paragraphs. Tables when comparing options." is a rule; "communicate clearly" is not.
 - Name ven skills where the user relies on them ("apply **prove-it-works** before calling it done"); never paste their text.

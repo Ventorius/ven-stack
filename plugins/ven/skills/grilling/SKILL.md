@@ -23,7 +23,7 @@ Reach a shared understanding with the user before anything gets built. Model the
 3. Wait for the answers. Settled decisions push the frontier outward and unblock what hung off them.
 4. Recompute the frontier and ask the next round. A question that depends on another question still open in this round belongs to a later round.
 
-When the client supports AskUserQuestion, use it: one question per decision, your recommendation as the first option, marked "(recommended)". Otherwise use this shape:
+When your agent has a multiple-choice question tool, use it: one question per decision, your recommendation as the first option, marked "(recommended)". Otherwise use this shape:
 
 ```text
 Q1. <title>: <the question, with the options if there are any>

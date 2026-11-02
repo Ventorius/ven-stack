@@ -15,7 +15,7 @@ Settle three things before writing:
 
 - **Subject:** the repo, one module, or one feature. One doc covers one subject.
 - **Reader:** someone arriving, someone using it, or someone changing it. The answer picks the shape in step 3.
-- **Home:** where and in what format the repo keeps docs today. Follow that layout. Ask the user with AskUserQuestion only when the repo has no layout and the choice matters.
+- **Home:** where and in what format the repo keeps docs today. Follow that layout. Ask the user only when the repo has no layout and the choice matters.
 
 Search for existing docs on the subject first. Update the existing doc instead of writing a second one. A fact that already has a home gets a link, not a copy.
 

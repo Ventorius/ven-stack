@@ -64,7 +64,7 @@ evals         <cases planned>; at most $15 per suite run
 writes        <pack dir>, the profile's packs
 ```
 
-Ask with AskUserQuestion: forge it, change the plan, or stop. Write nothing before "forge it". As a subagent, return `VEN-RESULT: BLOCKED: approve the pack plan` with the preview.
+Ask with a multiple-choice question when your agent has one: forge it, change the plan, or stop. Write nothing before "forge it". As a subagent, return `VEN-RESULT: BLOCKED: approve the pack plan` with the preview.
 
 ## 4. Scaffold
 

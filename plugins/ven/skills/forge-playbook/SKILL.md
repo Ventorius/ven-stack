@@ -38,7 +38,7 @@ Before choosing steps, write down:
 3. Give each step a `Done:` line: the observable condition that ends it for this shape. The router copies it into the task list and treats it as the step's gate; mark the steps that must hold before anything else continues `(gate)`.
 4. End with the learning-check step, as every playbook does.
 
-A step with no skill to name means either an existing skill covers it, or the skill is missing: stop and forge it first (suggest `/ven:forge-skill`). Never write the missing know-how into the playbook. Done when every step names a skill that exists and its `Done:` line is checkable.
+A step with no skill to name means either an existing skill covers it, or the skill is missing: stop and forge it first (suggest the "forge-skill" skill). Never write the missing know-how into the playbook. Done when every step names a skill that exists and its `Done:` line is checkable.
 
 ## 4. Write it
 

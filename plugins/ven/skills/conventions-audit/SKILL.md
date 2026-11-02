@@ -57,7 +57,7 @@ For each class:
 
 Order by instance count, then by the cost of the mistake. Present at most seven; three strong classes beat ten weak ones. Under the table: the refusal findings, then Watch.
 
-Ask the user which rows to keep, with one multi-select AskUserQuestion. Hand each approved check to **ratchet**, one at a time. Write proposal files only for approved rows, in the format **skill-tdd** defines, with `proposed_by: conventions-audit`.
+Ask the user which rows to keep, with one multi-select question (a multiple-choice question when your agent has one, else a numbered list). Hand each approved check to **ratchet**, one at a time. Write proposal files only for approved rows, in the format **skill-tdd** defines, with `proposed_by: conventions-audit`.
 
 Record the run, with corrections per session as the repeat-correction metric; compare it with the last run in `ven-decisions list`:
 

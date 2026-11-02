@@ -33,7 +33,7 @@ Look before writing: `ven-profile adapters` (an unproven entry may only need a f
 
 1. A tool the repo already has, wrapped so its output takes the capability's shape.
 2. A script that reads the files itself, using only the runtime ven's own tools need.
-3. A new tool, only with the user's consent. Ask with AskUserQuestion: what it is, where it installs, and the script you would write instead. Never install without a yes.
+3. A new tool, only with the user's consent. Ask the user: what it is, where it installs, and the script you would write instead. Never install without a yes.
 
 ## 2. Fixture first
 

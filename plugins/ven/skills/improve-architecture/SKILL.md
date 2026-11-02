@@ -43,7 +43,7 @@ For each candidate:
 - **Before and after:** a small sketch, captioned `HYPOTHESIS`.
 - **Strength:** Strong, Worth exploring, or Speculative.
 
-Draw all the sketches on one page, `arch-candidates`. Render it per **Rendering** in the badge protocol of **diagram-deps**. End with your top recommendation and why. Then ask which one to explore (AskUserQuestion when available).
+Draw all the sketches on one page, `arch-candidates`. Render it per **Rendering** in the badge protocol of **diagram-deps**. End with your top recommendation and why. Then ask which one to explore (as a multiple-choice question when your agent has one).
 
 ## 4. Settle the chosen one
 

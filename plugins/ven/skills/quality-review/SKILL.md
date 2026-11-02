@@ -13,7 +13,7 @@ One reviewer, one question: does this change leave the code simpler to read, cha
 
 Be ambitious. Don't stop at "this could be a bit cleaner". Look for the restructuring that keeps behavior and makes whole branches, flags, helpers or layers disappear, the one that makes the change look obvious in hindsight. Moving complexity around is not simplifying it.
 
-Never apply fixes inside this skill. The remedies go back to the user; suggest they type `/ven:do restructure <what>, keep behavior` to apply them.
+Never apply fixes inside this skill. The remedies go back to the user; suggest they hand the "do" skill `restructure <what>, keep behavior` to apply them.
 
 ## 1. Scope
 

@@ -43,7 +43,7 @@ One table per pack. Every finding cites its evidence: the transcript count, the 
 
 ## Propose, then apply what is approved
 
-Ask once per pack with AskUserQuestion, as a multi-select of its proposals; selecting none keeps everything:
+Ask once per pack, as a multi-select of its proposals; selecting none keeps everything:
 
 - **Fix** a failing item: send it back through **forge-skill**, or the forge skill that built its kind.
 - **Remove** an unused or unfixable item: its directory or file, its `pack.json` entry, its eval cases, its name or path in the profile's `packs`.

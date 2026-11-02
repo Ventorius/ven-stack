@@ -54,7 +54,7 @@ test('a ven: reference to an existing skill passes', () => {
   assert.equal(result.code, 0, result.stderr);
 });
 
-test('description needs a trigger phrase unless the skill is user-invoked', () => {
+test('description needs a trigger phrase', () => {
   const noTrigger = lint({ 'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing for people.' }) });
   assert.equal(noTrigger.code, 1);
   assert.match(noTrigger.stderr, /skills\/a\/SKILL\.md: description has no trigger phrase/);
@@ -63,10 +63,6 @@ test('description needs a trigger phrase unless the skill is user-invoked', () =
     const ok = lint({ 'skills/a/SKILL.md': skillFile({ name: 'a', description: `Does a thing. ${phrase}` }) });
     assert.equal(ok.code, 0, `${phrase}: ${ok.stderr}`);
   }
-  const exempt = lint({
-    'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing.', extra: 'disable-model-invocation: true\n' }),
-  });
-  assert.equal(exempt.code, 0, exempt.stderr);
 });
 
 test('description over max_description_chars fails', () => {
