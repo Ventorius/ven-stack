@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dispatch, fail, intFlag, list, parseStrict, writeAll } from '../scripts/lib/args.mjs';
@@ -25,13 +25,16 @@ import { describeSolution, relevantSolutions } from '../scripts/lib/solutions.mj
 import { appendDecision, appendVerify, readDecisions, readJson, readPlaybookState, writeJson } from '../scripts/lib/state.mjs';
 import { diffLines, findWorkarounds } from '../scripts/lib/workarounds.mjs';
 
-const USAGE = `ven-profile: the repo profile (stack facts + verified commands), stored in <git-common-dir>/ven
+const USAGE = `ven-profile: the repo profile (stack facts + verified commands), filled in as work needs it
 
   ven-profile path                         print the state directory
   ven-profile init                         create the state directory skeleton
-  ven-profile detect                       list signal files per source, for onboarding workers
+  ven-profile detect                       list signal files per source (manifests, CI, scripts, tests, ...)
   ven-profile show | get <key>             print the profile or one key (e.g. commands.test.single)
-  ven-profile set <key> <json|string>      set one key
+  ven-profile set <key> <json|string>      set one key (creates the profile on first use)
+  ven-profile learn <key> --run CMD --evidence E [--manual REASON] [--file F]
+                                           record a command found in the repo and prove it by running it once
+                                           (--manual: side effects outside the repo or on tracked files; never run)
   ven-profile write < profile.json         replace the whole profile (validated); stamps generated_at and source hashes
   ven-profile stamp                        re-stamp generated_at and source hashes, change nothing else
   ven-profile validate                     check the profile against the schema
@@ -50,19 +53,27 @@ const USAGE = `ven-profile: the repo profile (stack facts + verified commands), 
   ven-profile prove-adapters [<capability>...]                     prove adapters like prove does commands
   ven-profile playbooks                    list core and pack playbooks with their descriptions
   ven-profile packs-for <file>...          list enabled packs whose applies_when matches the files
+  ven-profile migrate                      move state left by older ven versions aside (idempotent)
 
   exit codes: 0 ok, 1 failure, 2 usage error, 3 adapter missing or unproven`;
 
 const PLUGIN_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const [command, ...rest] = process.argv.slice(2);
-const { flags, positionals } = parseStrict(rest, { values: ['file', 'var', 'timeout'], booleans: ['strict'] });
+const { flags, positionals } = parseStrict(rest, { values: ['file', 'var', 'timeout', 'run', 'evidence', 'manual'], booleans: ['strict'] });
 const timeout = intFlag(flags, 'timeout', undefined);
 const cwd = process.cwd();
 
+// No profile yet is a normal state: it starts empty and fills in as commands are learned and facts are set.
 function requireProfile() {
   const loaded = loadProfile(cwd);
-  if (!loaded) fail('ven-profile: no profile for this repo; run /ven:onboard first');
-  return loaded;
+  if (loaded) return loaded;
+  const dir = venDir(cwd) ?? fail('ven-profile: not inside a git repository');
+  return { dir, root: repoRoot(cwd), profile: { schema_version: PROFILE_SCHEMA_VERSION, commands: {} } };
+}
+
+function missingCommand(key) {
+  return `ven-profile: no command at ${key}. Find it in the repo (ven-profile detect lists manifests, CI and scripts), then:
+  ven-profile learn ${key} --run '<command>' --evidence '<file:line it came from>'`;
 }
 
 function print(value) {
@@ -146,8 +157,12 @@ const commands = {
     print(requireProfile().profile);
   },
   get() {
-    const value = getKey(requireProfile().profile, positionals[0] ?? fail('usage: ven-profile get <key>', 2));
-    if (value === undefined) fail(`ven-profile: ${positionals[0]} is not set`);
+    const key = positionals[0] ?? fail('usage: ven-profile get <key>', 2);
+    const value = getKey(requireProfile().profile, key);
+    if (value === undefined && /^(commands|workspaces)\./.test(key)) {
+      fail(`ven-profile: ${key} is not set. Find the command in the repo, then: ven-profile learn ${key} --run '<command>' --evidence '<file:line>'`);
+    }
+    if (value === undefined) fail(`ven-profile: ${key} is not set. Find it in the repo or ask the user once, then: ven-profile set ${key} <value>`);
     print(value);
   },
   set() {
@@ -183,10 +198,26 @@ const commands = {
   },
   run() {
     const key = positionals[0] ?? fail('usage: ven-profile run <key> [--file F]...', 2);
-    const spec = commandSpec(requireProfile().profile, key) ?? fail(`ven-profile: no command at ${key}`);
+    const spec = commandSpec(requireProfile().profile, key) ?? fail(missingCommand(key));
     const result = execute(spec, timeout);
     writeAll(1, result.output);
     process.exit(result.exit);
+  },
+  learn() {
+    const key = qualify(positionals[0] ?? fail('usage: ven-profile learn <key> --run CMD --evidence E [--manual REASON]', 2));
+    if (typeof flags.run !== 'string' || typeof flags.evidence !== 'string') fail('ven-profile learn: --run and --evidence are both required', 2);
+    const spec = { run: flags.run, status: flags.manual ? 'manual' : 'unverified', evidence: flags.evidence, ...(flags.manual ? { manual_reason: flags.manual } : {}) };
+    const { dir, profile } = requireProfile();
+    setKey(profile, key, { ...getKey(profile, key), ...spec });
+    saveProfile(dir, profile);
+    if (flags.manual) return print(`manual ${key}  \`${flags.run}\`  (${flags.manual}; not run)`);
+    const result = execute(spec, timeout);
+    const outcome = proofOf(result);
+    const { profile: fresh } = requireProfile();
+    applyProof(getKey(fresh, key), outcome);
+    saveProfile(dir, fresh);
+    console.log(`${result.exit === 0 ? 'ok   ' : 'FAIL '} ${key}  \`${result.commandLine}\`  (${outcome.proof})`);
+    if (result.exit !== 0) fail(`ven-profile learn: ${key} failed; it stays unverified. Fix the command, or keep it with the reason it can't pass here.`);
   },
   prove() {
     const { profile } = requireProfile();
@@ -218,7 +249,7 @@ const commands = {
   verify() {
     const key = positionals[0] ?? fail('usage: ven-profile verify <key> [--file F]...', 2);
     const { dir, root, profile } = requireProfile();
-    const spec = commandSpec(profile, key) ?? fail(`ven-profile: no command at ${key}`);
+    const spec = commandSpec(profile, key) ?? fail(missingCommand(qualify(key)));
     const before = workingTreeHash(root);
     refuseWorkarounds(dir, root, profile, before);
     const untrackedBefore = new Set(untrackedFiles(root));
@@ -243,6 +274,7 @@ const commands = {
     const loaded = loadProfile(cwd);
     const sections = [`ven state directory (never committed): ${dir}`];
     if (!loaded) sections.push('No profile yet: commands are found and proven on first use.');
+    if (legacyItems(dir).length > 0) sections.push('State from an older ven version is present; run ven-profile migrate.');
     const stale = loaded ? staleSources(loaded.profile, root) : [];
     if (stale.length > 0) {
       sections.push(`Profile may be stale: ${stale.join(', ')} changed after ${loaded.profile.generated_at}. Re-prove the commands you rely on, then run ven-profile stamp.`);
@@ -267,7 +299,7 @@ const commands = {
     const { root, profile } = requireProfile();
     const stale = staleSources(profile, root);
     if (stale.length === 0) return print('profile is fresh');
-    fail(`profile is stale: ${stale.join(', ')} changed since ${profile.generated_at}; run ven-profile stamp if the profile still holds, else /ven:onboard --refresh`);
+    fail(`profile is stale: ${stale.join(', ')} changed since ${profile.generated_at}; re-prove the commands those files define (ven-profile prove <key>), then ven-profile stamp`);
   },
   adapters() {
     print(readAdapters());
@@ -310,6 +342,14 @@ const commands = {
     });
     print(playbooks);
   },
+  migrate() {
+    const dir = venDir(cwd) ?? fail('ven-profile: not inside a git repository');
+    const done = legacyItems(dir).map(({ describe, apply }) => {
+      apply();
+      return describe;
+    });
+    print(done.length > 0 ? done.join('\n') : 'nothing to migrate');
+  },
   'packs-for'() {
     const { profile } = requireProfile();
     const files = positionals;
@@ -322,6 +362,27 @@ const commands = {
 };
 
 const MAX_CONTEXT_SOLUTIONS = 3;
+
+// Each item is state an older, onboarding-and-hooks ven left behind. Applying one makes it disappear
+// from this list, so migrate converges however often it runs.
+function legacyItems(dir) {
+  const items = [];
+  const map = join(dir, 'map.md');
+  if (existsSync(map)) {
+    items.push({
+      describe: 'map.md -> legacy/map.md (no longer injected at session start)',
+      apply: () => {
+        mkdirSync(join(dir, 'legacy'), { recursive: true });
+        renameSync(map, join(dir, 'legacy', 'map.md'));
+      },
+    });
+  }
+  for (const sub of ['sessions', 'baselines']) {
+    const path = join(dir, 'state', sub);
+    if (existsSync(path)) items.push({ describe: `removed state/${sub}/ (hook state)`, apply: () => rmSync(path, { recursive: true, force: true }) });
+  }
+  return items;
+}
 
 // The run's diff starts where the active playbook started, else where the branch left the default branch.
 function refuseWorkarounds(dir, root, profile, currentTree) {

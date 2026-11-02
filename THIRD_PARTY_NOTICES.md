@@ -41,7 +41,6 @@ Copyright (c) 2026 Cursor (orchestrate, ralph-loop, cursor-team-kit, continual-l
 - plugins/ven/skills/laziness/ adapted from pstack/skills/principle-subtract-before-you-add/SKILL.md
 - plugins/ven/skills/model-the-domain/ adapted from pstack/skills/principle-model-the-domain/SKILL.md
 - plugins/ven/skills/never-block-on-reversible/ adapted from pstack/skills/principle-never-block-on-the-human/SKILL.md
-- plugins/ven/skills/onboard/ adapted from pstack/skills/create-verification-skill/SKILL.md (patterns only, no text: interview the repo before the user, prove before handing over)
 - plugins/ven/skills/pack-audit/ adapted from pstack/skills/maintain-verification-skill/SKILL.md
 - plugins/ven/skills/prove-it-works/ adapted from pstack/skills/principle-prove-it-works/SKILL.md
 - plugins/ven/skills/quality-review/ adapted from cursor-team-kit/skills/thermo-nuclear-code-quality-review/SKILL.md
@@ -80,7 +79,6 @@ Copyright (c) 2025 Every. Licensed under the MIT License (below).
 - plugins/ven/skills/forge-convention/ pattern from skills/ce-setup/assets/pack-rule-template.md
 - plugins/ven/skills/forge-pack/ adapted from skills/ce-setup/references/pack-scaffold.md
 - plugins/ven/skills/forge-reference/ adapted from skills/ce-plan/references/agents/framework-docs-researcher.md
-- plugins/ven/skills/onboard/ adapted from skills/ce-setup/SKILL.md (patterns only, no text: preview every user-owned file change and apply on approval, no bulk installs)
 - plugins/ven/skills/review/references/lenses.md adapted from skills/ce-code-review/references/personas/correctness-reviewer.md, maintainability-reviewer.md, security-reviewer.md, data-migration-reviewer.md, testing-reviewer.md
 - plugins/ven/skills/unslop/ adapted from skills/ce-noslop/SKILL.md (boundaries, density and modes)
 
@@ -113,7 +111,6 @@ Copyright (c) 2026 Matt Pocock. Licensed under the MIT License (below).
 - plugins/ven/skills/handoff/ adapted from skills/productivity/handoff/SKILL.md
 - plugins/ven/skills/help/ adapted from skills/engineering/ask-matt/SKILL.md (default flow, close calls)
 - plugins/ven/skills/improve-architecture/ adapted from skills/engineering/improve-codebase-architecture/SKILL.md
-- plugins/ven/skills/onboard/ adapted from skills/engineering/setup-matt-pocock-skills/SKILL.md (patterns only, no text: explore, present findings, ask only what exploration left open)
 - plugins/ven/skills/prototype/ adapted from skills/engineering/prototype/SKILL.md, LOGIC.md (as references/logic.md), UI.md (as references/visual.md)
 - plugins/ven/skills/quiz/ adapted from skills/productivity/teach/SKILL.md (quiz rules)
 - plugins/ven/skills/reproduce/ adapted from skills/engineering/diagnosing-bugs/SKILL.md (phases 1–2)

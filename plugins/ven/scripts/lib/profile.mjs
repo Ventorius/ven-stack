@@ -16,7 +16,7 @@ export function loadProfile(cwd) {
   const path = profilePath(dir);
   const profile = readJson(path);
   if (profile?.schema_version !== PROFILE_SCHEMA_VERSION) {
-    throw new Error(`${path} has schema_version ${profile?.schema_version}, expected ${PROFILE_SCHEMA_VERSION}; re-run /ven:onboard`);
+    throw new Error(`${path} has schema_version ${profile?.schema_version}, expected ${PROFILE_SCHEMA_VERSION}; fix or delete the file (the profile refills as commands are learned)`);
   }
   return { dir, root: repoRoot(cwd), profile };
 }

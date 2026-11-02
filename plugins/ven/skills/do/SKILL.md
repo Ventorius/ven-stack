@@ -1,6 +1,6 @@
 ---
 name: do
-description: "Route a task to one playbook (core or from a repo pack), state the pick, copy its steps into the task list and run them with proof and a learning check. Use for any work in a repo onboarded with ven."
+description: "Route a task to one playbook (core or from a repo pack), state the pick, copy its steps into the task list and run them with proof and a learning check. Use for any engineering task in a git repository."
 argument-hint: <task>
 disable-model-invocation: true
 metadata:
@@ -18,10 +18,10 @@ You own the run. Pick one playbook, show the pick, copy its steps, run them in o
 ## 1. Read the repo state
 
 - `ven-profile context`: the state directory, a stale profile, the active playbook and past solutions for the files this branch touches. Before editing a file, `ven-profile solutions-for <files>` lists the entries that cover it.
-- `ven-profile show`. If it fails, the repo has no profile. A question you can answer by reading code alone may still run the **investigation** playbook. Anything else: tell the user to run `/ven:onboard` and stop.
-- `ven-profile fresh` exits 1: say the profile is stale, suggest `/ven:onboard --refresh`, and treat commands tied to the changed files as unverified.
+- `ven-profile fresh` exits 1: name the manifests that changed and re-prove the commands they define (`ven-profile prove <key>`) before relying on them, then `ven-profile stamp`.
 - `ven-decisions active` shows a playbook in this worktree: a task that continues it routes to **pickup**, a pause routes to **pause**. A new task while a playbook is active (running or paused) is not silent: ask the user (AskUserQuestion) whether to finish, abandon or keep the old one paused, and record the answer. Close it with `ven-decisions end --outcome <done|abandoned|blocked>` only on finish or abandon. A paused playbook keeps its state; run the new task in a separate worktree or branch, or after the pickup.
-- Commands come only from the profile. A missing or `unverified` key: say so and don't rely on it.
+- Commands come only from the profile, which fills in as work needs it. A command the task needs that is missing: find it in the repo (`ven-profile detect` lists manifests, CI and scripts), then `ven-profile learn <key> --run '<command>' --evidence '<file:line>'`, which runs it once and records whether it passed. A command with effects outside the repo, on tracked files, or that costs money: ask the user before it ever runs, and record it with `--manual "<reason>"`. An `unverified` key: say so and don't rely on it.
+- A fact only a person knows (what is risky to touch, what proves a change type, what a domain word means): ask the user once, when a step first needs it, and store the answer (`ven-profile set risk_areas '<list as JSON>'`, `ven-profile set verify.<change type> commands.<key>`, a **glossary** entry). Never ask for these up front.
 
 ## 2. Build the playbook list
 

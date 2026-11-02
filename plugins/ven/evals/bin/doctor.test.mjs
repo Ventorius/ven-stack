@@ -40,7 +40,7 @@ test('ven-doctor --json prints findings as JSON', () => {
   const result = doctor(root, ['--json']);
   const { findings } = JSON.parse(result.stdout);
   assert.ok(findings.every((finding) => ['INFO', 'WARN', 'ERROR'].includes(finding.level) && typeof finding.message === 'string'));
-  assert.ok(findings.some((finding) => finding.level === 'WARN' && /no ven profile/.test(finding.message)));
+  assert.ok(findings.some((finding) => finding.level === 'INFO' && /no ven profile/.test(finding.message)));
   assert.ok(findings.some((finding) => finding.level === 'INFO' && /skill listing/.test(finding.message)));
 });
 

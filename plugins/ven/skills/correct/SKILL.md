@@ -25,7 +25,7 @@ State the correction as one rule an agent could follow without this conversation
 
 Quote the user's words as evidence. A rule you cannot write without naming this one task is a one-off: say so in one line, record it (step 4) and stop.
 
-If the rule was already written down (a skill line, `map.md`) and the agent broke it anyway, text has failed once. Treat it as checkable if any check could catch it, even an expensive one.
+If the rule was already written down (a skill line, a solution entry) and the agent broke it anyway, text has failed once. Treat it as checkable if any check could catch it, even an expensive one.
 
 ## 3. Route it
 

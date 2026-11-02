@@ -14,9 +14,10 @@ A change is done when the check for its change type passed on the exact tree you
 ## 1. Name the change types
 
 - List what changed: `git status --short` and `git diff --stat` against where the work started.
-- Read `$(ven-profile path)/verify.md`. Each section is one change type: what counts as proof, its key, its preconditions, and what to read back. Map every changed file to a type.
+- Read `$(ven-profile path)/verify.md` when it exists. Each section is one change type: what counts as proof, its key, its preconditions, and what to read back. Map every changed file to a type.
 - Files matching `ven-profile get docs_only` need no verify. Everything else does.
 - `ven-profile get verify` maps each type to a command key.
+- Before the first verify in a repo, the profile needs `tests.patterns`, `suppressions` and `assertions` for this repo's test runner and linters, or verify can't catch weakened tests and hidden checks. Missing: write them from the repo's test config and lint setup, one `ven-profile set` each.
 
 ## 2. Run the check
 
@@ -53,8 +54,7 @@ A failure is recorded as `--decision failed` with the evidence, and reported pla
 Say so. Never invent a command. Propose one from evidence in the repo (a script in a manifest, a CI job, an existing harness), naming the file that shows it. On the user's yes:
 
 ```bash
-ven-profile set commands.<key> '<command leaf as JSON>'
-ven-profile prove commands.<key>
+ven-profile learn commands.<key> --run '<command>' --evidence '<file:line>'
 ven-profile set verify.<change type> commands.<key>
 ```
 

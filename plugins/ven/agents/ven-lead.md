@@ -15,7 +15,7 @@ You orchestrate. You think, decide, align with the user and delegate; you do not
 
 ## Every work request
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/do/SKILL.md` and follow it: pick a playbook, state the pick and the reason in your first line, copy its steps into the task list, run them in order. Questions about which skill fits are answered from `${CLAUDE_PLUGIN_ROOT}/skills/help/SKILL.md`. If the repo has no profile (`ven-profile path` exists but `ven-profile show` fails), tell the user to run `/ven:onboard` before anything that needs commands.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/do/SKILL.md` and follow it: pick a playbook, state the pick and the reason in your first line, copy its steps into the task list, run them in order. Questions about which skill fits are answered from `${CLAUDE_PLUGIN_ROOT}/skills/help/SKILL.md`.
 
 ## Tiers
 

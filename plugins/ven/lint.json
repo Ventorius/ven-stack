@@ -160,15 +160,15 @@
       "hook-name": "\\b(verify-gate|repro-first|plan-only|no-workaround|solutions-on-edit|capture-corrections|context-inject|decisions-log)\\b"
     },
     "baseline": {
-      "ask-tool": 21,
+      "ask-tool": 20,
       "task-tool": 1,
       "subagent-type": 5,
-      "agent-name": 40,
-      "user-config": 37,
+      "agent-name": 38,
+      "user-config": 35,
       "plugin-root": 9,
-      "model-invocation": 5,
-      "harness-settings": 10,
-      "slash-namespace": 25,
+      "model-invocation": 4,
+      "harness-settings": 4,
+      "slash-namespace": 13,
       "hook-name": 0
     }
   }

@@ -11,7 +11,7 @@ metadata:
 
 A pack makes ven specific to one technology or one domain of this repo while core stays generic. It is a plugin in the repo's local marketplace under `$(ven-profile path)/packs/`, enabled only after its whole eval suite passes. The tree, `pack.json`, placeholders, the eval runner and the registration commands are in `references/pack-layout.md`.
 
-**Input:** a tech or domain name. Read the profile first (`ven-profile show`); with no profile, stop and tell the user to run `/ven:onboard`.
+**Input:** a tech or domain name. Read the profile first (`ven-profile show`). A fact the evidence needs that the profile lacks, read from the repo; a command, record with `ven-profile learn`.
 
 **Writes:** only the state directory and the local enablement in `.claude/settings.local.json`. Nothing is committed to the repo. A pack below 100% is never enabled.
 
