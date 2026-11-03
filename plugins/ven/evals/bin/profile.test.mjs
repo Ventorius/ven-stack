@@ -3,13 +3,13 @@ import { createHash } from 'node:crypto';
 import { utimesSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { PLUGIN_ROOT, BASE_PROFILE, makeRepo, runBin, stateDir, writeFile, writeState } from '../support/fixture.mjs';
-import { workingTreeHash } from '../../scripts/lib/repo.mjs';
-import { passedVerifyFor, verifyEntries } from '../../scripts/lib/state.mjs';
+import { SCRIPTS_DIR, BASE_PROFILE, makeRepo, runBin, stateDir, writeFile, writeState } from '../support/fixture.mjs';
+import { workingTreeHash } from '../../skills/setup/scripts/lib/repo.mjs';
+import { passedVerifyFor, verifyEntries } from '../../skills/setup/scripts/lib/state.mjs';
 
 const json = (result) => JSON.parse(result.stdout);
 const profile = (root, ...args) => runBin('ven-profile', args, { cwd: root });
-const BIN = join(PLUGIN_ROOT, 'bin', 'ven-profile');
+const BIN = join(SCRIPTS_DIR, 'ven-profile');
 // A command that calls back into the bin while prove is still running, like a user `set` during a long prove.
 const setDuringRun = (key, value) => `node ${JSON.stringify(BIN)} set ${key} ${value} && node -e "process.exit(0)"`;
 

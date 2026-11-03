@@ -16,7 +16,7 @@ Every file touched matches the profile's `docs_only` globs (`ven-profile get doc
 3. Check links
    Done: the profile's lint or link check ran with `ven-profile run commands.lint` when it exists, and passes; with none, `skip: no docs check in the profile`.
 4. Own read of the diff
-   Done: you read the diff, confirmed no file outside the `docs_only` globs changed, and recorded it with `ven-decisions add --step review`. No verify gate applies.
+   Done: you read the diff, confirmed no file outside the `docs_only` globs changed, and recorded it with `ven-decisions add --step review`. `ven-decisions end` asks for no verify when only `docs_only` files changed.
 5. Light ship
    Done: the change is committed in the repo's commit style; a PR is prepared per the ship playbook's prepare step, with no panel and no re-verify, and opened only after the user approves.
 6. **learning-check**

@@ -1,12 +1,27 @@
 {
   "name": "ven-stack",
-  "owner": { "name": "Sebastian Basznianin" },
-  "description": "ven-stack: the stack-agnostic ven core plugin and generic tech packs",
+  "owner": {
+    "name": "Sebastian Basznianin"
+  },
+  "description": "ven-stack: the portable, stack-agnostic ven skills",
   "plugins": [
     {
       "name": "ven",
       "source": "./plugins/ven",
-      "description": "Onboard repos into verified profiles, route work through playbooks, prove every change, forge repo-specific packs"
+      "description": "Portable, stack-agnostic engineering workflow as plain skills: route work through playbooks, prove every change, and forge repo-specific packs. Works in any agent that loads SKILL.md files and can run shell commands.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Sebastian Basznianin"
+      },
+      "license": "MIT",
+      "keywords": [
+        "workflow",
+        "playbooks",
+        "tdd",
+        "verification",
+        "skills",
+        "forge"
+      ]
     }
   ]
 }

@@ -41,7 +41,7 @@ result: <right | wrong | ->
 ## One card per session
 
 1. Take the first card never asked; with none left, the oldest card answered wrong.
-2. Ask it with AskUserQuestion: labels `A` to `D` in deck order, each option's text as its description. No hint in labels, order or formatting.
+2. Ask it as a multiple-choice question when your agent has one, else as a lettered list: labels `A` to `D` in deck order, each option's text as its description. No hint in labels, order or formatting.
 3. Answer with right or wrong, the correct option, and one sentence of why, citing the source path.
 4. Set `asked` and `result`. A right card leaves the deck; a wrong one stays for a later session. Refill to five from sources not yet used.
 

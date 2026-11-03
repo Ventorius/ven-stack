@@ -25,7 +25,7 @@ Each panel carries its own badge per the badge protocol in **diagram-deps**. A p
 |---|---|---|
 | Change map | **diagram-change** | always |
 | Data diff | **diagram-data**, two-ref diff | the diff touches the data model |
-| New flows | **diagram-flow**, one per new entry point, two at most | new routes, handlers, jobs or commands; skipped when `${user_config.budget_tier}` is `lean` |
+| New flows | **diagram-flow**, one per new entry point, two at most | new routes, handlers, jobs or commands; skipped when `ven-profile config budget_tier` is `lean` |
 | Risks | **blast-radius** | always |
 | Walkthrough | you, from the diff | always |
 
@@ -43,6 +43,6 @@ Fill the template's summary section. Save it as `$(ven-profile path)/explain/<br
 
 ## 5. Posting is outward-facing
 
-Ask before posting anything (AskUserQuestion: replace the PR body, add it as a comment, or don't post). On yes, use the profile's forge cli and read its help for the exact subcommand; never guess flags. Post the Markdown summary only. The HTML page stays local: it can hold local paths and unreleased detail.
+Ask before posting anything, with a multiple-choice question when your agent has one: replace the PR body, add it as a comment, or don't post. On yes, use the profile's forge cli and read its help for the exact subcommand; never guess flags. Post the Markdown summary only. The HTML page stays local: it can hold local paths and unreleased detail.
 
 Write all prose through **unslop**.

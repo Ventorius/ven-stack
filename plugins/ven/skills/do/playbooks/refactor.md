@@ -19,7 +19,7 @@ The structure changes; the behavior does not. A missing feature or a real bug fo
 3. **improve-architecture**
    Done: the target shape (modules, interfaces, call graph) is named, and it deletes branches, layers or invalid states rather than adding indirection (apply **laziness**).
 4. **sweep**
-   Done: the mechanical moves ran as `ven:ven-worker` slices on disjoint files, every slice reports PASS, callers are migrated and the old shape is deleted in the same wave, with no shims.
+   Done: the mechanical moves ran as worker slices (**delegate**) on disjoint files, every slice reports PASS, callers are migrated and the old shape is deleted in the same wave, with no shims.
 5. **verify**
    Done: the pin passes on the combined tree, and the verify key for each touched change type is logged.
 6. **ratchet**

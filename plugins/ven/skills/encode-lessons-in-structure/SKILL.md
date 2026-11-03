@@ -11,13 +11,13 @@ metadata:
 
 Turn a recurring fix into a mechanism that enforces it, not another line of instructions. Every correction, failed check and surprise is a signal: capture it, put it where it gets enforced, and close the loop.
 
-**Why:** Written instructions get skipped. They depend on the reader noticing, remembering and complying. A type, a rule or a hook enforces itself every time, for every agent and every person.
+**Why:** Written instructions get skipped. They depend on the reader noticing, remembering and complying. A type, a rule or a check enforces itself every time, for every agent and every person.
 
 **Pattern:** put the lesson on the highest step that can hold it.
 1. **Type or architecture.** Make the wrong code impossible to write: a type that can't hold the bad value, a module that hides the dangerous call, a single entry point.
 2. **Boundary rule.** An import rule saying one layer never depends on another.
 3. **Lint or structural rule.** A pattern check run by the repo's linter or structural search tool.
-4. **Hook.** A check at edit or command time, for what only shows up then. A blocking hook prints why, so the block itself teaches.
+4. **Diff check.** A check every change must pass before verify logs it, for what only shows up in a diff. A failing check prints why, so the refusal itself teaches.
 5. **A line in a skill.** One sentence, with an example of the failure, in the skill that does that work. For lessons that need judgment.
 6. **A pointer in the repo map.** Only when the agent needs to know a tool or file exists.
 

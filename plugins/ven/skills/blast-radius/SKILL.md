@@ -33,7 +33,7 @@ Take each fact the change's safety depends on as far down this list as is cheap,
    - **Timing:** teardown order, retries, concurrency, what runs when.
 4. **Be honest about each risk.** Give it a real likelihood and a real cost. Keep the confirmed risks; list what you checked and cleared separately. Cite real `file:line`. A search that finds nothing is an answer: say what you searched for. Never invent a caller or an interface.
 5. **Prove the fact.** Write the smallest script or test that runs the real code, run it (`ven-profile run commands.test.single --file <path>` for a test), and paste the result. Keep scratch scripts out of the working tree, or delete them when done.
-6. **Wide changes.** When the reach spans many modules, fan out one `ven:ven-worker` (`model: ${user_config.swarm_model}`) per reach kind, each with a read-only brief that returns risks with `file:line`. Merge and judge their results yourself.
+6. **Wide changes.** When the reach spans many modules, **delegate** one worker per reach kind, each with a read-only brief that returns risks with `file:line`. Merge and judge their results yourself.
 
 ## Hand back
 

@@ -17,19 +17,19 @@ Packs rot: code moves, libraries upgrade, skills stop firing, and each loaded sk
 - **changed:** the user approved changes, and they are applied and proven.
 - **blocked:** a check could not run; say which one and why.
 
-**Input:** every pack in `ven-profile get packs`, or the one named. Per pack, `<pack dir>` is `$(ven-profile path)/packs/<pack>/`, read with its `pack.json` and `.claude-plugin/plugin.json`; `<ven root>` is `${CLAUDE_PLUGIN_ROOT}`. With several packs, fan out one read-only `ven:ven-worker` brief per pack (`model: ${user_config.swarm_model}`) for checks 1, 2, 4 and 5.
+**Input:** every pack in `ven-profile get packs`, or the one named. Per pack, `<pack dir>` is `$(ven-profile path)/packs/<pack>/`, read with its `pack.json`; `<ven root>` is `$(ven-profile root)`. With several packs, **delegate** one read-only worker brief per pack for checks 1, 2, 4 and 5.
 
 ## Checks
 
-1. **Registration.** The pack directory, its entry in `$(ven-profile path)/packs/.claude-plugin/marketplace.json`, its entry in the profile's `packs` and `claude plugin list` (enabled as `<plugin>@<marketplace>`) agree. A directory nothing registers is an abandoned draft.
+1. **Registration.** The pack directory and its entry in the profile's `packs` agree, and `ven-profile packs-for <a covered file>` lists every skill file as existing. A directory nothing registers is an abandoned draft.
 2. **Use in the last 90 days.**
-   - Skills: count Skill tool calls naming `<plugin>:<skill>` in the transcripts `ven-transcripts` reads (Grep `"skill":"<plugin>:<skill>"` across `~/.claude*/projects/*<repo>*/*.jsonl`).
+   - Skills: count `ven-decisions list --step pack-skill` rows naming `<pack>:<skill>`; the router logs one each time it loads a pack skill.
    - Playbooks: count the picks in `ven-transcripts --kind routes --since 90`.
    - Zero uses makes an item a candidate; read its `evidence` in `pack.json` before proposing anything.
-3. **Evals.** Read the newest `<pack dir>/evals/results/*/aggregate-result.json`. Any case under 1.00, missing results, or results older than the newest pack file outside `evals/results/`: rerun with `node <pack dir>/scripts/eval.mjs --ven <ven root> --runs 3 --max-cost-usd 15`, granting `--allow-tools` for what the cases list. When the budget tier is `lean` (`ven-profile get budget_tier`, else `${user_config.budget_tier}`), report "not rerun" instead of spending.
+3. **Evals.** Read the newest `<pack dir>/evals/results/*/aggregate-result.json`. Any case under 1.00, missing results, or results older than the newest pack file outside `evals/results/`: rerun with `node <pack dir>/scripts/eval.mjs --ven <ven root> --runs 3 --max-cost-usd 15`, granting `--allow-tools` for what the cases list. When `ven-profile config budget_tier` is `lean`, report "not rerun" instead of spending.
 4. **References.** Compare each `references[]` entry's `version` with the version its `lockfile` locks now; a difference is stale. Check the `file:line` rows in the reference with **citation-check**.
-5. **applies_when.** Glob each `applies_when.paths` pattern from the repo root: no match is dead. Each `applies_when.deps` name must still appear in a manifest from `ven-profile get stack.sources`. A skill whose `paths:` match nothing never activates.
-6. **Weight.** `claude plugin details <plugin>@<marketplace>` gives the pack's projected context cost. A costly pack with little use is a candidate even when each item is used now and then.
+5. **applies_when.** Glob each `applies_when.paths` pattern from the repo root: no match is dead. Each `applies_when.deps` name must still appear in a manifest from `ven-profile get stack.sources`. A pack whose paths match nothing never loads.
+6. **Weight.** The lines a matching task loads: the pack's SKILL.md files plus the references they link (`wc -l`). A costly pack with little use is a candidate even when each item is used now and then.
 
 ## Report
 
@@ -43,12 +43,12 @@ One table per pack. Every finding cites its evidence: the transcript count, the 
 
 ## Propose, then apply what is approved
 
-Ask once per pack with AskUserQuestion, as a multi-select of its proposals; selecting none keeps everything:
+Ask once per pack, as a multi-select of its proposals; selecting none keeps everything:
 
 - **Fix** a failing item: send it back through **forge-skill**, or the forge skill that built its kind.
 - **Remove** an unused or unfixable item: its directory or file, its `pack.json` entry, its eval cases, its name or path in the profile's `packs`.
 - **Refresh** a stale reference with **forge-reference** for the locked version.
-- **Narrow** dead `applies_when`: change `pack.json`, every skill's `paths:` and the profile entry together.
-- **Retire** a pack with nothing left in use: `claude plugin disable <plugin>@<marketplace> --scope local` and drop its profile entry. Keep the directory until the user says to delete it.
+- **Narrow** dead `applies_when`: change `pack.json` and the profile entry together.
+- **Retire** a pack with nothing left in use: drop its profile entry. Keep the directory until the user says to delete it.
 
-After applying: bump the patch `version` in `plugin.json`, run `ven-lint-skills --pack <pack dir>` and the whole suite (every case 1.00), then record `ven-decisions add --step pack-audit --decision "<outcome>: <changes>" --evidence "suite <n>/<n>"`. Tell the user to run `/reload-plugins` when skills changed.
+After applying: bump the patch `version` in `pack.json`, run `ven-lint-skills --pack <pack dir>` and the whole suite (every case 1.00), then record `ven-decisions add --step pack-audit --decision "<outcome>: <changes>" --evidence "suite <n>/<n>"`.

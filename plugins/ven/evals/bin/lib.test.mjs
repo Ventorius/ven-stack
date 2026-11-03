@@ -4,9 +4,9 @@ import { linkSync, mkdtempSync, readFileSync, readdirSync, statSync, writeFileSy
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { loadProfile, saveProfile, staleSources, validateProfile } from '../../scripts/lib/profile.mjs';
-import { CORRECTION, HOOK_BLOCK } from '../../scripts/lib/signals.mjs';
-import { appendVerify, passedVerifyFor, readBaseline, readPlaybookState, verifyEntries, writeBaseline, writePlaybookState } from '../../scripts/lib/state.mjs';
+import { loadProfile, saveProfile, staleSources, validateProfile } from '../../skills/setup/scripts/lib/profile.mjs';
+import { CORRECTION, HOOK_BLOCK } from '../../skills/setup/scripts/lib/signals.mjs';
+import { appendVerify, passedVerifyFor, readPlaybookState, verifyEntries, writePlaybookState } from '../../skills/setup/scripts/lib/state.mjs';
 import { BASE_PROFILE, makeRepo, writeState } from '../support/fixture.mjs';
 
 const tempDir = () => mkdtempSync(join(tmpdir(), 'ven-lib-'));
@@ -54,14 +54,11 @@ test('appendVerify rotates instead of rewriting: it drops only the oldest entrie
   assert.equal(trees.at(-1), 't1099');
 });
 
-test('playbook state and baselines are keyed per worktree', () => {
+test('playbook state is keyed per worktree', () => {
   const dir = tempDir();
   writePlaybookState(dir, '/repo-a', { playbook: 'fix' });
-  writeBaseline(dir, '/repo-a', 'tree-a', 'head-a');
   assert.equal(readPlaybookState(dir, '/repo-b'), null);
-  assert.equal(readBaseline(dir, '/repo-b'), null);
   assert.equal(readPlaybookState(dir, '/repo-a').playbook, 'fix');
-  assert.equal(readBaseline(dir, '/repo-a').head, 'head-a');
 });
 
 test('passedVerifyFor ignores entries whose tree changed during the run', () => {

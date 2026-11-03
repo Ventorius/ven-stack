@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
@@ -112,8 +112,7 @@ test('ven-profile init and detect describe the repo without a profile', () => {
   writeFile(root, '.github/workflows/ci.yml', 'on: push\n');
   writeFile(root, 'vitest.config.ts', 'export default {}\n');
   const dir = runBin('ven-profile', ['init'], { cwd: root }).stdout.trim();
-  const marketplace = JSON.parse(readFileSync(join(dir, 'packs', '.claude-plugin', 'marketplace.json'), 'utf8'));
-  assert.match(marketplace.name, /^ven-local-ven-fixture-/);
+  assert.ok(existsSync(join(dir, 'solutions')));
   const detected = json(runBin('ven-profile', ['detect'], { cwd: root }));
   assert.deepEqual(detected.signals.manifests, ['package.json']);
   assert.deepEqual(detected.signals.ci, ['.github/workflows/ci.yml']);
@@ -148,7 +147,7 @@ const skill = (name, layer, body, extra = '') => `---\nname: ${name}\ndescriptio
 
 test('ven-lint-skills passes a well-formed plugin', () => {
   const root = makePlugin({
-    'skills/router/SKILL.md': skill('router', 'L5', 'Pick a playbook.', 'disable-model-invocation: true\n'),
+    'skills/router/SKILL.md': skill('router', 'L5', 'Pick a playbook.'),
     'skills/router/playbooks/fix.md': '---\nname: fix\ndescription: fix things\n---\n1. **work**\n2. **careful**\n',
     'skills/work/SKILL.md': skill('work', 'L3', 'Apply **careful**. Then run **other**.'),
     'skills/other/SKILL.md': skill('other', 'L3', 'Standalone workflow.'),
@@ -159,11 +158,11 @@ test('ven-lint-skills passes a well-formed plugin', () => {
   assert.match(result.stdout, /ok: 5 skills\/playbooks/);
 });
 
-test('ven-lint-skills catches direction, invocation, cycles, denylist, duplicates and depth', () => {
+test('ven-lint-skills catches direction, cycles, denylist, duplicates and depth', () => {
   const repeated = 'This sentence is long enough to count for duplicates.\nAnd this second line is also long enough to count.\nA third long line makes the window of three complete.';
   const root = makePlugin({
-    'skills/router/SKILL.md': skill('router', 'L5', 'Suggest /ven:helper, then call `helper`.', 'disable-model-invocation: true\n'),
-    'skills/helper/SKILL.md': skill('helper', 'L5', 'Help.', 'disable-model-invocation: true\n'),
+    'skills/router/SKILL.md': skill('router', 'L5', 'Suggest /ven:helper, then call `helper`.'),
+    'skills/helper/SKILL.md': skill('helper', 'L5', 'Help.'),
     'skills/careful/SKILL.md': skill('careful', 'L2', 'Run **work** after.'),
     'skills/work/SKILL.md': skill('work', 'L3', `Run **loop** and deploy with Stripe.\n${repeated}`),
     'skills/loop/SKILL.md': skill('loop', 'L3', `Run **work**.\n${repeated}`),
@@ -172,7 +171,7 @@ test('ven-lint-skills catches direction, invocation, cycles, denylist, duplicate
   });
   const { code, stderr } = runBin('ven-lint-skills', ['--root', root]);
   assert.equal(code, 1);
-  assert.match(stderr, /user-invoked router references user-invoked helper/);
+  assert.match(stderr, /router \(L5\) references helper \(L5\)/);
   assert.doesNotMatch(stderr, /ven:helper/);
   assert.match(stderr, /careful \(L2\) references work \(L3\)/);
   assert.match(stderr, /cycle: (work -> loop -> work|loop -> work -> loop)/);

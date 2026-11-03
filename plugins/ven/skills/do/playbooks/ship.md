@@ -19,7 +19,7 @@ Opening a PR is outward-facing: prepare everything, then ask before running it.
 4. Prepare the PR
    Done: a title in the repo's commit style, and the exact push and create commands for `repo.forge.cli` (`ven-profile get repo.forge`). No forge CLI in the profile: hand the user the title and body, and stop.
 5. Ask, then open (gate)
-   Done: the user approved (AskUserQuestion) and the PR URL was read back from the code host; or the user declined and has the title, body and commands to run themselves.
+   Done: the user approved and the PR URL was read back from the code host; or the user declined and has the title, body and commands to run themselves.
 6. **learning-check**
    Done: its result is stated in the reply; silence is not a result.
 

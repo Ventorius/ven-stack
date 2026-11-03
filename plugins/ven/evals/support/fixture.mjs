@@ -3,9 +3,12 @@ import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { venDir } from '../../scripts/lib/repo.mjs';
+import { venDir } from '../../skills/setup/scripts/lib/repo.mjs';
 
 export const PLUGIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+export const SCRIPTS_DIR = join(PLUGIN_ROOT, 'skills', 'setup', 'scripts');
+// The suite may run under bun, whose execPath is bun; the tools are node scripts.
+export const NODE = execFileSync('sh', ['-c', 'command -v node'], { encoding: 'utf8' }).trim();
 
 // Child processes inherit this, so tests never touch the real ~/.ven.
 process.env.VEN_HOME = mkdtempSync(join(tmpdir(), 'ven-home-'));
@@ -62,20 +65,7 @@ export function writeFile(root, relativePath, content) {
   return path;
 }
 
-export function runHook(name, input) {
-  const result = spawnSync('node', [join(PLUGIN_ROOT, 'scripts', 'hooks', `${name}.mjs`)], {
-    input: JSON.stringify(input),
-    encoding: 'utf8',
-  });
-  return { code: result.status, stdout: result.stdout, stderr: result.stderr };
-}
-
-export function runHookRaw(name, stdinText) {
-  const result = spawnSync('node', [join(PLUGIN_ROOT, 'scripts', 'hooks', `${name}.mjs`)], { input: stdinText, encoding: 'utf8' });
-  return { code: result.status, stdout: result.stdout, stderr: result.stderr };
-}
-
 export function runBin(name, args, { cwd, input, env } = {}) {
-  const result = spawnSync('node', [join(PLUGIN_ROOT, 'bin', name), ...args], { cwd, input, encoding: 'utf8', env: { ...process.env, ...env } });
+  const result = spawnSync(NODE, [join(SCRIPTS_DIR, name), ...args], { cwd, input, encoding: 'utf8', env: { ...process.env, ...env } });
   return { code: result.status, stdout: result.stdout, stderr: result.stderr };
 }

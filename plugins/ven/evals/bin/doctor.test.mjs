@@ -1,47 +1,45 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { dirname, delimiter, join } from 'node:path';
 import { test } from 'node:test';
-import { BASE_PROFILE, makeRepo, runBin, writeFile, writeState } from '../support/fixture.mjs';
+import { BASE_PROFILE, NODE, SCRIPTS_DIR, makeRepo, runBin, writeFile, writeState } from '../support/fixture.mjs';
 
-const SETTINGS = { worktree: { baseRef: 'head' }, permissions: { allow: ['Bash(ven-profile:*)', 'Bash(ven-decisions:*)'] } };
+// Tests share the fixture's VEN_HOME, which also holds repo state; install links tools into its bin/.
+const home = process.env.VEN_HOME;
+spawnSync(NODE, [join(SCRIPTS_DIR, 'install.mjs')], { env: process.env });
+const PATH_WITH_TOOLS = [join(home, 'bin'), dirname(NODE), '/usr/bin', '/bin'].join(delimiter);
+const PATH_WITHOUT_TOOLS = [dirname(NODE), '/usr/bin', '/bin'].join(delimiter);
 
 function healthyRepo() {
   const root = makeRepo({ profile: null });
   runBin('ven-profile', ['write'], { cwd: root, input: JSON.stringify(BASE_PROFILE) });
-  writeFile(root, '.claude/settings.local.json', JSON.stringify(SETTINGS));
   return root;
 }
 
-function doctor(root, args = [], configDir = mkdtempSync(join(tmpdir(), 'ven-claude-'))) {
-  return runBin('ven-doctor', args, { cwd: root, env: { CLAUDE_CONFIG_DIR: configDir } });
-}
+const doctor = (root, args = [], path = PATH_WITH_TOOLS) => runBin('ven-doctor', args, { cwd: root, env: { PATH: path } });
 
 test('ven-doctor reports a healthy repo without warnings and exits 0 even under --strict', () => {
   const root = healthyRepo();
   const plain = doctor(root);
   assert.equal(plain.code, 0, plain.stderr);
-  assert.doesNotMatch(plain.stdout, /WARN/);
+  assert.doesNotMatch(plain.stdout, /WARN|ERROR/);
   assert.equal(doctor(root, ['--strict']).code, 0);
 });
 
-test('ven-doctor warns about worktree.baseRef; only --strict turns the warning into exit 1', () => {
-  const root = makeRepo({ profile: null });
-  runBin('ven-profile', ['write'], { cwd: root, input: JSON.stringify(BASE_PROFILE) });
-  const plain = doctor(root);
-  assert.equal(plain.code, 0);
-  assert.match(plain.stdout, /WARN +worktree\.baseRef is not "head"/);
-  assert.equal(doctor(root, ['--strict']).code, 1);
+test('ven-doctor warns when the tools are not on PATH and names the installer', () => {
+  const root = healthyRepo();
+  const result = doctor(root, [], PATH_WITHOUT_TOOLS);
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /WARN +ven-decisions, .*ven-profile.* not on PATH; run node .*install\.mjs/);
+  assert.equal(doctor(root, ['--strict'], PATH_WITHOUT_TOOLS).code, 1);
 });
 
-test('ven-doctor --json prints findings as JSON', () => {
+test('ven-doctor --json prints findings as JSON and treats a missing profile as normal', () => {
   const root = makeRepo({ profile: null });
-  const result = doctor(root, ['--json']);
-  const { findings } = JSON.parse(result.stdout);
+  const { findings } = JSON.parse(doctor(root, ['--json']).stdout);
   assert.ok(findings.every((finding) => ['INFO', 'WARN', 'ERROR'].includes(finding.level) && typeof finding.message === 'string'));
-  assert.ok(findings.some((finding) => finding.level === 'WARN' && /no ven profile/.test(finding.message)));
-  assert.ok(findings.some((finding) => finding.level === 'INFO' && /skill listing/.test(finding.message)));
+  assert.ok(findings.some((finding) => finding.level === 'INFO' && /no ven profile/.test(finding.message)));
+  assert.ok(findings.some((finding) => finding.level === 'INFO' && /node v\d+/.test(finding.message)));
 });
 
 test('ven-doctor flags a profile whose manifest changed since it was stamped', () => {
@@ -52,23 +50,33 @@ test('ven-doctor flags a profile whose manifest changed since it was stamped', (
   assert.match(result.stdout, /WARN +profile stale: package\.json/);
 });
 
-test('ven-doctor lists unverified commands and colliding personal skills', () => {
+test('ven-doctor lists unverified commands', () => {
   const root = healthyRepo();
-  const configDir = mkdtempSync(join(tmpdir(), 'ven-claude-'));
-  writeFile(configDir, 'skills/tdd/SKILL.md', '---\nname: tdd\ndescription: my own tdd\n---\nbody\n');
   runBin('ven-profile', ['set', 'commands.lint', '{"run":"x","status":"unverified"}'], { cwd: root });
-  const result = doctor(root, [], configDir);
-  assert.match(result.stdout, /WARN +personal .* also defines: tdd/);
-  assert.match(result.stdout, /"tdd": "off"/);
-  assert.match(result.stdout, /INFO +commands not verified: commands\.lint \(unverified\)/);
+  assert.match(doctor(root).stdout, /INFO +commands not verified: commands\.lint \(unverified\)/);
 });
 
-test('ven-doctor reports a corrupt profile as an error and exits 1', () => {
+test('ven-doctor points at migrate when an older ven left state behind', () => {
+  const root = healthyRepo();
+  writeState(root, 'map.md', '# Map\n');
+  const result = doctor(root, ['--strict']);
+  assert.equal(result.code, 1);
+  assert.match(result.stdout, /WARN +state from an older ven version: .*map\.md.*; run ven-profile migrate/);
+});
+
+test('ven-doctor reports a corrupt profile or config as an error and exits 1', () => {
   const root = healthyRepo();
   writeState(root, 'profile.json', '{ nope');
   const result = doctor(root);
   assert.equal(result.code, 1);
   assert.match(result.stdout, /ERROR +.*corrupt JSON in .*profile\.json/);
+
+  const other = healthyRepo();
+  writeFile(home, 'config.json', '{"budget_tier":"huge"}');
+  const config = doctor(other);
+  writeFile(home, 'config.json', '{}');
+  assert.equal(config.code, 1);
+  assert.match(config.stdout, /ERROR +.*budget_tier must be one of lean, standard, max/);
 });
 
 test('ven-doctor usage errors exit 2', () => {
@@ -88,23 +96,13 @@ test('ven-doctor --help and -h print usage to stdout and exit 0', () => {
   }
 });
 
-test('ven-doctor names corrupt state files and how to fix them', () => {
-  for (const folder of ['sessions', 'worktrees', 'baselines']) {
-    const root = healthyRepo();
-    const path = writeState(root, `state/${folder}/broken.json`, '{ nope');
-    const result = doctor(root);
-    assert.equal(result.code, 1, folder);
-    assert.match(result.stdout, /ERROR +/, folder);
-    assert.ok(result.stdout.includes(`corrupt JSON in ${path}`), folder);
-    assert.match(result.stdout, /delete the file/, folder);
-  }
-});
-
-test('ven-doctor accepts valid state files', () => {
+test('ven-doctor names a corrupt playbook state file and how to fix it', () => {
   const root = healthyRepo();
-  writeState(root, 'state/sessions/ok.json', '{"a":1}');
-  writeState(root, 'state/baselines/ok.json', '{}');
-  assert.equal(doctor(root, ['--strict']).code, 0);
+  const path = writeState(root, 'state/worktrees/broken.json', '{ nope');
+  const result = doctor(root);
+  assert.equal(result.code, 1);
+  assert.ok(result.stdout.includes(`corrupt JSON in ${path}`));
+  assert.match(result.stdout, /delete the file/);
 });
 
 test('ven-doctor flags a decisions.tsv with a wrong header or ragged rows', () => {

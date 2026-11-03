@@ -1,13 +1,14 @@
 # Repo state: profile, adapters and the state directory
 
-Every repo ven works in has one state directory: `~/.ven/repos/<repo>-<hash of the git common dir>/` (`VEN_HOME` moves `~/.ven`; `VEN_STATE_DIR` overrides the whole path, which eval fixtures use). It is shared by all worktrees of the repo, never committed, and outside `.git/` because Claude Code protects `.git/` from pre-approved writes. Print it with `ven-profile path`. Nothing ven writes goes into the working tree, and the team's `CLAUDE.md` is never edited; the SessionStart hook injects `map.md` instead.
+Every repo ven works in has one state directory: `~/.ven/repos/<repo>-<hash of the git common dir>/` (`VEN_HOME` moves `~/.ven`; `VEN_STATE_DIR` overrides the whole path, which eval fixtures use). It is shared by all worktrees of the repo, never committed, and outside `.git/` because Claude Code protects `.git/` from pre-approved writes. Print it with `ven-profile path`. Nothing ven writes goes into the working tree, and the team's agent instructions are never edited. `ven-profile context` prints what a session needs from here (staleness, the active playbook, relevant solutions); the router runs it first.
+
+The profile fills in as work needs it. With no `profile.json`, `ven-profile show` prints an empty profile, `ven-profile learn <key> --run <command> --evidence <file:line>` records a command and proves it by running it once, and `ven-profile set` stores a fact a person gave. Nothing is asked up front. `ven-profile migrate` moves aside what an older, onboarding-based ven left (`map.md`, hook state, plugin-era packs) and is safe to rerun.
 
 ```text
 ~/.ven/repos/<repo>-<hash>/
 ├── profile.json        # stack facts + verified commands (schema below)
 ├── adapters.json       # capability → command (schema below)
 ├── verify.md           # how to prove each change type in this repo
-├── map.md              # ≤100-line map injected at session start (what CLAUDE.md would hold)
 ├── GLOSSARY.md         # domain terms → one-line definition → code names
 ├── adr/                # decision records
 ├── diagrams/           # committed-style diagrams (badged)
@@ -21,8 +22,9 @@ Every repo ven works in has one state directory: `~/.ven/repos/<repo>-<hash of t
 ├── explain/<branch>.html          # explain-pr and teach pages (read, not committed)
 ├── baseline/           # snapshots of existing lint/boundary violations
 ├── decisions.tsv       # ts, worktree, playbook, step, decision, evidence
-├── state/              # active playbook per worktree, sessions, verify.jsonl (last 500 entries; an entry with `tree_changed` never counts as a pass), written by bin tools only
-└── packs/              # local marketplace: .claude-plugin/marketplace.json + one plugin dir per forged pack
+├── state/              # active playbook per worktree (with the tree it started at), verify.jsonl (last 500 entries; an entry with `tree_changed` never counts as a pass), written by bin tools only
+├── legacy/             # what ven-profile migrate moved aside
+└── packs/<pack>/       # forged packs, one plain directory each (layout in forge-pack's pack-layout reference)
 ```
 
 ## profile.json
@@ -59,8 +61,8 @@ Every repo ven works in has one state directory: `~/.ven/repos/<repo>-<hash of t
   "suppressions": [{ "pattern": "regex", "why": "" }],
   "assertions": [{ "pattern": "regex", "why": "" }],
   "conventions": { "commit_style": "", "branch_naming": "" },
-  "packs": [{ "name": "", "kind": "tech|domain", "plugin": "name@marketplace", "applies_when": { "paths": [], "deps": [] }, "skills": [], "playbooks": ["absolute paths"] }],
-  "budget_tier": "optional per-repo override of the userConfig tier"
+  "packs": [{ "name": "", "kind": "tech|domain", "dir": "optional; default <state dir>/packs/<name>", "applies_when": { "paths": [], "deps": [] }, "skills": [], "playbooks": ["absolute paths"], "checks": [{ "id": "", "run": "command over {files}" }] }],
+  "budget_tier": "optional per-repo override of the per-user budget_tier (ven-profile config)"
 }
 ```
 
@@ -68,11 +70,11 @@ Every repo ven works in has one state directory: `~/.ven/repos/<repo>-<hash of t
 
 `ven-profile write` always sets `generated_at` and records `stack.source_hashes`. The profile is stale when a source's content hash differs from the recorded one, so a checkout or a touch that leaves the content alone does not make it stale. A profile without `source_hashes` (written by an older version) falls back to comparing each source's mtime with `generated_at`.
 
-`ven-profile stamp` rewrites `generated_at` and `source_hashes` and changes nothing else. Use it after checking that the profile still holds for the changed manifests; use `/ven:onboard --refresh` when it does not.
+`ven-profile stamp` rewrites `generated_at` and `source_hashes` and changes nothing else. Use it after checking that the profile still holds for the changed manifests; when it does not, re-prove the commands the changed files define (`ven-profile prove <key>` or `ven-profile learn`).
 
 ### Validation
 
-`loadProfile` rejects any `schema_version` other than 1. `ven-profile validate` (and `set`/`write`) also require every `verify.<type>` value to name an existing command and every `packs[]` entry to have `name` and `kind`. `ven-profile prove` and `prove-adapters` re-read the file just before saving and update only the `status`, `proof` and `failure_tail` of the commands they ran, so a `set` made during a long prove survives.
+`loadProfile` rejects any `schema_version` other than 1. `ven-profile validate` (and `set`/`write`) also require every `verify.<type>` value to name an existing command and every `packs[]` entry to have `name` and `kind`, and each of its `checks` an `id` and a `run`. `ven-profile verify` runs a pack's checks on the changed files under its `applies_when.paths` and refuses on failure. `ven-profile prove` and `prove-adapters` re-read the file just before saving and update only the `status`, `proof` and `failure_tail` of the commands they ran, so a `set` made during a long prove survives.
 
 ### Command leaf
 
@@ -128,7 +130,3 @@ Run with `ven-profile adapter <capability> [--file F]`. A missing capability mea
 ## verify.md
 
 One section per change type the repo has (for example: logic, API endpoint, UI flow, CLI, data/migration, background job, integration). Each section says: what counts as proof, the exact command key (`verify.<type>`), preconditions (`requires`), and what to read back. "It compiles" is never proof.
-
-## map.md
-
-At most ~100 lines: what the repo is, workspaces, the verified command keys, where the glossary and solutions live, enabled packs, risk areas, and the ven entry points (`/ven:do`, `/ven:help`). Pointers, not prose.

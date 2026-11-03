@@ -15,21 +15,21 @@ Nothing is applied to a skill in this session. Skill edits become proposals that
 
 ## 1. Find the transcript
 
-The transcript is the newest `*.jsonl` in `<config dir>/projects/<repo path with every non-alphanumeric character replaced by ->/`, where `<config dir>` is `$CLAUDE_CONFIG_DIR` or `~/.claude`. Confirm it by matching its first user message to this session's opening request. Stay in this repo's project directory; never read other projects' transcripts.
+The transcript is your agent's log of this session, when it keeps one on disk (Claude Code: the newest `*.jsonl` in `<config dir>/projects/<repo path with every non-alphanumeric character replaced by ->/`, where `<config dir>` is `$CLAUDE_CONFIG_DIR` or `~/.claude`). Confirm it by matching its first user message to this session's opening request. Stay in this repo's project directory; never read other projects' transcripts.
 
-No match: write a digest instead (the requests, corrections, skills used, hook blocks, outcomes).
+No match: write a digest instead (the requests, corrections, skills used, check refusals, outcomes).
 
 Count corrections from the decisions log first: `ven-decisions list --step correction` shows what the user objected to this session and earlier. The transcript is the fallback and the source for everything else.
 
 ## 2. Run three blind lenses
 
-Spawn three `ven:ven-reviewer` agents in one message, each with the brief in `references/lenses.md` (shared part plus its lens) and the transcript path or digest:
+**delegate** to three reviewers at once, each with the brief in `references/lenses.md` (shared part plus its lens) and the transcript path or digest:
 
 | Lens | Looks for | `model` |
 |---|---|---|
-| judgment | The durable principle behind an incident | `${user_config.orchestrator_model}` |
-| tooling | Commands, paths and context the agent rediscovered or the user had to hand over | `${user_config.coder_model}` |
-| divergent | What the other two miss: second-order effects, skipped proof, skills that never fired | `${user_config.orchestrator_model}` |
+| judgment | The durable principle behind an incident | `orchestrator_model` |
+| tooling | Commands, paths and context the agent rediscovered or the user had to hand over | `coder_model` |
+| divergent | What the other two miss: second-order effects, skipped proof, skills that never fired | `orchestrator_model` |
 
 Reviewers never see each other's output. On the `lean` budget tier, run the judgment lens only.
 

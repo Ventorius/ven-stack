@@ -1,6 +1,6 @@
 ---
 name: to-tickets
-description: "Slice a spec into vertical tickets, each a complete brief a coder can finish without asking anything, with dependencies and file overlaps marked. Use after to-spec, when the user asks for tickets, or before handing work to ven-coder agents."
+description: "Slice a spec into vertical tickets, each a complete brief a coder can finish without asking anything, with dependencies and file overlaps marked. Use after to-spec, when the user asks for tickets, or before handing work to coders."
 metadata:
   layer: L3
   source: mattpocock/skills@49dd158:skills/engineering/to-tickets/SKILL.md
@@ -9,7 +9,7 @@ metadata:
 
 # To tickets
 
-Break a spec into **tickets**: thin vertical slices, each a brief that `ven:ven-coder` can run end to end without asking anything.
+Break a spec into **tickets**: thin vertical slices, each a brief that a coder (**delegate**) can run end to end without asking anything.
 
 ## 1. Gather
 
@@ -37,7 +37,7 @@ Apply **sequence-verifiable-units**. Each ticket:
 
 ## 4. Quiz the user
 
-Show a numbered list: title, blocked by, overlaps, what it delivers. Ask (AskUserQuestion when available): is the granularity right, are the blocking edges real, should any ticket merge or split? Iterate until the user approves.
+Show a numbered list: title, blocked by, overlaps, what it delivers. Ask, with a multiple-choice question when your agent has one: is the granularity right, are the blocking edges real, should any ticket merge or split? Iterate until the user approves.
 
 ## 5. Publish
 

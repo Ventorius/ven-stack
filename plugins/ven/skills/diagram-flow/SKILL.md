@@ -11,7 +11,7 @@ Trace one request or event from its entry point to its last effect and draw it a
 
 ## 1. Pin the trigger
 
-- One trigger per diagram: a route, a command, a message type, a scheduled job, a user action. If the request names several or none and the conversation doesn't settle it, ask which (AskUserQuestion).
+- One trigger per diagram: a route, a command, a message type, a scheduled job, a user action. If the request names several or none and the conversation doesn't settle it, ask which (as a multiple-choice question).
 - Draw the common success path. A failure path is a second diagram.
 - Map domain words to code names with `$(ven-profile path)/GLOSSARY.md`.
 

@@ -11,7 +11,7 @@ metadata:
 
 A pack skill earns its place by stopping a mistake the agent really made, often enough to meet the pack bar, and by proving that it does. Run the six steps in order; each ends on a check.
 
-**Input:** a pack and a recurring task, a cluster of corrections, or the user's request. `<pack dir>` is `$(ven-profile path)/packs/<pack>/` and `<ven root>` is `${CLAUDE_PLUGIN_ROOT}`. No pack yet: stop and suggest `/ven:forge-pack <name>`. A caller that already settled the evidence and the scope (an approved pack plan, a convention draft) starts at step 3. A change to one of ven's own skills goes through **skill-tdd** alone.
+**Input:** a pack and a recurring task, a cluster of corrections, or the user's request. `<pack dir>` is `$(ven-profile path)/packs/<pack>/` and `<ven root>` is `$(ven-profile root)`, the directory holding ven's skills. No pack yet: stop and suggest the "forge-pack" skill with the pack name. A caller that already settled the evidence and the scope (an approved pack plan, a convention draft) starts at step 3. A change to one of ven's own skills goes through **skill-tdd** alone.
 
 ## 1. Evidence first
 
@@ -24,7 +24,7 @@ Collect real instances of the same mistake or need, enough to meet the pack bar 
 Each instance records source, date, `file:line`, what went wrong and what fixed it. Done when the instances share one cause.
 
 - Below the bar: forge nothing. Propose a **compound** entry for what you found, and say the skill can be forged once it recurs.
-- A type, import rule, lint rule or hook could catch it: it belongs lower on the ladder. Apply **encode-lessons-in-structure** and stop.
+- A type, import rule, lint rule or diff check could catch it: it belongs lower on the ladder. Apply **encode-lessons-in-structure** and stop.
 
 ## 2. Grill the scope
 
@@ -39,10 +39,10 @@ Settle the layer too (L2 for a principle, L3 for a workflow) and a kebab-case na
 
 ## 3. Write the failing scenario
 
-Brief `ven:ven-coder` (`model: ${user_config.coder_model}`):
+Brief a coder (**delegate**):
 
 - **Inputs:** the instances and the four answers.
-- **Files:** `<pack dir>/evals/<skill>-scenario/`, `<skill>-fires/` and `<skill>-quiet/`, copied from `<ven root>/templates/skill/cases/` (`scenario/`, `fires/`, `quiet/`, and `fixture.sh` into each), every `{{` placeholder filled. Nothing else changes: no repo files, so no commit and no verify step.
+- **Files:** `<pack dir>/evals/<skill>-scenario/`, `<skill>-fires/` and `<skill>-quiet/`, copied from `<ven root>/setup/assets/templates/skill/cases/` (`scenario/`, `fires/`, `quiet/`, and `fixture.sh` into each), every `{{` placeholder filled. Nothing else changes: no repo files, so no commit and no verify step.
 - **Shape:** the scenario prompt is one instance's task in the user's words and never names the skill. `fixture.sh` builds the smallest repo that reproduces it. `no-mistake` matches the mistake as the instances show it; `outcome` matches the fix. For a rule the agent skips under pressure, the prompt carries the pressures the transcripts show (time, sunk cost, an order to hurry).
 - **Check:** with `<pack dir>/skills/<skill>/` absent, `node <pack dir>/scripts/eval.mjs --ven <ven root> --case '<skill>-scenario' --runs 3 --max-cost-usd 5 --allow-tools Edit Write Bash` shows `outcome` or `no-mistake` failing (`skill-fired` fails trivially and proves nothing). Report the per-grader results from `aggregate-result.json` and the agent's failing words verbatim.
 
@@ -50,10 +50,9 @@ Read the failing runs yourself (`--keep-temp` keeps them). When `outcome` and `n
 
 ## 4. Draft the skill
 
-You write it, at the orchestrator tier. Copy `<ven root>/templates/skill/SKILL.md` to `<pack dir>/skills/<skill>/SKILL.md` and fill it:
+You write it, at the orchestrator tier. Copy `<ven root>/setup/assets/templates/skill/SKILL.md` to `<pack dir>/skills/<skill>/SKILL.md` and fill it:
 
 - **Description:** "<what it does>. Use when <the trigger>", under 300 characters, the trigger word early, one phrase per distinct case.
-- **paths:** `applies_when.paths` from `pack.json`, or narrower when the idea is.
 - **Length:** under 150 lines; 30 to 80 is typical. Library facts go to `<pack dir>/references/` through **forge-reference**, linked the way the template's "Library facts" line shows.
 - **Content:** only the failures step 3 recorded, each in the form that fixes its kind:
 
@@ -82,8 +81,8 @@ A failure is new evidence: name the excuse or the gap, change the draft for it, 
 
 ## 6. Register
 
-1. Add `{ "name", "evidence": [<instances>], "cases": [<case names>], "delta": "scenario <without> -> <with>, 3 runs; suite <n>/<n>" }` to `skills` in `<pack dir>/pack.json`, and bump the patch `version` in `<pack dir>/.claude-plugin/plugin.json`.
+1. Add `{ "name", "evidence": [<instances>], "cases": [<case names>], "delta": "scenario <without> -> <with>, 3 runs; suite <n>/<n>" }` to `skills` in `<pack dir>/pack.json`, and bump the patch `version` in it.
 2. Profile: in the list from `ven-profile get packs`, add the skill to this pack's `skills`, then store the list with `ven-profile set packs '<json>'`.
 3. A task shape that needs its own sequence of steps: **forge-playbook**, which registers it with the router.
 4. Commit only when the pack lives in a repo, as a promoted pack does: one commit per skill, the delta in the message, e.g. `Add <pack> <skill> skill (scenario 0.00 -> 1.00, suite 14/14)`. Packs under `$(ven-profile path)` are never committed.
-5. Tell the user to run `/reload-plugins`.
+5. Tell the user which files now bring the skill in: the router loads it for tasks that touch the pack's `applies_when.paths`.

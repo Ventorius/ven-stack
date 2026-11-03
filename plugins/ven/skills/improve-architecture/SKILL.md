@@ -22,7 +22,7 @@ Deepening pays off where code keeps changing, so decide where to look before loo
 
 ## 2. Explore
 
-Walk the scoped code yourself, or for a wide scope send one read-only `ven:ven-worker` per area (`model: ${user_config.swarm_model}`) with the paths and the questions below, returning findings with `file:line`. Note where you feel friction:
+Walk the scoped code yourself, or for a wide scope **delegate** one read-only worker per area with the paths and the questions below, returning findings with `file:line`. Note where you feel friction:
 
 - Understanding one concept means bouncing between many small modules.
 - An interface is nearly as complex as its implementation.
@@ -43,7 +43,7 @@ For each candidate:
 - **Before and after:** a small sketch, captioned `HYPOTHESIS`.
 - **Strength:** Strong, Worth exploring, or Speculative.
 
-Draw all the sketches on one page, `arch-candidates`. Render it per **Rendering** in the badge protocol of **diagram-deps**. End with your top recommendation and why. Then ask which one to explore (AskUserQuestion when available).
+Draw all the sketches on one page, `arch-candidates`. Render it per **Rendering** in the badge protocol of **diagram-deps**. End with your top recommendation and why. Then ask which one to explore (as a multiple-choice question when your agent has one).
 
 ## 4. Settle the chosen one
 

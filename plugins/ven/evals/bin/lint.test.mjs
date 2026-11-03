@@ -3,11 +3,15 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { PLUGIN_ROOT, runBin } from '../support/fixture.mjs';
+import { SCRIPTS_DIR, runBin } from '../support/fixture.mjs';
 
-function makePlugin(files) {
+const config = JSON.parse(readFileSync(join(SCRIPTS_DIR, 'lint.json'), 'utf8'));
+
+// Without lintConfig the fixture borrows the plugin's lint.json, the way any foreign root does.
+function makePlugin(files, lintConfig) {
   const root = mkdtempSync(join(tmpdir(), 'ven-lint-'));
-  for (const [path, content] of Object.entries(files)) {
+  const configFile = lintConfig ? { 'lint.json': JSON.stringify(lintConfig) } : {};
+  for (const [path, content] of Object.entries({ ...configFile, ...files })) {
     mkdirSync(dirname(join(root, path)), { recursive: true });
     writeFileSync(join(root, path), content);
   }
@@ -17,8 +21,7 @@ function makePlugin(files) {
 const skillFile = ({ name, description, body = 'Do it.', extra = '' }) =>
   `---\nname: ${name}\ndescription: ${description}\n${extra}metadata:\n  layer: L3\n---\n${body}\n`;
 
-const lint = (files) => runBin('ven-lint-skills', ['--root', makePlugin(files)]);
-const config = JSON.parse(readFileSync(join(PLUGIN_ROOT, 'lint.json'), 'utf8'));
+const lint = (files, lintConfig) => runBin('ven-lint-skills', ['--root', makePlugin(files, lintConfig)]);
 
 function bulkSkills(totalLines) {
   const perSkill = config.max_skill_lines - 10;
@@ -51,7 +54,7 @@ test('a ven: reference to an existing skill passes', () => {
   assert.equal(result.code, 0, result.stderr);
 });
 
-test('description needs a trigger phrase unless the skill is user-invoked', () => {
+test('description needs a trigger phrase', () => {
   const noTrigger = lint({ 'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing for people.' }) });
   assert.equal(noTrigger.code, 1);
   assert.match(noTrigger.stderr, /skills\/a\/SKILL\.md: description has no trigger phrase/);
@@ -60,10 +63,6 @@ test('description needs a trigger phrase unless the skill is user-invoked', () =
     const ok = lint({ 'skills/a/SKILL.md': skillFile({ name: 'a', description: `Does a thing. ${phrase}` }) });
     assert.equal(ok.code, 0, `${phrase}: ${ok.stderr}`);
   }
-  const exempt = lint({
-    'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing.', extra: 'disable-model-invocation: true\n' }),
-  });
-  assert.equal(exempt.code, 0, exempt.stderr);
 });
 
 test('description over max_description_chars fails', () => {
@@ -79,11 +78,9 @@ test('frontmatter name must match the directory name', () => {
   assert.match(result.stderr, /skills\/a\/SKILL\.md: name "b" must equal directory name "a"/);
 });
 
-test('ven: references must resolve to a skill, playbook, agent or bin tool', () => {
+test('ven: references must resolve to a skill, playbook or bin tool', () => {
   const files = {
-    'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing. Use when testing.', body: 'Ask ven:ven-helper, run ven:ven-tool, see ven:ghost.' }),
-    'agents/ven-helper.md': '---\nname: ven-helper\ndescription: helps\n---\nHelp.\n',
-    'bin/ven-tool': '#!/usr/bin/env node\n',
+    'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing. Use when testing.', body: 'Run ven:ven-profile, see ven:ghost.' }),
   };
   const result = lint(files);
   assert.equal(result.code, 1);
@@ -112,4 +109,59 @@ test('success prints a single ok line', () => {
   assert.equal(result.code, 0);
   assert.equal(result.stdout.trim().split('\n').length, 1);
   assert.match(result.stdout, /^ok: /);
+});
+
+const withPortability = (baseline) => ({
+  ...config,
+  portability: { patterns: { 'ask-tool': 'AskUserQuestion', 'model-invocation': 'disable-model-invocation' }, baseline },
+});
+const askingSkill = (uses) =>
+  skillFile({ name: 'a', description: 'Does a thing. Use when testing.', body: Array.from({ length: uses }, () => 'Ask with AskUserQuestion.').join('\n') });
+
+test('harness-specific tokens above the portability baseline fail and point at the first use', () => {
+  const result = lint({ 'skills/a/SKILL.md': askingSkill(2) }, withPortability({ 'ask-tool': 1, 'model-invocation': 0 }));
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /portability: ask-tool has 2 uses, baseline 1; .*skills\/a\/SKILL\.md:\d+/);
+});
+
+test('a token with no baseline entry is banned, frontmatter included', () => {
+  const result = lint(
+    { 'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing.', extra: 'disable-model-invocation: true\n' }) },
+    withPortability({}),
+  );
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /portability: model-invocation has 1 uses, baseline 0/);
+});
+
+test('uses below the portability baseline fail until the baseline is lowered', () => {
+  const result = lint({ 'skills/a/SKILL.md': askingSkill(1) }, withPortability({ 'ask-tool': 3, 'model-invocation': 0 }));
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /portability: ask-tool dropped to 1 uses; lower lint\.json portability\.baseline\.ask-tool from 3 to 1/);
+});
+
+test('uses equal to the portability baseline pass', () => {
+  const result = lint({ 'skills/a/SKILL.md': askingSkill(2) }, withPortability({ 'ask-tool': 2, 'model-invocation': 0 }));
+  assert.equal(result.code, 0, result.stderr);
+});
+
+test('a root that borrows the plugin lint.json skips the portability ratchet', () => {
+  assert.ok(config.portability, 'the plugin lint.json should define a portability baseline');
+  const result = lint({ 'skills/a/SKILL.md': askingSkill(1) });
+  assert.equal(result.code, 0, result.stderr);
+});
+
+test('--pack reports only the pack findings, not problems in skills beside the core', () => {
+  const root = makePlugin({
+    'skills/a/SKILL.md': skillFile({ name: 'a', description: 'Does a thing. Use when testing.' }),
+    'skills/foreign/SKILL.md': '---\nname: other-name\n---\nNo description.\n',
+  });
+  const pack = makePlugin({ 'skills/p/SKILL.md': skillFile({ name: 'p', description: 'Packs a widget rule. Use when editing widgets.', body: 'Then apply **a**.' }) });
+  const clean = runBin('ven-lint-skills', ['--root', root, '--pack', pack]);
+  assert.equal(clean.code, 0, clean.stderr);
+
+  const broken = makePlugin({ 'skills/p/SKILL.md': skillFile({ name: 'q', description: 'Packs a widget rule. Use when editing widgets.' }) });
+  const result = runBin('ven-lint-skills', ['--root', root, '--pack', broken]);
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /name "q" must equal directory name "p"/);
+  assert.doesNotMatch(result.stderr, /foreign/);
 });

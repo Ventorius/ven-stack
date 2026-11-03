@@ -1,6 +1,6 @@
 ---
 name: sweep
-description: "Fan a mechanical or partitionable job out to parallel ven-workers, one complete brief per slice, and aggregate one evidenced report. Use for renames across many files, per-package migration batches, applying a codemod in slices, or parallel probes."
+description: "Fan a mechanical or partitionable job out to parallel workers, one complete brief per slice, and aggregate one evidenced report. Use for renames across many files, per-package migration batches, applying a codemod in slices, or parallel probes."
 metadata:
   layer: L3
   source: cursor/plugins@1e5c90a:pstack/skills/swarm/SKILL.md
@@ -9,7 +9,7 @@ metadata:
 
 # Sweep
 
-Split a job into slices, give each slice to a `ven:ven-worker` with a brief that leaves nothing to decide, and return one report. Open a task list with one entry per phase below before spawning anything.
+Split a job into slices, give each slice to a worker (**delegate**) with a brief that leaves nothing to decide, and return one report. Open a task list with one entry per phase below before spawning anything.
 
 ## 1. Frame
 
@@ -34,7 +34,7 @@ A brief that contains "decide" or "figure out" is not ready. Make the decision f
 
 ## 3. Fan out
 
-Spawn every worker in one message with the Agent tool: `subagent_type: ven:ven-worker`, `model: ${user_config.swarm_model}`, `run_in_background: true`. Budget tier `${user_config.budget_tier}`: `lean` passes `effort: low`, `max` passes `effort: high`. If a worker drops out, continue with the rest and note it.
+Hand off every slice at once, as **delegate** describes, in the background where your agent allows it. If a worker drops out, continue with the rest and note it.
 
 ## 4. Aggregate
 

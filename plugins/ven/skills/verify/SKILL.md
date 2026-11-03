@@ -1,6 +1,6 @@
 ---
 name: verify
-description: "Prove a change works with the check that matches its type, do the read-back, and log the pass against the exact tree. Use when a change is ready to call done, before review, commit or stopping, and whenever the verify-gate blocks."
+description: "Prove a change works with the check that matches its type, do the read-back, and log the pass against the exact tree. Use when a change is ready to call done, before review, commit or stopping, and whenever ven-decisions end refuses an unverified tree."
 metadata:
   layer: L3
   source: cursor/plugins@1e5c90a:pstack/skills/create-verification-skill/SKILL.md; obra/superpowers@bb92a77:skills/verification-before-completion/SKILL.md
@@ -14,9 +14,10 @@ A change is done when the check for its change type passed on the exact tree you
 ## 1. Name the change types
 
 - List what changed: `git status --short` and `git diff --stat` against where the work started.
-- Read `$(ven-profile path)/verify.md`. Each section is one change type: what counts as proof, its key, its preconditions, and what to read back. Map every changed file to a type.
+- Read `$(ven-profile path)/verify.md` when it exists. Each section is one change type: what counts as proof, its key, its preconditions, and what to read back. Map every changed file to a type.
 - Files matching `ven-profile get docs_only` need no verify. Everything else does.
 - `ven-profile get verify` maps each type to a command key.
+- Before the first verify in a repo, the profile needs `tests.patterns`, `suppressions` and `assertions` for this repo's test runner and linters, or verify can't catch weakened tests and hidden checks. Missing: write them from the repo's test config and lint setup, one `ven-profile set` each.
 
 ## 2. Run the check
 
@@ -26,7 +27,7 @@ For each change type touched:
 2. Run `ven-profile verify <key>`. It runs the command and logs the exit code against the current working tree.
 3. Read the whole output: the exit code, the failure and skip counts. A failure you didn't cause still gets reported, by name.
 
-Any edit after a verify, a formatting fix included, changes the tree: verify again. The verify-gate hook blocks Stop, and SubagentStop for coders, until a pass is logged for the current tree.
+Any edit after a verify, a formatting fix included, changes the tree: verify again. `ven-decisions end` refuses to close a run as done until a pass is logged for the current tree. `ven-profile verify` itself refuses, before running anything, a diff that adds a profile `suppressions` match or drops test `assertions`, unless the line carries `ven-allow: <reason>`. If the profile has a verified `commands.format`, run it on the changed files before you verify.
 
 ## 3. Read back
 
@@ -53,8 +54,7 @@ A failure is recorded as `--decision failed` with the evidence, and reported pla
 Say so. Never invent a command. Propose one from evidence in the repo (a script in a manifest, a CI job, an existing harness), naming the file that shows it. On the user's yes:
 
 ```bash
-ven-profile set commands.<key> '<command leaf as JSON>'
-ven-profile prove commands.<key>
+ven-profile learn commands.<key> --run '<command>' --evidence '<file:line>'
 ven-profile set verify.<change type> commands.<key>
 ```
 

@@ -8,7 +8,7 @@ You need Node 22 or later and [Bun](https://bun.sh) 1.4 or later. ven has no dep
 
    ```sh
    git clone https://github.com/Ventorius/ven-stack && cd ven-stack
-   bun run test          # unit tests for hooks, bin tools and scripts
+   bun run test          # unit tests for the ven tools and repo scripts
    bun run lint:skills   # composition rules, line budgets, denylist
    ```
 
@@ -19,7 +19,7 @@ You need Node 22 or later and [Bun](https://bun.sh) 1.4 or later. ven has no dep
 3. **Scaffold a skill.**
 
    ```sh
-   plugins/ven/bin/ven-new-skill <name> --layer L2 \
+   node scripts/ven-new-skill.mjs <name> --layer L2 \
      --notice-group <group> --source <owner/repo@main:path>   # --source and --notice-group only for adapted skills
    ```
 
@@ -33,7 +33,7 @@ You need Node 22 or later and [Bun](https://bun.sh) 1.4 or later. ven has no dep
 
 - `bun run test` and `bun run lint:skills` are free and run in CI.
 - `bun run eval:routing:quick` is the cheap tier: one tool-less Haiku call per routing case. Use it while you edit router wording.
-- The full routing suite (`claude plugin eval plugins/ven --scaffold --runs 3 --max-cost-usd 10`) costs about $7. Run it manually, before a release or when the quick tier flips a case. CI never runs it.
+- The full routing suite (`claude plugin eval plugins/ven --scaffold --runs 3 --max-cost-usd 10`) costs about $7 and needs the tools from this checkout on your `PATH` (`node plugins/ven/skills/setup/scripts/install.mjs`). Run it manually, before a release or when the quick tier flips a case. CI never runs it.
 - `bun run eval:history <result file>` records a run in `plugins/ven/evals/routing/history.jsonl` and lists the cases that flipped since the previous run of the same tier.
 
 ## Commits
@@ -52,7 +52,7 @@ Every adapted skill and playbook names its upstream in `metadata.source`.
 ## Release
 
 1. Move the `Unreleased` entries in [`CHANGELOG.md`](CHANGELOG.md) under a new `## [X.Y.Z] - YYYY-MM-DD` heading and leave an empty `Unreleased`.
-2. Set `version` in `plugins/ven/.claude-plugin/plugin.json` to `X.Y.Z`.
+2. Set the ven entry's `version` in `.claude-plugin/marketplace.json` to `X.Y.Z`.
 3. Run `bun run release:check` (tests and lint). Run the full routing suite if the router or any playbook changed.
 4. Commit as `chore(release): vX.Y.Z`, merge to `main`, then tag and push:
 
@@ -60,4 +60,4 @@ Every adapted skill and playbook names its upstream in `metadata.source`.
    git tag vX.Y.Z && git push origin vX.Y.Z
    ```
 
-Users pick the release up with `/plugin marketplace update ven-stack`.
+Claude Code users pick the release up with `/plugin marketplace update ven-stack`; users of other agents with `git pull` in their clone, then `node plugins/ven/skills/setup/scripts/install.mjs`.

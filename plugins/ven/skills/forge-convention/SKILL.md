@@ -1,13 +1,13 @@
 ---
 name: forge-convention
-description: "Write a narrow principle-style skill in the repo's pack for a convention that no type, boundary rule, lint rule or hook can check, scoped to the files it governs and proven by a failing scenario. Use when a convention needs judgment and no rule tool can state it."
+description: "Write a narrow principle-style skill in the repo's pack for a convention that no type, boundary rule, lint rule or diff check can check, scoped to the files it governs and proven by a failing scenario. Use when a convention needs judgment and no rule tool can state it."
 metadata:
   layer: L3
 ---
 
 # Forge convention
 
-Some conventions need judgment, such as "a new widget kind gets its own module, never a branch in the shared one". No check can decide them, so they become a narrow skill that loads only on the files it governs. This is the last structural step: confirm first that a type, a boundary rule, a lint or structural rule, and a hook each fail to state the convention, and write down why.
+Some conventions need judgment, such as "a new widget kind gets its own module, never a branch in the shared one". No check can decide them, so they become a narrow skill that loads only on the files it governs. This is the last structural step: confirm first that a type, a boundary rule, a lint or structural rule, and a diff check each fail to state the convention, and write down why.
 
 ## 1. Evidence
 
@@ -15,7 +15,7 @@ Collect real instances, enough to meet the pack bar in **encode-lessons-in-struc
 
 ## 2. Scope
 
-Settle these, then confirm the rule text with the user in one AskUserQuestion. The text becomes the team's rule, so it is their call.
+Settle these, then confirm the rule text with the user in one question. The text becomes the team's rule, so it is their call.
 
 - **The rule.** What to do, what not to do, and the one exception if there is one. Short enough to quote whole.
 - **Where.** The files it governs as globs, and the situations in the words a task would use ("adding a widget kind", "changing how reports load").
@@ -27,7 +27,7 @@ Settle these, then confirm the rule text with the user in one AskUserQuestion. T
 
 The skill goes in the pack that `ven-profile packs-for <governed files>` returns. Its content, in this order:
 
-- `name`: the rule in kebab case. `description`: "<What must always or never happen>. Use when <the situations>." `paths:` the globs. `metadata.layer: L2`.
+- `name`: the rule in kebab case. `description`: "<What must always or never happen>. Use when <the situations>." `metadata.layer: L2`. The pack loads it for all its paths, so the first body line is `Applies to: <globs>`.
 - A title that states the rule in one sentence.
 - The rule paragraph from step 2.
 - **Why:** the cost, with the cited instance.

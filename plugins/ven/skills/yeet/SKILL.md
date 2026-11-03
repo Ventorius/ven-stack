@@ -1,8 +1,6 @@
 ---
 name: yeet
-description: "Take every local change green through the repo's own checks, slice it into conventional commits, push, and with --pr open a pull request on the code host."
-argument-hint: "[--force] [--fast] [--pr] (optional) notes on how to group the commits"
-disable-model-invocation: true
+description: "Take every local change green through the repo's own checks, slice it into conventional commits, push, and with --pr open a pull request on the code host. Use only when the user explicitly asks to yeet, or to commit and push everything; never on your own initiative."
 metadata:
   layer: L5
 ---
@@ -13,10 +11,10 @@ Ship everything in the working tree: **survey** it, get it **green**, **slice** 
 
 ## Flags
 
-Read them from the arguments before step 1; the rest of the arguments are grouping notes. Typing a flag is the user's consent to what it does, so `/ven:yeet` pushes, and `--pr` opens the PR, without asking again.
+Read them from the user's request before step 1; the rest of the request is grouping notes. Asking for yeet, and typing a flag, is the user's consent to what it does, so yeet pushes, and `--pr` opens the PR, without asking again.
 
 - `--force`: skip step 2. Commits land on whatever branch `HEAD` is, the default branch included.
-- `--fast`: skip step 3. Nothing is run; the report states checks were skipped, and the verify-gate still asks for proof before the session stops.
+- `--fast`: skip step 3. Nothing is run; the report states checks were skipped, and `ven-decisions end` still asks for proof before the run closes.
 - `--pr`: run step 7 after the push.
 
 ## 1. Survey

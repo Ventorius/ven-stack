@@ -57,7 +57,7 @@ Every visual skill follows this section. It is written only here.
 
 **Hybrid rule.** Put the claim table under the diagram and run **citation-check** before presenting the diagram as fact. Fix or remove every edge that fails or has no citation, or show it as a draft with those edges labelled `?` and the real count. A hybrid with an uncited edge is never saved.
 
-**No adapter.** `ven-profile adapter <capability>` exits 3 when the capability is missing or unverified. Take the generic path: read the files yourself, cite every node and edge, and badge the result HYBRID. Name the missing capability and suggest **forge-adapter**. Exit 1 with "no profile" means the repo needs `/ven:onboard`. Any other non-zero exit: show the output tail and draw nothing from partial output.
+**No adapter.** `ven-profile adapter <capability>` exits 3 when the capability is missing or unverified. Take the generic path: read the files yourself, cite every node and edge, and badge the result HYBRID. Name the missing capability and suggest **forge-adapter**. Any other non-zero exit: show the output tail and draw nothing from partial output.
 
 **At another ref.** To run an adapter at a base ref, check the ref out in a throwaway worktree and run the same command there:
 

@@ -1,8 +1,6 @@
 ---
 name: help
-description: "Suggest which ven command, skill or playbook fits what you want, and check this repo's ven state (profile, staleness, skill collisions). Suggests only; never runs the work."
-argument-hint: <question>
-disable-model-invocation: true
+description: "Suggest which ven skill or playbook fits what you want, and check this repo's ven state. Use when the user asks which ven skill to use or how ven works; it suggests only and never runs the work."
 metadata:
   layer: L5
   source: cursor/plugins@1e5c90a:pstack/skills/poteto-help/SKILL.md
@@ -11,17 +9,17 @@ metadata:
 
 # help
 
-Answer "which skill fits" with a command the user can type. Never run the skill, playbook or command you suggest; the user sends it. A message that asks for work rather than help gets `/ven:do <their task>` back, ready to send.
+Answer "which skill fits" with the skill to invoke and what to give it. Never run the skill, playbook or command you suggest; the user sends it. A message that asks for work rather than help gets the "do" skill with their task back, ready to send.
 
 ## Default answer
 
-`/ven:do <task>` for any real work. It picks the playbook, runs its steps, proves the result and closes with a learning check. A good task states the goal and how to tell it's done. Don't list skills for it: a hand-written sequence drops steps the playbook keeps. The router's table is the map of what runs when; don't restate it.
+The "do" skill, given the task, for any real work. It picks the playbook, runs its steps, proves the result and closes with a learning check. A good task states the goal and how to tell it's done. Don't list skills for it: a hand-written sequence drops steps the playbook keeps. The router's table is the map of what runs when; don't restate it.
 
-Suggest a single skill only when the user wants one part of the flow. Read `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md` before you say what it does, or route by its frontmatter description. Setup is `/ven:onboard` (`--refresh` after the stack changed). Committing and pushing finished work without a review panel or briefing body is `/ven:yeet` (`--pr` also opens the PR); the ship playbook is the reviewed path.
+Suggest a single skill only when the user wants one part of the flow. Read `$(ven-profile root)/<name>/SKILL.md` before you say what it does, or route by its frontmatter description. Committing and pushing finished work without a review panel or briefing body is the "yeet" skill (`--pr` also opens the PR); the ship playbook is the reviewed path.
 
 ## Playbooks
 
-Playbooks are step lists that `/ven:do` runs, not commands. Describing the task picks one:
+Playbooks are step lists that the "do" skill runs, not commands. Describing the task picks one:
 
 - investigation: how or why something is, or a choice between options
 - feature: add or change behavior
@@ -46,10 +44,9 @@ Repo packs add playbooks; the router prefers a pack playbook when its pack appli
 
 Run these and mention a result only when it changes the answer:
 
-- `ven-profile show` fails: no profile. Suggest `/ven:onboard` first.
-- `ven-profile fresh` exits 1: the stack changed since onboarding. Suggest `/ven:onboard --refresh`.
-- `ven-decisions active` shows a playbook: work is in flight. `/ven:do continue` resumes it; `/ven:do pause` parks it.
-- `ven-doctor`: skill name collisions, unverified commands, the worktree base, missing permission rules. Run it whenever something behaved unexpectedly.
+- `ven-profile context`: the active playbook, a stale profile, or state from an older ven version (`ven-profile migrate`). A repo with no profile needs nothing first: commands are learned as work needs them.
+- `ven-decisions active` shows a playbook: work is in flight. "do" with `continue` resumes it; "do" with `pause` parks it.
+- `ven-doctor`: the tools on PATH, node and git, the per-user settings, unverified commands and state an older ven left. Run it whenever something behaved unexpectedly; for its fixes, suggest **setup**.
 
 ## Reply
 

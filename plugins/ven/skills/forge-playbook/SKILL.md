@@ -11,7 +11,7 @@ metadata:
 
 A playbook is an ordered list of existing skills for one task shape, so the router runs the same proven sequence every time that shape comes up. It holds no know-how of its own: each step names a skill, and the skill holds the how.
 
-**Input:** a pack and a task shape. `<pack dir>` stands for `$(ven-profile path)/packs/<pack>/`; `<ven root>` for `${CLAUDE_PLUGIN_ROOT}`.
+**Input:** a pack and a task shape. `<pack dir>` stands for `$(ven-profile path)/packs/<pack>/`; `<ven root>` for `$(ven-profile root)`, the directory holding ven's skills.
 
 ## 1. Confirm the shape repeats
 
@@ -38,11 +38,11 @@ Before choosing steps, write down:
 3. Give each step a `Done:` line: the observable condition that ends it for this shape. The router copies it into the task list and treats it as the step's gate; mark the steps that must hold before anything else continues `(gate)`.
 4. End with the learning-check step, as every playbook does.
 
-A step with no skill to name means either an existing skill covers it, or the skill is missing: stop and forge it first (suggest `/ven:forge-skill`). Never write the missing know-how into the playbook. Done when every step names a skill that exists and its `Done:` line is checkable.
+A step with no skill to name means either an existing skill covers it, or the skill is missing: stop and forge it first (suggest the "forge-skill" skill). Never write the missing know-how into the playbook. Done when every step names a skill that exists and its `Done:` line is checkable.
 
 ## 4. Write it
 
-Copy `<ven root>/templates/playbook/playbook.md` to `<pack dir>/playbooks/<name>.md` and fill it:
+Copy `<ven root>/setup/assets/templates/playbook/playbook.md` to `<pack dir>/playbooks/<name>.md` and fill it:
 
 - `name`: kebab-case, not the name of any file in `<ven root>/skills/do/playbooks/`.
 - `description`: the one line the router matches on, in the words a request uses, the leading word first.
@@ -50,7 +50,7 @@ Copy `<ven root>/templates/playbook/playbook.md` to `<pack dir>/playbooks/<name>
 
 ## 5. Prove the router picks it
 
-Copy `<ven root>/templates/playbook/cases/route/` twice into `<pack dir>/evals/`, filling every `{{` placeholder:
+Copy `<ven root>/setup/assets/templates/playbook/cases/route/` twice into `<pack dir>/evals/`, filling every `{{` placeholder:
 
 - `route-<name>/`: a task of this shape, in a user's words; the expected playbook is `<name>`.
 - `route-<name>-near-miss/`: a task in the same area that a core playbook fits; the expected playbook is that core one.
@@ -59,6 +59,6 @@ Run `node <pack dir>/scripts/eval.mjs --ven <ven root> --case 'route-<name>*' --
 
 ## 6. Register
 
-1. Add `{ "name", "file": "playbooks/<name>.md", "evidence": [<tasks>], "cases": [<route cases>] }` to `playbooks` in `<pack dir>/pack.json`; bump the patch `version` in `<pack dir>/.claude-plugin/plugin.json`.
+1. Add `{ "name", "file": "playbooks/<name>.md", "evidence": [<tasks>], "cases": [<route cases>] }` to `playbooks` in `<pack dir>/pack.json`, and bump its patch `version`.
 2. The router finds pack playbooks through the profile: from `ven-profile get packs`, add the playbook's absolute path to this pack's `playbooks`, and save the list with `ven-profile set packs '<json>'`.
-3. Tell the user the playbook is live: the router reads the profile on every `/ven:do`, so no reload is needed unless the playbook names a pack skill that isn't loaded yet.
+3. Tell the user the playbook is live: the router reads the profile on every routed task, so nothing needs reloading.

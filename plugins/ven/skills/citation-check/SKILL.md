@@ -1,6 +1,6 @@
 ---
 name: citation-check
-description: "Check every file and line citation behind a hybrid diagram or a list of claims with parallel ven-verifiers, then badge the result. Use before saving or committing a hybrid diagram, or when claims about code cite lines that need independent checking."
+description: "Check every file and line citation behind a hybrid diagram or a list of claims with parallel verifiers, then badge the result. Use before saving or committing a hybrid diagram, or when claims about code cite lines that need independent checking."
 metadata:
   layer: L3
 ---
@@ -24,7 +24,7 @@ From the diagram (or list), build a numbered claim table:
 ## 2. Batch and send
 
 - Split the cited claims into batches of about ten, grouped by file so each verifier reads a file once.
-- Spawn one `ven:ven-verifier` per batch, all in one message: `model: ${user_config.swarm_model}`, `run_in_background: true`; pass `effort: low` when `${user_config.budget_tier}` is `lean`.
+- **delegate** one verifier per batch, all at once.
 - Each brief holds: the commit, the batch's rows, the rule in section 3, and the output shape: one line per claim, `pass | fail | unverifiable`, the id, the cited text quoted, and for a fail what the line actually says.
 
 ## 3. The rule (for the verifier)

@@ -18,7 +18,7 @@ Write down the conventions the team follows in practice, not the ones a style gu
 
 ## 2. One worker per area
 
-Spawn every area in one message: `subagent_type: ven:ven-worker`, `model: ${user_config.swarm_model}`, read-only.
+**delegate** every area at once to read-only workers.
 
 | Area | Look at |
 |---|---|
@@ -48,8 +48,8 @@ You do this, on the orchestrator tier.
 - Keep a pattern when its examples clearly outnumber its counterexamples. A roughly even split is not a convention: list it under Split with both sides.
 - Where a written rule and the code disagree, record both.
 - A recurring review request with no code evidence goes under Asked for in review.
-- Check what already enforces each pattern: `ven-profile adapters`, the lint config, the profile's `boundaries`, pack rules and hooks.
-- Ask the user about splits and contradictions only, batched in one AskUserQuestion. The answers settle which side is the convention.
+- Check what already enforces each pattern: `ven-profile adapters`, the lint config, the profile's `boundaries`, pack rules and checks.
+- Ask the user about splits and contradictions only, batched in one question. The answers settle which side is the convention.
 
 ## 4. Write conventions.md
 
@@ -62,7 +62,7 @@ Generated <date> @ <short sha> from <n> files and <n> PRs.
 
 - <Pattern in one sentence.> Examples: `path:line`, `path:line`, `path:line`.
   Exceptions: <n> (`path:line`). Source: code | review #<pr> | written <file>.
-  Enforced by: <check, rule or hook> | nothing.
+  Enforced by: <check or rule> | nothing.
 
 ## Split
 ## Asked for in review
